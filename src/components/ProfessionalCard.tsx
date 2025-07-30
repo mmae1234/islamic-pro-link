@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,8 +25,10 @@ interface Professional {
   is_mentor: boolean;
   is_seeking_mentor: boolean;
   availability: string;
+  avatar_url: string | null;
   profiles?: {
     full_name: string;
+    avatar_url: string | null;
   };
 }
 
@@ -123,11 +126,15 @@ const ProfessionalCard = ({ professional, onRequestSent }: ProfessionalCardProps
         <div className="flex flex-col md:flex-row gap-4">
           {/* Avatar and Basic Info */}
           <div className="flex items-start gap-3">
-            <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-primary-foreground font-semibold text-lg">
+            <Avatar className="w-16 h-16 flex-shrink-0">
+              <AvatarImage 
+                src={professional.avatar_url || professional.profiles?.avatar_url || undefined} 
+                alt={professional.profiles?.full_name || 'User avatar'} 
+              />
+              <AvatarFallback className="text-lg font-semibold">
                 {getInitials(professional.profiles?.full_name || 'U')}
-              </span>
-            </div>
+              </AvatarFallback>
+            </Avatar>
             
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-2">

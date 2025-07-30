@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { ImageUpload } from '@/components/ImageUpload';
 import { CheckCircle, Plus, X, User, Briefcase, MessageSquare, Calendar } from 'lucide-react';
 
 const SKILLS_OPTIONS = [
@@ -51,6 +52,8 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
     is_seeking_mentor: false,
     preferred_communication: ['in_app_messaging'] as string[]
   });
+
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   const [newSkill, setNewSkill] = useState('');
 
@@ -96,7 +99,8 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
         .upsert({
           user_id: user.id,
           full_name: profileData.full_name,
-          role: profileData.occupation
+          role: profileData.occupation,
+          avatar_url: avatarUrl
         });
 
       if (profileError) throw profileError;
@@ -117,7 +121,8 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
           availability: profileData.availability,
           is_mentor: profileData.is_mentor,
           is_seeking_mentor: profileData.is_seeking_mentor,
-          preferred_communication: profileData.preferred_communication
+          preferred_communication: profileData.preferred_communication,
+          avatar_url: avatarUrl
         });
 
       if (professionalError) throw professionalError;
@@ -180,6 +185,15 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
             </div>
             
             <div className="space-y-4">
+              <div className="flex justify-center mb-6">
+                <ImageUpload
+                  currentImageUrl={avatarUrl}
+                  onImageChange={setAvatarUrl}
+                  fallbackInitials={profileData.full_name ? profileData.full_name.charAt(0).toUpperCase() : '?'}
+                  size="lg"
+                />
+              </div>
+
               <div>
                 <Label htmlFor="full_name">Full Name *</Label>
                 <Input
