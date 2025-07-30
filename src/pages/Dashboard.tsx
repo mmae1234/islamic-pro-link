@@ -51,8 +51,8 @@ const Dashboard = () => {
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user?.id)
-        .single();
+        .eq('user_id', user?.id)
+        .maybeSingle();
 
       if (profileError && profileError.code !== 'PGRST116') {
         console.error('Error loading profile:', profileError);
@@ -67,7 +67,7 @@ const Dashboard = () => {
         .from('professional_profiles')
         .select('*')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (professionalError && professionalError.code !== 'PGRST116') {
         console.error('Error loading professional profile:', professionalError);
@@ -98,9 +98,11 @@ const Dashboard = () => {
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert({
-          id: user.id,
+          user_id: user.id,
           full_name: fullName,
           role: role as any,
+        }, {
+          onConflict: 'user_id'
         });
 
       if (profileError) throw profileError;
