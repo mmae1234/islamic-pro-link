@@ -14,10 +14,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Loader2, Save, User, Briefcase } from "lucide-react";
+import { Loader2, Save, User, Briefcase, Users, X } from "lucide-react";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -38,6 +39,11 @@ const Dashboard = () => {
   const [university, setUniversity] = useState("");
   const [bio, setBio] = useState("");
   const [experienceYears, setExperienceYears] = useState("");
+  const [skills, setSkills] = useState<string[]>([]);
+  const [availability, setAvailability] = useState("");
+  const [isMentor, setIsMentor] = useState(false);
+  const [isSeekingMentor, setIsSeekingMentor] = useState(false);
+  const [preferredCommunication, setPreferredCommunication] = useState<string[]>(["in_app_messaging"]);
 
   useEffect(() => {
     if (user) {
@@ -81,6 +87,11 @@ const Dashboard = () => {
         setUniversity(professionalData.university || '');
         setBio(professionalData.bio || '');
         setExperienceYears(professionalData.experience_years?.toString() || '');
+        setSkills(professionalData.skills || []);
+        setAvailability(professionalData.availability || '');
+        setIsMentor(professionalData.is_mentor || false);
+        setIsSeekingMentor(professionalData.is_seeking_mentor || false);
+        setPreferredCommunication(professionalData.preferred_communication || ["in_app_messaging"]);
       }
     } catch (error) {
       console.error('Error loading user data:', error);
@@ -121,6 +132,11 @@ const Dashboard = () => {
             university,
             bio,
             experience_years: experienceYears ? parseInt(experienceYears) : null,
+            skills,
+            availability,
+            is_mentor: isMentor,
+            is_seeking_mentor: isSeekingMentor,
+            preferred_communication: preferredCommunication,
           });
 
         if (professionalError) throw professionalError;
@@ -307,6 +323,113 @@ const Dashboard = () => {
                       placeholder="Tell us about yourself and your professional background..."
                       rows={4}
                     />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Mentorship Preferences */}
+              <Card className="shadow-soft">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="w-5 h-5" />
+                    Mentorship & Skills
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Skills */}
+                  <div>
+                    <Label htmlFor="skills">Skills (Press Enter to add)</Label>
+                    <div className="space-y-2">
+                      <Input
+                        id="skills"
+                        placeholder="e.g., JavaScript, Leadership, Marketing"
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const value = e.currentTarget.value.trim();
+                            if (value && !skills.includes(value)) {
+                              setSkills([...skills, value]);
+                              e.currentTarget.value = '';
+                            }
+                          }
+                        }}
+                      />
+                      {skills.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {skills.map((skill, index) => (
+                            <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                              {skill}
+                              <X 
+                                className="w-3 h-3 cursor-pointer" 
+                                onClick={() => setSkills(skills.filter((_, i) => i !== index))}
+                              />
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Availability */}
+                  <div>
+                    <Label htmlFor="availability">Availability</Label>
+                    <Input
+                      id="availability"
+                      value={availability}
+                      onChange={(e) => setAvailability(e.target.value)}
+                      placeholder="e.g., Weekends, Evenings (EST), Flexible"
+                    />
+                  </div>
+
+                  {/* Mentorship Preferences */}
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="is_mentor"
+                        checked={isMentor}
+                        onCheckedChange={(checked) => setIsMentor(checked === true)}
+                      />
+                      <Label htmlFor="is_mentor">I'm available as a mentor</Label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="is_seeking_mentor"
+                        checked={isSeekingMentor}
+                        onCheckedChange={(checked) => setIsSeekingMentor(checked === true)}
+                      />
+                      <Label htmlFor="is_seeking_mentor">I'm seeking a mentor</Label>
+                    </div>
+                  </div>
+
+                  {/* Preferred Communication */}
+                  <div>
+                    <Label>Preferred Communication Methods</Label>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      {[
+                        { value: "in_app_messaging", label: "In-app Messaging" },
+                        { value: "video_calls", label: "Video Calls" },
+                        { value: "phone_calls", label: "Phone Calls" },
+                        { value: "in_person", label: "In Person" }
+                      ].map((method) => (
+                        <div key={method.value} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={method.value}
+                            checked={preferredCommunication.includes(method.value)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setPreferredCommunication([...preferredCommunication, method.value]);
+                              } else {
+                                setPreferredCommunication(
+                                  preferredCommunication.filter(m => m !== method.value)
+                                );
+                              }
+                            }}
+                          />
+                          <Label htmlFor={method.value} className="text-sm">{method.label}</Label>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
