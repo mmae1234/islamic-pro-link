@@ -63,8 +63,8 @@ const sampleProfessionals = [
 
 const Search = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState("");
-  const [selectedSector, setSelectedSector] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("all");
+  const [selectedSector, setSelectedSector] = useState("all");
   const [results, setResults] = useState(sampleProfessionals);
   const [viewMode, setViewMode] = useState<"table" | "map">("table");
 
@@ -72,8 +72,8 @@ const Search = () => {
     // Simple search implementation
     let filteredResults = sampleProfessionals.filter(professional => {
       const matchesName = professional.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCountry = !selectedCountry || professional.location.includes(selectedCountry);
-      const matchesSector = !selectedSector || professional.sector === selectedSector;
+      const matchesCountry = selectedCountry === "all" || professional.location.includes(selectedCountry);
+      const matchesSector = selectedSector === "all" || professional.sector === selectedSector;
       
       return matchesName && matchesCountry && matchesSector;
     });
@@ -123,7 +123,7 @@ const Search = () => {
                     <SelectValue placeholder="Select country" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Countries</SelectItem>
+                    <SelectItem value="all">All Countries</SelectItem>
                     <SelectItem value="Canada">Canada</SelectItem>
                     <SelectItem value="UK">United Kingdom</SelectItem>
                     <SelectItem value="UAE">United Arab Emirates</SelectItem>
@@ -140,7 +140,7 @@ const Search = () => {
                     <SelectValue placeholder="Select sector" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Sectors</SelectItem>
+                    <SelectItem value="all">All Sectors</SelectItem>
                     <SelectItem value="Technology">Technology</SelectItem>
                     <SelectItem value="Finance">Finance</SelectItem>
                     <SelectItem value="Healthcare">Healthcare</SelectItem>
