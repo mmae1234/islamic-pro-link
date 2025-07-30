@@ -1,8 +1,11 @@
+import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Search, Users, MessageCircle, Award } from "lucide-react";
 import heroImage from "@/assets/hero-image.jpg";
 
 const Hero = () => {
+  const { user } = useAuth();
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image with Overlay */}
@@ -34,13 +37,17 @@ const Hero = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button variant="accent" size="lg" className="font-semibold">
-                <Search className="w-5 h-5 mr-2" />
-                Find Professionals
+              <Button variant="accent" size="lg" className="font-semibold" asChild>
+                <Link to="/search">
+                  <Search className="w-5 h-5 mr-2" />
+                  Find Professionals
+                </Link>
               </Button>
-              <Button variant="elegant" size="lg" className="font-semibold">
-                <Users className="w-5 h-5 mr-2" />
-                Join Community
+              <Button variant="elegant" size="lg" className="font-semibold" asChild>
+                <Link to={user ? "/dashboard" : "/login"}>
+                  <Users className="w-5 h-5 mr-2" />
+                  {user ? "Go to Dashboard" : "Join Community"}
+                </Link>
               </Button>
             </div>
 

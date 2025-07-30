@@ -1,10 +1,29 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Menu, X, User, Search, MessageCircle } from "lucide-react";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Menu, X, User, Search, MessageCircle, LogOut, Settings } from "lucide-react";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   return (
     <header className="bg-background/95 backdrop-blur-md border-b border-border sticky top-0 z-50">
@@ -33,18 +52,55 @@ const Header = () => {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" size="sm">
-              <Search className="w-4 h-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <MessageCircle className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" size="sm">
-              Login
-            </Button>
-            <Button variant="hero" size="sm">
-              Join Now
-            </Button>
+            {user ? (
+              <>
+                <Button variant="ghost" size="sm">
+                  <Search className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <MessageCircle className="w-4 h-4" />
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="relative">
+                      <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
+                        <span className="text-primary-foreground text-xs font-semibold">
+                          {user.email?.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56 bg-popover border border-border shadow-elegant" align="end">
+                    <DropdownMenuItem asChild>
+                      <Link to="/dashboard" className="flex items-center">
+                        <User className="w-4 h-4 mr-2" />
+                        Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/dashboard" className="flex items-center">
+                        <Settings className="w-4 h-4 mr-2" />
+                        Settings
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut} className="flex items-center">
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/login">Login</Link>
+                </Button>
+                <Button variant="hero" size="sm" asChild>
+                  <Link to="/login">Join Now</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -85,12 +141,25 @@ const Header = () => {
                 About
               </Link>
               <div className="flex flex-col space-y-2 px-4 pt-4 border-t border-border">
-                <Button variant="outline" size="sm">
-                  Login
-                </Button>
-                <Button variant="hero" size="sm">
-                  Join Now
-                </Button>
+                {user ? (
+                  <>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to="/dashboard">Dashboard</Link>
+                    </Button>
+                    <Button variant="hero" size="sm" onClick={handleSignOut}>
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to="/login">Login</Link>
+                    </Button>
+                    <Button variant="hero" size="sm" asChild>
+                      <Link to="/login">Join Now</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>

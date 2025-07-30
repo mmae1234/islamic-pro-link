@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   Search, 
   Users, 
@@ -50,6 +52,7 @@ const features = [
 ];
 
 const Features = () => {
+  const { user } = useAuth();
   return (
     <section className="py-20 bg-muted/30">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -105,11 +108,15 @@ const Features = () => {
               successful careers while staying true to their faith.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="accent" size="lg" className="font-semibold">
-                Create Your Profile
+              <Button variant="accent" size="lg" className="font-semibold" asChild>
+                <Link to={user ? "/dashboard" : "/login"}>
+                  {user ? "Complete Your Profile" : "Create Your Profile"}
+                </Link>
               </Button>
-              <Button variant="elegant" size="lg" className="font-semibold">
-                Explore Professionals
+              <Button variant="elegant" size="lg" className="font-semibold" asChild>
+                <Link to="/search">
+                  Explore Professionals
+                </Link>
               </Button>
             </div>
           </div>
