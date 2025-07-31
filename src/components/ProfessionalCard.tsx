@@ -199,7 +199,7 @@ const ProfessionalCard = ({
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {professional.is_mentor && (
-                    <Badge className="text-xs bg-gradient-to-r from-green-500/20 to-green-600/20 text-green-700 border-green-500/30 hover:shadow-glow">
+                    <Badge className="text-xs bg-green-100 text-green-800 border-green-200 hover:bg-green-200">
                       <Users className="w-3 h-3 mr-1" />
                       Mentor Available
                     </Badge>
