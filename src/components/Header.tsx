@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Menu, X, User, Search, MessageCircle, LogOut, Settings } from "lucide-react";
+import NotificationCenter from "./NotificationCenter";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -54,12 +55,17 @@ const Header = () => {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
-                <Button variant="ghost" size="sm">
-                  <Search className="w-4 h-4" />
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/search">
+                    <Search className="w-4 h-4" />
+                  </Link>
                 </Button>
-                <Button variant="ghost" size="sm">
-                  <MessageCircle className="w-4 h-4" />
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/mentorship">
+                    <MessageCircle className="w-4 h-4" />
+                  </Link>
                 </Button>
+                <NotificationCenter />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="relative">
