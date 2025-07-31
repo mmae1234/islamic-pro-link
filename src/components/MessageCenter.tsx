@@ -44,8 +44,48 @@ const MessageCenter = ({ requestId, recipientId, recipientName }: MessageCenterP
   useEffect(() => {
     if (user) {
       loadConversations();
+      
+      // Set up real-time subscription for new messages
+      const channel = supabase
+        .channel('messages')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+            filter: `recipient_id=eq.${user.id}`,
+          },
+          (payload) => {
+            console.log('New message received:', payload);
+            // Refresh conversations and messages
+            loadConversations();
+            if (selectedConversation && payload.new.sender_id === selectedConversation) {
+              loadMessages(selectedConversation);
+            }
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'messages',
+            filter: `sender_id=eq.${user.id}`,
+          },
+          (payload) => {
+            console.log('Message updated:', payload);
+            // Refresh conversations when read status changes
+            loadConversations();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
-  }, [user]);
+  }, [user, selectedConversation]);
 
   useEffect(() => {
     if (recipientId) {
