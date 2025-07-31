@@ -233,6 +233,14 @@ const NotificationCenter = () => {
                     <div
                       key={notification.id}
                       className="p-4 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
+                      onClick={() => {
+                        if (notification.type === 'message') {
+                          window.location.href = '/messages';
+                        } else if (notification.type === 'mentorship_request') {
+                          window.location.href = '/mentorship';
+                        }
+                        setShowNotifications(false);
+                      }}
                     >
                       <div className="flex items-start gap-3">
                         <div className="mt-1">

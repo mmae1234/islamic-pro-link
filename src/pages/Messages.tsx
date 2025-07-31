@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ConversationView from "@/components/ConversationView";
 import { 
   MessageCircle, 
   Send, 
@@ -53,6 +54,7 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState("");
   const [selectedRecipient, setSelectedRecipient] = useState<any>(null);
   const [professionals, setProfessionals] = useState<any[]>([]);
+  const [selectedConversation, setSelectedConversation] = useState<{partnerId: string, partnerName: string} | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -262,6 +264,26 @@ const Messages = () => {
     );
   }
 
+  if (selectedConversation) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-4xl mx-auto">
+            <ConversationView
+              partnerId={selectedConversation.partnerId}
+              partnerName={selectedConversation.partnerName}
+              onBack={() => setSelectedConversation(null)}
+            />
+          </div>
+        </main>
+
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -314,7 +336,11 @@ const Messages = () => {
                   ) : (
                     <div className="space-y-4">
                       {conversations.map((conv) => (
-                        <Card key={conv.partner_id} className="shadow-soft hover:shadow-lg transition-shadow cursor-pointer">
+                        <Card 
+                          key={conv.partner_id} 
+                          className="shadow-soft hover:shadow-lg transition-shadow cursor-pointer"
+                          onClick={() => setSelectedConversation({partnerId: conv.partner_id, partnerName: conv.partner_name})}
+                        >
                           <CardContent className="pt-6">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">

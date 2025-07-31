@@ -16,6 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { CountrySelect, UniversitySelect, SectorSelect, OccupationSelect, AvailabilitySelect } from "@/components/FormDropdowns";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Loader2, Save, User, Briefcase, Users, X } from "lucide-react";
@@ -137,6 +138,8 @@ const Dashboard = () => {
             is_mentor: isMentor,
             is_seeking_mentor: isSeekingMentor,
             preferred_communication: preferredCommunication,
+          }, {
+            onConflict: 'user_id'
           });
 
         if (professionalError) throw professionalError;
@@ -249,13 +252,8 @@ const Dashboard = () => {
                     </div>
                     
                     <div>
-                      <Label htmlFor="country">Country</Label>
-                      <Input
-                        id="country"
-                        value={country}
-                        onChange={(e) => setCountry(e.target.value)}
-                        placeholder="Enter your country"
-                      />
+                      <Label>Country</Label>
+                      <CountrySelect value={country} onValueChange={setCountry} />
                     </div>
                   </div>
 
@@ -271,35 +269,20 @@ const Dashboard = () => {
                     </div>
                     
                     <div>
-                      <Label htmlFor="university">University</Label>
-                      <Input
-                        id="university"
-                        value={university}
-                        onChange={(e) => setUniversity(e.target.value)}
-                        placeholder="Enter your university"
-                      />
+                      <Label>University</Label>
+                      <UniversitySelect value={university} onValueChange={setUniversity} />
                     </div>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="sector">Sector</Label>
-                      <Input
-                        id="sector"
-                        value={sector}
-                        onChange={(e) => setSector(e.target.value)}
-                        placeholder="e.g., Technology, Finance"
-                      />
+                      <Label>Sector</Label>
+                      <SectorSelect value={sector} onValueChange={setSector} />
                     </div>
                     
                     <div>
-                      <Label htmlFor="occupation">Occupation</Label>
-                      <Input
-                        id="occupation"
-                        value={occupation}
-                        onChange={(e) => setOccupation(e.target.value)}
-                        placeholder="e.g., Software Engineer"
-                      />
+                      <Label>Occupation</Label>
+                      <OccupationSelect value={occupation} onValueChange={setOccupation} />
                     </div>
                   </div>
 
@@ -372,13 +355,8 @@ const Dashboard = () => {
 
                   {/* Availability */}
                   <div>
-                    <Label htmlFor="availability">Availability</Label>
-                    <Input
-                      id="availability"
-                      value={availability}
-                      onChange={(e) => setAvailability(e.target.value)}
-                      placeholder="e.g., Weekends, Evenings (EST), Flexible"
-                    />
+                    <Label>Availability</Label>
+                    <AvailabilitySelect value={availability} onValueChange={setAvailability} />
                   </div>
 
                   {/* Mentorship Preferences */}

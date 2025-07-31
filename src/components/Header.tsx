@@ -48,9 +48,6 @@ const Header = () => {
             </Link>
             {user && (
               <>
-                <Link to="/messages" className="text-foreground hover:text-primary transition-smooth">
-                  Messages
-                </Link>
                 <Link to="/favorites" className="text-foreground hover:text-primary transition-smooth">
                   Favorites
                 </Link>
@@ -91,6 +88,12 @@ const Header = () => {
                       <Link to="/dashboard" className="flex items-center">
                         <User className="w-4 h-4 mr-2" />
                         Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/messages" className="flex items-center">
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        Messages
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>

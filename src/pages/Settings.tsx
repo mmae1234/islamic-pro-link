@@ -6,279 +6,252 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
+import { CountrySelect, UniversitySelect, SectorSelect, OccupationSelect, AvailabilitySelect } from "@/components/FormDropdowns";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { 
-  User, 
-  Lock, 
-  Briefcase, 
-  Users, 
-  Bell, 
-  Shield, 
-  ExternalLink,
-  Trash2,
-  Save
-} from "lucide-react";
+import { User, Briefcase, Users, X, Loader2 } from "lucide-react";
 
-const COUNTRIES = [
-  'Afghanistan', 'Albania', 'Algeria', 'Argentina', 'Australia', 'Austria', 'Bahrain', 'Bangladesh',
-  'Belgium', 'Bosnia and Herzegovina', 'Brazil', 'Brunei', 'Bulgaria', 'Canada', 'China',
-  'Croatia', 'Denmark', 'Egypt', 'France', 'Germany', 'India', 'Indonesia', 'Iran', 'Iraq',
-  'Ireland', 'Italy', 'Jordan', 'Kazakhstan', 'Kuwait', 'Lebanon', 'Libya', 'Malaysia',
-  'Maldives', 'Morocco', 'Netherlands', 'Nigeria', 'Norway', 'Oman', 'Pakistan', 'Palestine',
-  'Qatar', 'Russia', 'Saudi Arabia', 'Senegal', 'Somalia', 'South Africa', 'Spain', 'Sweden',
-  'Switzerland', 'Syria', 'Tunisia', 'Turkey', 'UAE', 'United Kingdom', 'United States', 'Yemen'
+const SKILLS_OPTIONS = [
+  'JavaScript', 'Python', 'React', 'Node.js', 'SQL', 'Machine Learning', 'Digital Marketing',
+  'Project Management', 'Data Analysis', 'UI/UX Design', 'Cloud Computing', 'Finance',
+  'Healthcare', 'Education', 'Consulting', 'Sales', 'HR', 'Legal', 'Engineering'
 ];
 
-const SECTORS = [
-  'Technology', 'Finance & Banking', 'Healthcare & Medicine', 'Education', 'Engineering',
-  'Marketing & Advertising', 'Consulting', 'Legal', 'Real Estate', 'Manufacturing',
-  'Retail & E-commerce', 'Media & Entertainment', 'Non-profit', 'Government', 'Construction',
-  'Transportation', 'Energy & Utilities', 'Agriculture', 'Hospitality & Tourism', 'Other'
-];
-
-const OCCUPATIONS = [
-  'Software Engineer', 'Data Scientist', 'Product Manager', 'Marketing Manager', 'Financial Analyst',
-  'Consultant', 'Doctor', 'Nurse', 'Teacher', 'Professor', 'Lawyer', 'Engineer',
-  'Designer', 'Sales Manager', 'HR Manager', 'Business Analyst', 'Project Manager',
-  'Entrepreneur', 'Researcher', 'Student', 'Other'
+const COMMUNICATION_OPTIONS = [
+  { id: 'in_app_messaging', label: 'In-App Messaging' },
+  { id: 'email', label: 'Email' },
+  { id: 'video_call', label: 'Video Call' },
+  { id: 'phone', label: 'Phone Call' }
 ];
 
 const Settings = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
-  const [profile, setProfile] = useState<any>(null);
-  const [professionalProfile, setProfessionalProfile] = useState<any>(null);
-  
-  // Form states
-  const [profileData, setProfileData] = useState({
-    full_name: '',
-    email: '',
-    phone: '',
-    avatar_url: ''
-  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
-  const [professionalData, setProfessionalData] = useState({
+  const [formData, setFormData] = useState({
+    full_name: '',
+    role: 'professional',
+    bio: '',
     occupation: '',
     sector: '',
     university: '',
     city: '',
     country: '',
-    bio: '',
+    experience_years: '',
+    skills: [] as string[],
+    availability: '',
     is_mentor: false,
     is_seeking_mentor: false,
-    availability: ''
+    preferred_communication: ['in_app_messaging'] as string[]
   });
 
-  const [notificationSettings, setNotificationSettings] = useState({
-    email_notifications: true,
-    mentorship_notifications: true,
-    message_notifications: true
-  });
-
-  const [privacySettings, setPrivacySettings] = useState({
-    profile_visibility: 'public',
-    allow_messages: 'all'
-  });
-
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [newSkill, setNewSkill] = useState('');
 
   useEffect(() => {
     if (user) {
-      loadUserData();
+      loadUserProfile();
     }
   }, [user]);
 
-  const loadUserData = async () => {
+  const loadUserProfile = async () => {
     if (!user) return;
 
     try {
-      // Load profile
-      const { data: profileData, error: profileError } = await supabase
+      // Load basic profile
+      const { data: profileData } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', user.id)
-        .single();
-
-      if (profileError && profileError.code !== 'PGRST116') throw profileError;
+        .maybeSingle();
 
       // Load professional profile
-      const { data: professionalData, error: professionalError } = await supabase
+      const { data: professionalData } = await supabase
         .from('professional_profiles')
         .select('*')
         .eq('user_id', user.id)
-        .single();
-
-      if (professionalError && professionalError.code !== 'PGRST116') throw professionalError;
-
-      setProfile(profileData);
-      setProfessionalProfile(professionalData);
+        .maybeSingle();
 
       if (profileData) {
-        setProfileData({
+        setFormData(prev => ({
+          ...prev,
           full_name: profileData.full_name || '',
-          email: user.email || '',
-          phone: '', // Add phone to profiles table if needed
-          avatar_url: profileData.avatar_url || ''
-        });
+          role: profileData.role || 'professional'
+        }));
+        setAvatarUrl(profileData.avatar_url);
       }
 
       if (professionalData) {
-        setProfessionalData({
+        setFormData(prev => ({
+          ...prev,
+          bio: professionalData.bio || '',
           occupation: professionalData.occupation || '',
           sector: professionalData.sector || '',
           university: professionalData.university || '',
           city: professionalData.city || '',
           country: professionalData.country || '',
-          bio: professionalData.bio || '',
+          experience_years: professionalData.experience_years?.toString() || '',
+          skills: professionalData.skills || [],
+          availability: professionalData.availability || '',
           is_mentor: professionalData.is_mentor || false,
           is_seeking_mentor: professionalData.is_seeking_mentor || false,
-          availability: professionalData.availability || ''
-        });
+          preferred_communication: professionalData.preferred_communication || ['in_app_messaging']
+        }));
+        setAvatarUrl(professionalData.avatar_url || avatarUrl);
       }
-    } catch (error: any) {
-      console.error('Error loading user data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load your profile data.",
-        variant: "destructive",
-      });
+    } catch (error) {
+      console.error('Error loading profile:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const updateProfile = async () => {
+  const saveProfile = async () => {
     if (!user) return;
-
-    setLoading(true);
+    
+    setSaving(true);
     try {
-      const { error } = await supabase
+      // Save basic profile
+      const { error: profileError } = await supabase
         .from('profiles')
         .upsert({
           user_id: user.id,
-          full_name: profileData.full_name,
-          avatar_url: profileData.avatar_url
+          full_name: formData.full_name,
+          role: formData.role,
+          avatar_url: avatarUrl
+        }, {
+          onConflict: 'user_id'
         });
 
-      if (error) throw error;
+      if (profileError) throw profileError;
+
+      // Save professional profile if user is professional
+      if (formData.role === 'professional') {
+        const { error: professionalError } = await supabase
+          .from('professional_profiles')
+          .upsert({
+            user_id: user.id,
+            bio: formData.bio,
+            occupation: formData.occupation,
+            sector: formData.sector,
+            university: formData.university,
+            city: formData.city,
+            country: formData.country,
+            experience_years: formData.experience_years ? parseInt(formData.experience_years) : null,
+            skills: formData.skills,
+            availability: formData.availability,
+            is_mentor: formData.is_mentor,
+            is_seeking_mentor: formData.is_seeking_mentor,
+            preferred_communication: formData.preferred_communication,
+            avatar_url: avatarUrl
+          }, {
+            onConflict: 'user_id'
+          });
+
+        if (professionalError) throw professionalError;
+      }
 
       toast({
-        title: "Profile updated",
+        title: "Profile updated!",
         description: "Your profile has been updated successfully.",
       });
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to save profile.",
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
-  const updateProfessionalProfile = async () => {
-    if (!user) return;
+  const addSkill = (skill: string) => {
+    if (skill && !formData.skills.includes(skill)) {
+      setFormData(prev => ({
+        ...prev,
+        skills: [...prev.skills, skill]
+      }));
+      setNewSkill('');
+    }
+  };
 
-    setLoading(true);
+  const removeSkill = (skillToRemove: string) => {
+    setFormData(prev => ({
+      ...prev,
+      skills: prev.skills.filter(skill => skill !== skillToRemove)
+    }));
+  };
+
+  const handleCommunicationChange = (commId: string, checked: boolean) => {
+    if (checked) {
+      setFormData(prev => ({
+        ...prev,
+        preferred_communication: [...prev.preferred_communication, commId]
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        preferred_communication: prev.preferred_communication.filter(id => id !== commId)
+      }));
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user || deleteConfirmation !== 'delete') return;
+    
+    setDeleting(true);
     try {
-      const { error } = await supabase
-        .from('professional_profiles')
-        .upsert({
-          user_id: user.id,
-          ...professionalData
-        });
-
-      if (error) throw error;
-
+      // Delete user data from our tables first
+      await supabase.from('professional_profiles').delete().eq('user_id', user.id);
+      await supabase.from('profiles').delete().eq('user_id', user.id);
+      await supabase.from('favorites').delete().eq('user_id', user.id);
+      await supabase.from('messages').delete().or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`);
+      await supabase.from('mentorship_requests').delete().or(`mentor_id.eq.${user.id},mentee_id.eq.${user.id}`);
+      
+      // Note: We cannot delete the auth user directly from client side
+      // This would need to be handled by a server function or admin action
+      
       toast({
-        title: "Professional profile updated",
-        description: "Your professional profile has been updated successfully.",
+        title: "Account deleted",
+        description: "Your account and all data have been deleted.",
       });
+      
+      signOut();
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to delete account.",
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setDeleting(false);
+      setShowDeleteDialog(false);
+      setDeleteConfirmation('');
     }
   };
 
-  const changePassword = async () => {
-    if (newPassword !== confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords do not match.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      toast({
-        title: "Error",
-        description: "Password must be at least 6 characters long.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Password updated",
-        description: "Your password has been changed successfully.",
-      });
-      setNewPassword('');
-      setConfirmPassword('');
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteAccount = async () => {
-    if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
-      setLoading(true);
-      try {
-        // Delete user data first
-        await supabase.from('professional_profiles').delete().eq('user_id', user?.id);
-        await supabase.from('profiles').delete().eq('user_id', user?.id);
-        
-        toast({
-          title: "Account deletion requested",
-          description: "Please contact support to complete account deletion.",
-        });
-      } catch (error: any) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex items-center justify-center h-96">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -291,400 +264,269 @@ const Settings = () => {
               Settings
             </h1>
             <p className="text-lg text-muted-foreground">
-              Manage your account, profile, and preferences.
+              Manage your profile and account preferences.
             </p>
           </div>
 
-          <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6">
-              <TabsTrigger value="profile" className="flex items-center gap-2">
-                <User className="w-4 h-4" />
-                Profile
-              </TabsTrigger>
-              <TabsTrigger value="account" className="flex items-center gap-2">
-                <Lock className="w-4 h-4" />
-                Account
-              </TabsTrigger>
-              <TabsTrigger value="professional" className="flex items-center gap-2">
-                <Briefcase className="w-4 h-4" />
-                Professional
-              </TabsTrigger>
-              <TabsTrigger value="mentorship" className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Mentorship
-              </TabsTrigger>
-              <TabsTrigger value="notifications" className="flex items-center gap-2">
-                <Bell className="w-4 h-4" />
-                Notifications
-              </TabsTrigger>
-              <TabsTrigger value="privacy" className="flex items-center gap-2">
-                <Shield className="w-4 h-4" />
-                Privacy
-              </TabsTrigger>
-            </TabsList>
+          <div className="space-y-8">
+            {/* Basic Profile */}
+            <Card className="shadow-soft">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="w-5 h-5" />
+                  Basic Profile
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex justify-center">
+                  <ImageUpload
+                    currentImageUrl={avatarUrl}
+                    onImageChange={setAvatarUrl}
+                    fallbackInitials={formData.full_name ? formData.full_name.charAt(0).toUpperCase() : '?'}
+                    size="lg"
+                  />
+                </div>
 
-            {/* Profile Settings */}
-            <TabsContent value="profile">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Profile Settings</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="flex justify-center">
-                    <ImageUpload
-                      currentImageUrl={profileData.avatar_url}
-                      onImageChange={(url) => setProfileData(prev => ({ ...prev, avatar_url: url }))}
-                      fallbackInitials={profileData.full_name ? profileData.full_name.charAt(0).toUpperCase() : '?'}
-                      size="lg"
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="full_name">Full Name</Label>
+                    <Input
+                      id="full_name"
+                      value={formData.full_name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
+                      placeholder="Enter your full name"
                     />
                   </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="full_name">Full Name</Label>
-                      <Input
-                        id="full_name"
-                        value={profileData.full_name}
-                        onChange={(e) => setProfileData(prev => ({ ...prev, full_name: e.target.value }))}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        value={profileData.email}
-                        disabled
-                        className="bg-muted"
-                      />
-                    </div>
+                  
+                  <div>
+                    <Label>Role</Label>
+                    <Select value={formData.role} onValueChange={(value) => setFormData(prev => ({ ...prev, role: value }))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="visitor">Visitor (Service Seeker)</SelectItem>
+                        <SelectItem value="professional">Professional</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
+                </div>
 
-                  <Button onClick={updateProfile} disabled={loading}>
-                    <Save className="w-4 h-4 mr-2" />
-                    Save Changes
-                  </Button>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                <div>
+                  <Label htmlFor="bio">Bio</Label>
+                  <Textarea
+                    id="bio"
+                    value={formData.bio}
+                    onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                    placeholder="Tell us about yourself..."
+                    rows={4}
+                  />
+                </div>
+              </CardContent>
+            </Card>
 
-            {/* Account Settings */}
-            <TabsContent value="account">
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Change Password</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <Label htmlFor="new_password">New Password</Label>
-                      <Input
-                        id="new_password"
-                        type="password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="confirm_password">Confirm Password</Label>
-                      <Input
-                        id="confirm_password"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                      />
-                    </div>
-                    <Button onClick={changePassword} disabled={loading}>
-                      Update Password
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Delete Account</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground mb-4">
-                      Once you delete your account, there is no going back. Please be certain.
-                    </p>
-                    <Button variant="destructive" onClick={deleteAccount} disabled={loading}>
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete Account
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            {/* Professional Settings */}
-            <TabsContent value="professional">
-              <Card>
+            {/* Professional Profile */}
+            {formData.role === 'professional' && (
+              <Card className="shadow-soft">
                 <CardHeader>
-                  <CardTitle>Professional Settings</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Briefcase className="w-5 h-5" />
+                    Professional Information
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="bio">Bio</Label>
-                    <Textarea
-                      id="bio"
-                      value={professionalData.bio}
-                      onChange={(e) => setProfessionalData(prev => ({ ...prev, bio: e.target.value }))}
-                      rows={4}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <Label>Occupation</Label>
-                      <Select 
-                        value={professionalData.occupation} 
-                        onValueChange={(value) => setProfessionalData(prev => ({ ...prev, occupation: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select occupation" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {OCCUPATIONS.map(occupation => (
-                            <SelectItem key={occupation} value={occupation}>{occupation}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <OccupationSelect value={formData.occupation} onValueChange={(value) => setFormData(prev => ({ ...prev, occupation: value }))} />
                     </div>
+                    
                     <div>
                       <Label>Sector</Label>
-                      <Select 
-                        value={professionalData.sector} 
-                        onValueChange={(value) => setProfessionalData(prev => ({ ...prev, sector: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select sector" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {SECTORS.map(sector => (
-                            <SelectItem key={sector} value={sector}>{sector}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <SectorSelect value={formData.sector} onValueChange={(value) => setFormData(prev => ({ ...prev, sector: value }))} />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="city">City</Label>
                       <Input
                         id="city"
-                        value={professionalData.city}
-                        onChange={(e) => setProfessionalData(prev => ({ ...prev, city: e.target.value }))}
+                        value={formData.city}
+                        onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                        placeholder="Enter your city"
                       />
                     </div>
+                    
                     <div>
                       <Label>Country</Label>
-                      <Select 
-                        value={professionalData.country} 
-                        onValueChange={(value) => setProfessionalData(prev => ({ ...prev, country: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select country" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {COUNTRIES.map(country => (
-                            <SelectItem key={country} value={country}>{country}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <CountrySelect value={formData.country} onValueChange={(value) => setFormData(prev => ({ ...prev, country: value }))} />
                     </div>
                   </div>
 
-                  <Button onClick={updateProfessionalProfile} disabled={loading}>
-                    <Save className="w-4 h-4 mr-2" />
-                    Save Changes
-                  </Button>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>University</Label>
+                      <UniversitySelect value={formData.university} onValueChange={(value) => setFormData(prev => ({ ...prev, university: value }))} />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="experience_years">Years of Experience</Label>
+                      <Input
+                        id="experience_years"
+                        type="number"
+                        value={formData.experience_years}
+                        onChange={(e) => setFormData(prev => ({ ...prev, experience_years: e.target.value }))}
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
-            </TabsContent>
+            )}
 
-            {/* Mentorship Settings */}
-            <TabsContent value="mentorship">
-              <Card>
+            {/* Skills & Mentorship */}
+            {formData.role === 'professional' && (
+              <Card className="shadow-soft">
                 <CardHeader>
-                  <CardTitle>Mentorship Settings</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="w-5 h-5" />
+                    Skills & Mentorship
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="is_mentor">Available as Mentor</Label>
-                      <p className="text-sm text-muted-foreground">Allow others to request mentorship from you</p>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label>Skills</Label>
+                    <div className="flex gap-2 mb-2">
+                      <Input
+                        value={newSkill}
+                        onChange={(e) => setNewSkill(e.target.value)}
+                        placeholder="Add a skill..."
+                        onKeyPress={(e) => e.key === 'Enter' && addSkill(newSkill)}
+                      />
+                      <Button onClick={() => addSkill(newSkill)} size="sm" variant="outline">
+                        Add
+                      </Button>
                     </div>
-                    <Switch
-                      id="is_mentor"
-                      checked={professionalData.is_mentor}
-                      onCheckedChange={(checked) => setProfessionalData(prev => ({ ...prev, is_mentor: checked }))}
-                    />
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {SKILLS_OPTIONS.map(skill => (
+                        <Badge
+                          key={skill}
+                          variant={formData.skills.includes(skill) ? "default" : "outline"}
+                          className="cursor-pointer"
+                          onClick={() => addSkill(skill)}
+                        >
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.skills.map(skill => (
+                        <Badge key={skill} className="flex items-center gap-1">
+                          {skill}
+                          <X 
+                            className="w-3 h-3 cursor-pointer" 
+                            onClick={() => removeSkill(skill)}
+                          />
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="is_seeking_mentor">Looking for Mentor</Label>
-                      <p className="text-sm text-muted-foreground">Show that you're seeking mentorship</p>
-                    </div>
-                    <Switch
-                      id="is_seeking_mentor"
-                      checked={professionalData.is_seeking_mentor}
-                      onCheckedChange={(checked) => setProfessionalData(prev => ({ ...prev, is_seeking_mentor: checked }))}
-                    />
+                  <div>
+                    <Label>Availability</Label>
+                    <AvailabilitySelect value={formData.availability} onValueChange={(value) => setFormData(prev => ({ ...prev, availability: value }))} />
                   </div>
 
-                  {professionalData.is_mentor && (
-                    <div>
-                      <Label>Availability</Label>
-                      <Select 
-                        value={professionalData.availability} 
-                        onValueChange={(value) => setProfessionalData(prev => ({ ...prev, availability: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select your availability" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="weekdays">Weekdays</SelectItem>
-                          <SelectItem value="weekends">Weekends</SelectItem>
-                          <SelectItem value="evenings">Evenings</SelectItem>
-                          <SelectItem value="flexible">Flexible</SelectItem>
-                        </SelectContent>
-                      </Select>
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="is_mentor"
+                        checked={formData.is_mentor}
+                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_mentor: checked as boolean }))}
+                      />
+                      <Label htmlFor="is_mentor">I want to be a mentor</Label>
                     </div>
-                  )}
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="is_seeking_mentor"
+                        checked={formData.is_seeking_mentor}
+                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_seeking_mentor: checked as boolean }))}
+                      />
+                      <Label htmlFor="is_seeking_mentor">I'm looking for a mentor</Label>
+                    </div>
+                  </div>
 
-                  <Button onClick={updateProfessionalProfile} disabled={loading}>
-                    <Save className="w-4 h-4 mr-2" />
-                    Save Changes
+                  <div>
+                    <Label>Preferred Communication Methods</Label>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      {COMMUNICATION_OPTIONS.map(option => (
+                        <div key={option.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={option.id}
+                            checked={formData.preferred_communication.includes(option.id)}
+                            onCheckedChange={(checked) => handleCommunicationChange(option.id, checked as boolean)}
+                          />
+                          <Label htmlFor={option.id} className="text-sm">{option.label}</Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Actions */}
+            <Card className="shadow-soft">
+              <CardContent className="pt-6">
+                <div className="flex gap-4">
+                  <Button onClick={saveProfile} disabled={saving}>
+                    {saving ? 'Saving...' : 'Save Changes'}
                   </Button>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Notification Settings */}
-            <TabsContent value="notifications">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Notification Settings</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="email_notifications">Email Notifications</Label>
-                      <p className="text-sm text-muted-foreground">Receive updates via email</p>
-                    </div>
-                    <Switch
-                      id="email_notifications"
-                      checked={notificationSettings.email_notifications}
-                      onCheckedChange={(checked) => setNotificationSettings(prev => ({ ...prev, email_notifications: checked }))}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="mentorship_notifications">Mentorship Notifications</Label>
-                      <p className="text-sm text-muted-foreground">Get notified about mentorship requests and updates</p>
-                    </div>
-                    <Switch
-                      id="mentorship_notifications"
-                      checked={notificationSettings.mentorship_notifications}
-                      onCheckedChange={(checked) => setNotificationSettings(prev => ({ ...prev, mentorship_notifications: checked }))}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="message_notifications">Message Notifications</Label>
-                      <p className="text-sm text-muted-foreground">Get notified about new messages</p>
-                    </div>
-                    <Switch
-                      id="message_notifications"
-                      checked={notificationSettings.message_notifications}
-                      onCheckedChange={(checked) => setNotificationSettings(prev => ({ ...prev, message_notifications: checked }))}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Privacy Settings */}
-            <TabsContent value="privacy">
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Privacy Settings</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div>
-                      <Label>Profile Visibility</Label>
-                      <Select 
-                        value={privacySettings.profile_visibility} 
-                        onValueChange={(value) => setPrivacySettings(prev => ({ ...prev, profile_visibility: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="public">Public</SelectItem>
-                          <SelectItem value="members_only">Members Only</SelectItem>
-                          <SelectItem value="private">Private</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label>Who can message you</Label>
-                      <Select 
-                        value={privacySettings.allow_messages} 
-                        onValueChange={(value) => setPrivacySettings(prev => ({ ...prev, allow_messages: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Everyone</SelectItem>
-                          <SelectItem value="professionals_only">Professionals Only</SelectItem>
-                          <SelectItem value="connections_only">Connections Only</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Legal & Support</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span>Terms & Conditions</span>
-                      <Button variant="outline" size="sm">
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        View
-                      </Button>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Privacy Policy</span>
-                      <Button variant="outline" size="sm">
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        View
-                      </Button>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Contact Support</span>
-                      <Button variant="outline" size="sm">
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        Contact
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-          </Tabs>
+                  <Button 
+                    variant="destructive" 
+                    onClick={() => setShowDeleteDialog(true)}
+                  >
+                    Delete Account
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </main>
+
+      {/* Delete Account Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your account and remove all your data from our servers.
+              <br /><br />
+              Type "delete" in the box below to confirm.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="my-4">
+            <Input
+              placeholder="Type 'delete' to confirm"
+              value={deleteConfirmation}
+              onChange={(e) => setDeleteConfirmation(e.target.value)}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={deleteConfirmation !== 'delete' || deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? 'Deleting...' : 'Delete Account'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Footer />
     </div>

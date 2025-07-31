@@ -67,7 +67,7 @@ const Search = () => {
         .from('professional_profiles')
         .select(`
           *,
-          profiles(full_name)
+          profiles!professional_profiles_user_id_profiles_fkey(full_name)
         `);
 
       // Apply filters

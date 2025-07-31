@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ImageUpload';
+import { CountrySelect, UniversitySelect, SectorSelect, OccupationSelect, AvailabilitySelect } from '@/components/FormDropdowns';
 import { CheckCircle, Plus, X, User, Briefcase, MessageSquare, Calendar } from 'lucide-react';
 
 const SKILLS_OPTIONS = [
@@ -138,6 +139,8 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
           full_name: profileData.full_name,
           role: profileData.role,
           avatar_url: avatarUrl
+        }, {
+          onConflict: 'user_id'
         });
 
       if (profileError) throw profileError;
@@ -161,6 +164,8 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
             is_seeking_mentor: profileData.is_seeking_mentor,
             preferred_communication: profileData.preferred_communication,
             avatar_url: avatarUrl
+          }, {
+            onConflict: 'user_id'
           });
 
         if (professionalError) throw professionalError;
@@ -305,19 +310,10 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
                     placeholder="City"
                   />
                 </div>
-                <div>
-                  <Label>Country</Label>
-                  <Select value={profileData.country} onValueChange={(value) => setProfileData(prev => ({ ...prev, country: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select country" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COUNTRIES.map(country => (
-                        <SelectItem key={country} value={country}>{country}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div>
+                <Label>Country</Label>
+                <CountrySelect value={profileData.country} onValueChange={(value) => setProfileData(prev => ({ ...prev, country: value }))} />
+              </div>
               </div>
             </div>
           </div>
@@ -335,45 +331,18 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
             <div className="space-y-4">
               <div>
                 <Label>Current Role *</Label>
-                <Select value={profileData.occupation} onValueChange={(value) => setProfileData(prev => ({ ...prev, occupation: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your occupation" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {OCCUPATIONS.map(occupation => (
-                      <SelectItem key={occupation} value={occupation}>{occupation}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <OccupationSelect value={profileData.occupation} onValueChange={(value) => setProfileData(prev => ({ ...prev, occupation: value }))} placeholder="Select your occupation" />
               </div>
               
               <div>
                 <Label>Industry Sector *</Label>
-                <Select value={profileData.sector} onValueChange={(value) => setProfileData(prev => ({ ...prev, sector: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your industry" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SECTORS.map(sector => (
-                      <SelectItem key={sector} value={sector}>{sector}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <SectorSelect value={profileData.sector} onValueChange={(value) => setProfileData(prev => ({ ...prev, sector: value }))} placeholder="Select your industry" />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>University/Education</Label>
-                  <Select value={profileData.university} onValueChange={(value) => setProfileData(prev => ({ ...prev, university: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select university" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {UNIVERSITIES.map(uni => (
-                        <SelectItem key={uni} value={uni}>{uni}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <UniversitySelect value={profileData.university} onValueChange={(value) => setProfileData(prev => ({ ...prev, university: value }))} />
                 </div>
                 <div>
                   <Label htmlFor="experience_years">Years of Experience</Label>
@@ -460,17 +429,7 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
 
               <div>
                 <Label htmlFor="availability">Availability</Label>
-                <Select value={profileData.availability} onValueChange={(value) => setProfileData(prev => ({ ...prev, availability: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your availability" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="weekdays">Weekdays</SelectItem>
-                    <SelectItem value="weekends">Weekends</SelectItem>
-                    <SelectItem value="evenings">Evenings</SelectItem>
-                    <SelectItem value="flexible">Flexible</SelectItem>
-                  </SelectContent>
-                </Select>
+                <AvailabilitySelect value={profileData.availability} onValueChange={(value) => setProfileData(prev => ({ ...prev, availability: value }))} />
               </div>
             </div>
           </div>

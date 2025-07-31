@@ -242,14 +242,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "fk_professional_profiles_profiles"
+            foreignKeyName: "professional_profiles_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: "professional_profiles_user_id_fkey"
+            foreignKeyName: "professional_profiles_user_id_profiles_fkey"
             columns: ["user_id"]
             isOneToOne: true
             referencedRelation: "profiles"
