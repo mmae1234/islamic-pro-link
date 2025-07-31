@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ImageUpload';
 import { CountrySelect, UniversitySelect, SectorSelect, OccupationSelect, AvailabilitySelect } from '@/components/FormDropdowns';
+import { StateProvinceSelect } from '@/components/StateProvinceSelect';
+import { CitySelect } from '@/components/CitySelect';
 import { CheckCircle, Plus, X, User, Briefcase, MessageSquare, Calendar, Users } from 'lucide-react';
 
 const SKILLS_OPTIONS = [
@@ -30,16 +32,7 @@ const COUNTRIES = [
   'Switzerland', 'Syria', 'Tunisia', 'Turkey', 'UAE', 'United Kingdom', 'United States', 'Yemen'
 ];
 
-const UNIVERSITIES = [
-  'MIT - Massachusetts Institute of Technology', 'Harvard University', 'Stanford University',
-  'University of Cambridge', 'University of Oxford', 'California Institute of Technology',
-  'ETH Zurich', 'Imperial College London', 'University College London', 'King\'s College London',
-  'University of Toronto', 'McGill University', 'University of Melbourne', 'University of Sydney',
-  'National University of Singapore', 'Nanyang Technological University', 'University of Hong Kong',
-  'American University of Beirut', 'Cairo University', 'King Abdulaziz University',
-  'King Fahd University', 'Qatar University', 'UAE University', 'University of Karachi',
-  'Lahore University of Management Sciences', 'Other'
-];
+// Universities list moved to FormDropdowns component for consistency
 
 const SECTORS = [
   'Technology', 'Finance & Banking', 'Healthcare & Medicine', 'Education', 'Engineering',
@@ -296,6 +289,10 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
+                  <Label>Country</Label>
+                  <CountrySelect value={profileData.country} onValueChange={(value) => setProfileData(prev => ({ ...prev, country: value }))} />
+                </div>
+                <div>
                   <Label htmlFor="city">City</Label>
                   <Input
                     id="city"
@@ -304,10 +301,6 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
                     placeholder="City"
                   />
                 </div>
-              <div>
-                <Label>Country</Label>
-                <CountrySelect value={profileData.country} onValueChange={(value) => setProfileData(prev => ({ ...prev, country: value }))} />
-              </div>
               </div>
             </div>
           </div>

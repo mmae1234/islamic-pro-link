@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
 import { CountrySelect, UniversitySelect, SectorSelect, OccupationSelect, AvailabilitySelect } from "@/components/FormDropdowns";
 import { StateProvinceSelect } from "@/components/StateProvinceSelect";
+import { CitySelect } from "@/components/CitySelect";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { User, Briefcase, Users, X, Loader2 } from "lucide-react";
@@ -381,12 +382,12 @@ const Settings = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="city">City</Label>
-                    <Input
-                      id="city"
-                      value={formData.city}
-                      onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                      placeholder="Enter your city"
+                    <Label>City</Label>
+                    <CitySelect 
+                      value={formData.city} 
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, city: value }))}
+                      country={formData.country}
+                      stateProvince={formData.state_province}
                     />
                   </div>
 

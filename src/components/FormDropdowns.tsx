@@ -11,14 +11,55 @@ const COUNTRIES = [
 ];
 
 const UNIVERSITIES = [
+  // Top Global Universities
   'MIT - Massachusetts Institute of Technology', 'Harvard University', 'Stanford University',
   'University of Cambridge', 'University of Oxford', 'California Institute of Technology',
   'ETH Zurich', 'Imperial College London', 'University College London', 'King\'s College London',
   'University of Toronto', 'McGill University', 'University of Melbourne', 'University of Sydney',
   'National University of Singapore', 'Nanyang Technological University', 'University of Hong Kong',
+  
+  // Middle East & Islamic Universities
   'American University of Beirut', 'Cairo University', 'King Abdulaziz University',
-  'King Fahd University', 'Qatar University', 'UAE University', 'University of Karachi',
-  'Lahore University of Management Sciences', 'Other'
+  'King Fahd University', 'Qatar University', 'UAE University', 'Al-Azhar University',
+  'Jordan University of Science and Technology', 'Kuwait University', 'University of Tehran',
+  'Sharif University of Technology', 'Istanbul Technical University', 'Bogazici University',
+  'Middle East Technical University', 'American University of Cairo', 'Lebanese American University',
+  
+  // South Asian Universities
+  'University of Karachi', 'Lahore University of Management Sciences', 'Indian Institute of Technology Delhi',
+  'Indian Institute of Technology Bombay', 'University of Delhi', 'Jawaharlal Nehru University',
+  'Aligarh Muslim University', 'Jamia Millia Islamia', 'University of Punjab', 'Quaid-i-Azam University',
+  'National University of Sciences and Technology', 'Dhaka University', 'Bangladesh University of Engineering',
+  
+  // European Universities
+  'Sorbonne University', 'Technical University of Munich', 'KTH Royal Institute of Technology',
+  'Delft University of Technology', 'University of Amsterdam', 'Utrecht University',
+  'KU Leuven', 'Université catholique de Louvain', 'University of Copenhagen',
+  'Stockholm University', 'University of Oslo', 'Norwegian University of Science and Technology',
+  
+  // North American Universities
+  'University of California Berkeley', 'University of Michigan', 'Carnegie Mellon University',
+  'Yale University', 'Princeton University', 'Columbia University', 'University of Pennsylvania',
+  'Northwestern University', 'University of Chicago', 'Johns Hopkins University',
+  'University of British Columbia', 'University of Waterloo', 'McMaster University',
+  
+  // African Universities
+  'University of Cape Town', 'University of the Witwatersrand', 'Stellenbosch University',
+  'Cairo University', 'Alexandria University', 'Ain Shams University', 'University of Khartoum',
+  'Makerere University', 'University of Ghana', 'University of Ibadan',
+  
+  // Southeast Asian Universities
+  'University of Malaya', 'Universiti Teknologi Malaysia', 'Universiti Putra Malaysia',
+  'Universiti Kebangsaan Malaysia', 'Universiti Sains Malaysia', 'University of Indonesia',
+  'Bandung Institute of Technology', 'Gadjah Mada University', 'Chulalongkorn University',
+  
+  // Other Notable Universities
+  'Australian National University', 'Monash University', 'University of New South Wales',
+  'University of Queensland', 'University of Adelaide', 'RMIT University',
+  'Tsinghua University', 'Peking University', 'Fudan University', 'Shanghai Jiao Tong University',
+  'University of Tokyo', 'Kyoto University', 'Osaka University', 'Tohoku University',
+  
+  'Other'
 ];
 
 const SECTORS = [

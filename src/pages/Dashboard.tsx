@@ -18,6 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { CountrySelect, UniversitySelect, SectorSelect, OccupationSelect, AvailabilitySelect } from "@/components/FormDropdowns";
 import { StateProvinceSelect } from "@/components/StateProvinceSelect";
+import { CitySelect } from "@/components/CitySelect";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Loader2, Save, User, Briefcase, Users, X } from "lucide-react";
@@ -37,6 +38,20 @@ const Dashboard = () => {
   const [country, setCountry] = useState("");
   const [stateProvince, setStateProvince] = useState("");
   const [city, setCity] = useState("");
+
+  // Reset dependent fields when parent selections change
+  useEffect(() => {
+    if (stateProvince) {
+      setCity(""); // Reset city when state/province changes
+    }
+  }, [stateProvince]);
+
+  useEffect(() => {
+    if (country) {
+      setStateProvince(""); // Reset state/province when country changes
+      setCity(""); // Reset city when country changes
+    }
+  }, [country]);
   const [sector, setSector] = useState("");
   const [occupation, setOccupation] = useState("");
   const [university, setUniversity] = useState("");
@@ -271,12 +286,12 @@ const Dashboard = () => {
                     </div>
                     
                     <div>
-                      <Label htmlFor="city">City</Label>
-                      <Input
-                        id="city"
-                        value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                        placeholder="Enter your city"
+                      <Label>City</Label>
+                      <CitySelect 
+                        value={city} 
+                        onValueChange={setCity}
+                        country={country}
+                        stateProvince={stateProvince}
                       />
                     </div>
                   </div>

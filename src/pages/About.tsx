@@ -36,19 +36,25 @@ const About = () => {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-                  Our Mission
+                  Our Story
                 </h2>
                 <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
-                  MuslimsPros was founded with a simple yet powerful vision: to create a 
-                  professional network where Muslim professionals can connect, grow, and 
-                  succeed while maintaining their Islamic values and principles.
+                  I created MuslimsPros while being unemployed, believing that the best thing I can do in my life right now is to help others, hoping that Allah accepts this from me.
                 </p>
+                
+                <blockquote className="border-l-4 border-primary pl-6 mb-6 bg-muted/30 p-4 rounded-r-lg">
+                  <p className="text-lg text-foreground font-medium mb-3 italic">
+                    "A Muslim is a brother of another Muslim. … Whoever fulfills the needs of his brother, Allah will fulfill his needs; whoever removes the troubles of his brother, Allah will remove one of his troubles on the Day of Resurrection."
+                  </p>
+                  <cite className="text-sm text-muted-foreground font-normal">
+                    — Prophet Muhammad (ﷺ) | Al-Bukhari and Muslim
+                  </cite>
+                </blockquote>
+                
                 <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                  We believe that faith and professional success are not mutually exclusive. 
-                  Our platform provides a space where professionals can build meaningful 
-                  relationships, find mentorship, and advance their careers in an environment 
-                  that understands and respects their religious commitments.
+                  MuslimsPros is my way of applying this Hadith — a platform for Muslims to support, connect with, and uplift each other. We believe that faith and professional success go hand in hand, and our platform provides a space where professionals can build meaningful relationships while staying true to their Islamic values.
                 </p>
+                
                 <Button variant="hero" size="lg">
                   Join Our Community
                 </Button>
