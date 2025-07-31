@@ -77,36 +77,69 @@ const Favorites = () => {
     if (!user) return;
 
     try {
-      // Load favorite professionals
+      // Load favorite professionals - using simpler query without join
       const { data: favProfs, error: favProfsError } = await supabase
         .from('favorites')
-        .select(`
-          *,
-          professional_profile:professional_profiles!favorites_professional_id_fkey(
-            *,
-            profiles!professional_profiles_user_id_fkey(full_name)
-          )
-        `)
+        .select('*')
         .eq('user_id', user.id);
 
       if (favProfsError) throw favProfsError;
 
+      // Load professional profiles separately
+      if (favProfs && favProfs.length > 0) {
+        const professionalIds = favProfs.map(fav => fav.professional_id);
+        const { data: professionals, error: profError } = await supabase
+          .from('professional_profiles')
+          .select(`
+            *,
+            profiles!professional_profiles_user_id_fkey(full_name)
+          `)
+          .in('user_id', professionalIds);
+
+        if (profError) throw profError;
+
+        // Combine favorites with professional data
+        const combinedFavorites = favProfs.map(fav => ({
+          ...fav,
+          professional_profile: professionals?.find(prof => prof.user_id === fav.professional_id) || null
+        })).filter(fav => fav.professional_profile);
+
+        setFavoriteProfessionals(combinedFavorites as any);
+      } else {
+        setFavoriteProfessionals([]);
+      }
+
       // Load mentorship requests (as favorite mentors)
       const { data: mentorRequests, error: mentorError } = await supabase
         .from('mentorship_requests')
-        .select(`
-          *,
-          mentor_profile:professional_profiles!mentorship_requests_mentor_id_fkey(
-            *,
-            profiles!professional_profiles_user_id_fkey(full_name)
-          )
-        `)
+        .select('*')
         .eq('mentee_id', user.id);
 
       if (mentorError) throw mentorError;
 
-      setFavoriteProfessionals(favProfs || []);
-      setFavoriteMentors(mentorRequests || []);
+      // Load mentor profiles separately if there are requests
+      if (mentorRequests && mentorRequests.length > 0) {
+        const mentorIds = mentorRequests.map(req => req.mentor_id);
+        const { data: mentorProfiles, error: mentorProfError } = await supabase
+          .from('professional_profiles')
+          .select(`
+            *,
+            profiles!professional_profiles_user_id_fkey(full_name)
+          `)
+          .in('user_id', mentorIds);
+
+        if (mentorProfError) throw mentorProfError;
+
+        // Combine requests with mentor data
+        const combinedMentors = mentorRequests.map(req => ({
+          ...req,
+          mentor_profile: mentorProfiles?.find(prof => prof.user_id === req.mentor_id) || null
+        })).filter(req => req.mentor_profile);
+
+        setFavoriteMentors(combinedMentors as any);
+      } else {
+        setFavoriteMentors([]);
+      }
     } catch (error: any) {
       console.error('Error loading favorites:', error);
       toast({

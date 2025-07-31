@@ -9,7 +9,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { MapPin, Mail, MessageCircle, Calendar, Star, Users } from 'lucide-react';
+import { MapPin, MessageCircle, Calendar, Star, Users, Heart } from 'lucide-react';
 
 interface Professional {
   id: string;
@@ -35,9 +35,16 @@ interface Professional {
 interface ProfessionalCardProps {
   professional: Professional;
   onRequestSent?: () => void;
+  showMentorshipButton?: boolean; // New prop to control mentorship button visibility
+  showFavoriteButton?: boolean; // New prop to control favorite button visibility
 }
 
-const ProfessionalCard = ({ professional, onRequestSent }: ProfessionalCardProps) => {
+const ProfessionalCard = ({ 
+  professional, 
+  onRequestSent, 
+  showMentorshipButton = true, 
+  showFavoriteButton = true 
+}: ProfessionalCardProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false);
@@ -45,6 +52,7 @@ const ProfessionalCard = ({ professional, onRequestSent }: ProfessionalCardProps
   const [requestMessage, setRequestMessage] = useState('');
   const [messageContent, setMessageContent] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
 
   const sendMentorshipRequest = async () => {
     if (!user || !requestMessage.trim()) return;
@@ -106,6 +114,54 @@ const ProfessionalCard = ({ professional, onRequestSent }: ProfessionalCardProps
     } catch (error: any) {
       toast({
         title: "Error sending message",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleFavorite = async () => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      if (isFavorited) {
+        // Remove from favorites
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('professional_id', professional.user_id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Removed from favorites",
+          description: "Professional removed from your favorites.",
+        });
+        setIsFavorited(false);
+      } else {
+        // Add to favorites
+        const { error } = await supabase
+          .from('favorites')
+          .insert({
+            user_id: user.id,
+            professional_id: professional.user_id
+          });
+
+        if (error) throw error;
+
+        toast({
+          title: "Added to favorites",
+          description: "Professional added to your favorites.",
+        });
+        setIsFavorited(true);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
         description: error.message,
         variant: "destructive",
       });
@@ -247,7 +303,20 @@ const ProfessionalCard = ({ professional, onRequestSent }: ProfessionalCardProps
                 </DialogContent>
               </Dialog>
 
-              {professional.is_mentor && (
+              {showFavoriteButton && (
+                <Button 
+                  variant={isFavorited ? "default" : "outline"} 
+                  size="sm" 
+                  onClick={toggleFavorite}
+                  disabled={loading}
+                  className="flex items-center gap-2 lg:w-full"
+                >
+                  <Heart className={`w-4 h-4 ${isFavorited ? 'fill-current' : ''}`} />
+                  {isFavorited ? 'Favorited' : 'Add to Favorites'}
+                </Button>
+              )}
+
+              {showMentorshipButton && professional.is_mentor && (
                 <Dialog open={isRequestDialogOpen} onOpenChange={setIsRequestDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="accent" size="sm" className="flex items-center gap-2 hover:shadow-glow lg:w-full">

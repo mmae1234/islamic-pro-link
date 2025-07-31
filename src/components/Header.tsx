@@ -46,6 +46,16 @@ const Header = () => {
             <Link to="/mentorship" className="text-foreground hover:text-primary transition-smooth">
               Mentorship
             </Link>
+            {user && (
+              <>
+                <Link to="/messages" className="text-foreground hover:text-primary transition-smooth">
+                  Messages
+                </Link>
+                <Link to="/favorites" className="text-foreground hover:text-primary transition-smooth">
+                  Favorites
+                </Link>
+              </>
+            )}
             <Link to="/about" className="text-foreground hover:text-primary transition-smooth">
               About
             </Link>
@@ -84,7 +94,13 @@ const Header = () => {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/dashboard" className="flex items-center">
+                      <Link to="/favorites" className="flex items-center">
+                        <User className="w-4 h-4 mr-2" />
+                        Favorites
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/settings" className="flex items-center">
                         <Settings className="w-4 h-4 mr-2" />
                         Settings
                       </Link>
@@ -140,13 +156,22 @@ const Header = () => {
                 Mentorship
               </Link>
               {user && (
-                <Link 
-                  to="/messages" 
-                  className="text-foreground hover:text-primary transition-smooth px-4 py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Messages
-                </Link>
+                <>
+                  <Link 
+                    to="/messages" 
+                    className="text-foreground hover:text-primary transition-smooth px-4 py-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Messages
+                  </Link>
+                  <Link 
+                    to="/favorites" 
+                    className="text-foreground hover:text-primary transition-smooth px-4 py-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Favorites
+                  </Link>
+                </>
               )}
               <Link 
                 to="/about" 

@@ -75,6 +75,7 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
   const [profileData, setProfileData] = useState({
     full_name: '',
     bio: '',
+    role: 'visitor', // New field for role selection
     occupation: '',
     sector: '',
     university: '',
@@ -85,6 +86,7 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
     availability: '',
     is_mentor: false,
     is_seeking_mentor: false,
+    wants_mentorship: false, // New field for mentorship program
     preferred_communication: ['in_app_messaging'] as string[]
   });
 
@@ -134,37 +136,41 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
         .upsert({
           user_id: user.id,
           full_name: profileData.full_name,
-          role: profileData.occupation,
+          role: profileData.role,
           avatar_url: avatarUrl
         });
 
       if (profileError) throw profileError;
 
-      // Save to professional_profiles table
-      const { error: professionalError } = await supabase
-        .from('professional_profiles')
-        .upsert({
-          user_id: user.id,
-          bio: profileData.bio,
-          occupation: profileData.occupation,
-          sector: profileData.sector,
-          university: profileData.university,
-          city: profileData.city,
-          country: profileData.country,
-          experience_years: profileData.experience_years ? parseInt(profileData.experience_years) : null,
-          skills: profileData.skills,
-          availability: profileData.availability,
-          is_mentor: profileData.is_mentor,
-          is_seeking_mentor: profileData.is_seeking_mentor,
-          preferred_communication: profileData.preferred_communication,
-          avatar_url: avatarUrl
-        });
+      // Only save to professional_profiles if user is a professional
+      if (profileData.role === 'professional') {
+        const { error: professionalError } = await supabase
+          .from('professional_profiles')
+          .upsert({
+            user_id: user.id,
+            bio: profileData.bio,
+            occupation: profileData.occupation,
+            sector: profileData.sector,
+            university: profileData.university,
+            city: profileData.city,
+            country: profileData.country,
+            experience_years: profileData.experience_years ? parseInt(profileData.experience_years) : null,
+            skills: profileData.skills,
+            availability: profileData.availability,
+            is_mentor: profileData.is_mentor,
+            is_seeking_mentor: profileData.is_seeking_mentor,
+            preferred_communication: profileData.preferred_communication,
+            avatar_url: avatarUrl
+          });
 
-      if (professionalError) throw professionalError;
+        if (professionalError) throw professionalError;
+      }
 
       toast({
         title: "Profile created successfully!",
-        description: "Your professional profile is now complete.",
+        description: profileData.role === 'professional' 
+          ? "Your professional profile is now complete." 
+          : "Your profile is now complete.",
       });
 
       onComplete();
@@ -180,7 +186,7 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
   };
 
   const nextStep = () => {
-    if (currentStep < 4) {
+    if (currentStep < getTotalSteps()) {
       setCurrentStep(prev => prev + 1);
     } else {
       saveProfile();
@@ -193,15 +199,35 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
     }
   };
 
+  const getTotalSteps = () => {
+    if (profileData.role === 'visitor') {
+      return profileData.wants_mentorship ? 4 : 3; // Personal, Mentorship (if wanted), Communication
+    } else {
+      return profileData.wants_mentorship ? 5 : 4; // Personal, Professional, Mentorship (if wanted), Communication
+    }
+  };
+
   const isStepComplete = () => {
     switch (currentStep) {
       case 1:
-        return profileData.full_name && profileData.bio;
+        return profileData.full_name && profileData.bio && profileData.role;
       case 2:
+        if (profileData.role === 'visitor') {
+          return true; // Skip to mentorship step for visitors
+        }
         return profileData.occupation && profileData.sector;
       case 3:
-        return profileData.skills.length > 0;
+        if (profileData.role === 'visitor' && profileData.wants_mentorship) {
+          return true; // Mentorship step for visitors
+        } else if (profileData.role === 'professional' && profileData.wants_mentorship) {
+          return profileData.skills.length > 0; // Skills step for professionals with mentorship
+        } else if (profileData.role === 'professional' && !profileData.wants_mentorship) {
+          return profileData.skills.length > 0; // Skills step for professionals without mentorship
+        }
+        return true;
       case 4:
+        return profileData.preferred_communication.length > 0;
+      case 5:
         return profileData.preferred_communication.length > 0;
       default:
         return false;
@@ -227,6 +253,25 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
                   fallbackInitials={profileData.full_name ? profileData.full_name.charAt(0).toUpperCase() : '?'}
                   size="lg"
                 />
+              </div>
+
+              <div>
+                <Label>I am joining as... *</Label>
+                <Select value={profileData.role} onValueChange={(value) => setProfileData(prev => ({ ...prev, role: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="visitor">Visitor (Service Seeker)</SelectItem>
+                    <SelectItem value="professional">Professional</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {profileData.role === 'visitor' 
+                    ? "Search and connect with professionals for services" 
+                    : "Create a profile to advertise your services and connect with other professionals"
+                  }
+                </p>
               </div>
 
               <div>

@@ -262,10 +262,12 @@ const Search = () => {
                 >
                   <ProfessionalCard
                     professional={professional}
+                    showMentorshipButton={false}
+                    showFavoriteButton={true}
                     onRequestSent={() => {
                       toast({
-                        title: "Request sent successfully!",
-                        description: "The mentor will be notified of your request.",
+                        title: "Added to favorites!",
+                        description: "Professional added to your favorites.",
                       });
                     }}
                   />
