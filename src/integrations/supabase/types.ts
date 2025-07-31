@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      favorites: {
+        Row: {
+          created_at: string
+          id: string
+          professional_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          professional_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          professional_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       mentorship_requests: {
         Row: {
           created_at: string
@@ -222,6 +243,13 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "fk_professional_profiles_profiles"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "professional_profiles_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
             referencedRelation: "profiles"
