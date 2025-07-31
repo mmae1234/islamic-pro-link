@@ -48,6 +48,7 @@ All colors MUST be HSL.
 
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 
     --radius: 0.5rem;
 
@@ -115,4 +116,36 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Interactive elements */
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-elegant;
+  }
+  
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-glow;
+  }
+  
+  .shimmer-effect {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .shimmer-effect::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    transform: translateX(-100%);
+    animation: shimmer 2s ease-in-out infinite;
+  }
+}
 }

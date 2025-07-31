@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SearchFilters from "@/components/SearchFilters";
+import SearchSorting from "@/components/SearchSorting";
 import ProfessionalCard from "@/components/ProfessionalCard";
 import ProfileSetup from "@/components/ProfileSetup";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,6 +20,8 @@ const Search = () => {
   const [loading, setLoading] = useState(false);
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
   const [showProfileSetup, setShowProfileSetup] = useState(false);
+  const [sortBy, setSortBy] = useState('created_at');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
     if (user) {
@@ -172,15 +175,72 @@ const Search = () => {
         <SearchFilters onSearch={handleSearch} loading={loading} />
 
         {/* Results */}
-        <div className="mt-8">
-          <h2 className="text-xl font-semibold text-foreground mb-4">
-            Search Results ({professionals.length} professionals found)
-          </h2>
+        <div className="mt-8 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h2 className="text-xl font-semibold text-foreground">
+              Search Results ({professionals.length} professionals found)
+            </h2>
+            
+            {professionals.length > 0 && (
+              <SearchSorting
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSortChange={(newSortBy, newSortOrder) => {
+                  setSortBy(newSortBy);
+                  setSortOrder(newSortOrder);
+                  // Re-sort current results
+                  const sorted = [...professionals].sort((a, b) => {
+                    let aVal = a[newSortBy];
+                    let bVal = b[newSortBy];
+                    
+                    if (newSortBy === 'name') {
+                      aVal = a.profiles?.full_name || '';
+                      bVal = b.profiles?.full_name || '';
+                    }
+                    
+                    if (typeof aVal === 'string' && typeof bVal === 'string') {
+                      return newSortOrder === 'asc' 
+                        ? aVal.localeCompare(bVal)
+                        : bVal.localeCompare(aVal);
+                    }
+                    
+                    return newSortOrder === 'asc' 
+                      ? (aVal || 0) - (bVal || 0)
+                      : (bVal || 0) - (aVal || 0);
+                  });
+                  setProfessionals(sorted);
+                }}
+              />
+            )}
+          </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin" />
-              <span className="ml-2">Searching professionals...</span>
+            <div className="grid gap-6">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="animate-fade-in">
+                  <Card className="shadow-soft shimmer-effect">
+                    <CardContent className="p-6">
+                      <div className="flex items-start space-x-4">
+                        <div className="h-16 w-16 bg-muted rounded-full animate-pulse-soft"></div>
+                        <div className="space-y-3 flex-1">
+                          <div className="h-5 bg-muted rounded animate-pulse-soft w-3/4"></div>
+                          <div className="h-4 bg-muted rounded animate-pulse-soft w-1/2"></div>
+                          <div className="h-4 bg-muted rounded animate-pulse-soft w-2/3"></div>
+                        </div>
+                      </div>
+                      <div className="mt-4 space-y-2">
+                        <div className="h-3 bg-muted rounded animate-pulse-soft w-full"></div>
+                        <div className="h-3 bg-muted rounded animate-pulse-soft w-4/5"></div>
+                      </div>
+                      <div className="flex space-x-2 mt-4">
+                        <div className="h-6 w-16 bg-muted rounded animate-pulse-soft"></div>
+                        <div className="h-6 w-20 bg-muted rounded animate-pulse-soft"></div>
+                        <div className="h-6 w-14 bg-muted rounded animate-pulse-soft"></div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              ))}
             </div>
           ) : professionals.length === 0 ? (
             <Card className="shadow-soft">
@@ -193,18 +253,23 @@ const Search = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-6">
-              {professionals.map((professional) => (
-                <ProfessionalCard
+            <div className="grid gap-6 animate-fade-in">
+              {professionals.map((professional, index) => (
+                <div 
                   key={professional.id}
-                  professional={professional}
-                  onRequestSent={() => {
-                    toast({
-                      title: "Request sent successfully!",
-                      description: "The mentor will be notified of your request.",
-                    });
-                  }}
-                />
+                  className="animate-fade-in-up"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <ProfessionalCard
+                    professional={professional}
+                    onRequestSent={() => {
+                      toast({
+                        title: "Request sent successfully!",
+                        description: "The mentor will be notified of your request.",
+                      });
+                    }}
+                  />
+                </div>
               ))}
             </div>
           )}

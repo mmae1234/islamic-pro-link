@@ -121,17 +121,17 @@ const ProfessionalCard = ({ professional, onRequestSent }: ProfessionalCardProps
   const isOwnProfile = user?.id === professional.user_id;
 
   return (
-    <Card className="shadow-soft hover:shadow-elegant transition-smooth">
+    <Card className="shadow-soft hover:shadow-elegant transition-smooth hover-lift bg-gradient-card border border-border/50 backdrop-blur-sm">
       <CardContent className="p-6">
-        <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* Avatar and Basic Info */}
-          <div className="flex items-start gap-3">
-            <Avatar className="w-16 h-16 flex-shrink-0">
+          <div className="flex items-start gap-4 flex-1">
+            <Avatar className="w-20 h-20 flex-shrink-0 border-2 border-primary/20 shadow-soft">
               <AvatarImage 
                 src={professional.avatar_url || professional.profiles?.avatar_url || undefined} 
                 alt={professional.profiles?.full_name || 'User avatar'} 
               />
-              <AvatarFallback className="text-lg font-semibold">
+              <AvatarFallback className="text-lg font-semibold bg-gradient-primary text-primary-foreground">
                 {getInitials(professional.profiles?.full_name || 'U')}
               </AvatarFallback>
             </Avatar>
@@ -141,15 +141,15 @@ const ProfessionalCard = ({ professional, onRequestSent }: ProfessionalCardProps
                 <h3 className="text-lg font-semibold text-foreground truncate">
                   {professional.profiles?.full_name || 'Anonymous User'}
                 </h3>
-                <div className="flex gap-1">
+                <div className="flex flex-wrap gap-2">
                   {professional.is_mentor && (
-                    <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
+                    <Badge className="text-xs bg-gradient-to-r from-green-500/20 to-green-600/20 text-green-700 border-green-500/30 hover:shadow-glow">
                       <Users className="w-3 h-3 mr-1" />
-                      Mentor
+                      Mentor Available
                     </Badge>
                   )}
                   {professional.is_seeking_mentor && (
-                    <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
+                    <Badge className="text-xs bg-gradient-to-r from-blue-500/20 to-blue-600/20 text-blue-700 border-blue-500/30 hover:shadow-glow">
                       <Star className="w-3 h-3 mr-1" />
                       Seeking Mentor
                     </Badge>
@@ -157,24 +157,20 @@ const ProfessionalCard = ({ professional, onRequestSent }: ProfessionalCardProps
                 </div>
               </div>
               
-              <p className="text-muted-foreground mb-2">{professional.occupation}</p>
+              <p className="text-primary font-medium text-lg mb-1">{professional.occupation}</p>
+              <p className="text-muted-foreground text-sm mb-3">{professional.sector}</p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground mb-3">
-                <div className="flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />
-                  {professional.city && professional.country 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mb-4">
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                  <MapPin className="w-4 h-4 text-primary" />
+                  <span>{professional.city && professional.country 
                     ? `${professional.city}, ${professional.country}` 
                     : 'Location not specified'
-                  }
+                  }</span>
                 </div>
-                <div>
-                  <strong>Sector:</strong> {professional.sector}
-                </div>
-                <div>
-                  <strong>Experience:</strong> {professional.experience_years} years
-                </div>
-                <div>
-                  <strong>Availability:</strong> {professional.availability || 'Not specified'}
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                  <Calendar className="w-4 h-4 text-primary" />
+                  <span>{professional.experience_years} years experience</span>
                 </div>
               </div>
 
@@ -186,17 +182,25 @@ const ProfessionalCard = ({ professional, onRequestSent }: ProfessionalCardProps
 
               {/* Skills */}
               {professional.skills && professional.skills.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-4">
-                  {professional.skills.slice(0, 5).map(skill => (
-                    <Badge key={skill} variant="outline" className="text-xs">
-                      {skill}
-                    </Badge>
-                  ))}
-                  {professional.skills.length > 5 && (
-                    <Badge variant="outline" className="text-xs">
-                      +{professional.skills.length - 5} more
-                    </Badge>
-                  )}
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-foreground">Skills & Expertise</p>
+                  <div className="flex flex-wrap gap-2">
+                    {professional.skills.slice(0, 6).map((skill, index) => (
+                      <Badge 
+                        key={skill} 
+                        variant="outline" 
+                        className="text-xs hover:bg-primary/10 hover:border-primary/30 transition-colors"
+                        style={{ animationDelay: `${index * 0.1}s` }}
+                      >
+                        {skill}
+                      </Badge>
+                    ))}
+                    {professional.skills.length > 6 && (
+                      <Badge variant="outline" className="text-xs bg-accent/10 text-accent-foreground">
+                        +{professional.skills.length - 6} more
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -204,12 +208,12 @@ const ProfessionalCard = ({ professional, onRequestSent }: ProfessionalCardProps
 
           {/* Action Buttons */}
           {!isOwnProfile && (
-            <div className="flex flex-col gap-2 min-w-fit">
+            <div className="flex flex-col sm:flex-row lg:flex-col gap-3 lg:min-w-fit lg:w-40">
               <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" className="flex items-center gap-2 hover:shadow-soft lg:w-full">
                     <MessageCircle className="w-4 h-4" />
-                    Message
+                    Send Message
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -246,7 +250,7 @@ const ProfessionalCard = ({ professional, onRequestSent }: ProfessionalCardProps
               {professional.is_mentor && (
                 <Dialog open={isRequestDialogOpen} onOpenChange={setIsRequestDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button size="sm" className="flex items-center gap-2">
+                    <Button variant="accent" size="sm" className="flex items-center gap-2 hover:shadow-glow lg:w-full">
                       <Calendar className="w-4 h-4" />
                       Request Mentorship
                     </Button>

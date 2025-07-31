@@ -65,10 +65,12 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
   };
 
   return (
-    <Card className="shadow-soft">
+    <Card className="shadow-soft hover-lift transition-all duration-300">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Filter className="w-5 h-5" />
+        <CardTitle className="flex items-center gap-2 text-foreground">
+          <div className="p-2 rounded-lg bg-primary/10">
+            <Filter className="w-5 h-5 text-primary" />
+          </div>
           Search Filters
         </CardTitle>
       </CardHeader>
@@ -197,13 +199,19 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-2">
-          <Button onClick={handleSearch} className="flex-1" disabled={loading}>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button 
+            onClick={handleSearch} 
+            className="flex-1 hover:shadow-elegant" 
+            disabled={loading}
+            variant="accent"
+            size="lg"
+          >
             <SearchIcon className="w-4 h-4 mr-2" />
             {loading ? 'Searching...' : 'Search Professionals'}
           </Button>
-          <Button variant="outline" onClick={clearFilters}>
-            Clear
+          <Button variant="outline" onClick={clearFilters} className="hover:shadow-soft">
+            Clear Filters
           </Button>
         </div>
       </CardContent>
