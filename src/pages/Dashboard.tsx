@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { CountrySelect, UniversitySelect, SectorSelect, OccupationSelect, AvailabilitySelect } from "@/components/FormDropdowns";
+import { StateProvinceSelect } from "@/components/StateProvinceSelect";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Loader2, Save, User, Briefcase, Users, X } from "lucide-react";
@@ -34,6 +35,7 @@ const Dashboard = () => {
   const [role, setRole] = useState("professional");
   const [gender, setGender] = useState("");
   const [country, setCountry] = useState("");
+  const [stateProvince, setStateProvince] = useState("");
   const [city, setCity] = useState("");
   const [sector, setSector] = useState("");
   const [occupation, setOccupation] = useState("");
@@ -82,6 +84,7 @@ const Dashboard = () => {
         setProfessionalProfile(professionalData);
         setGender(professionalData.gender || '');
         setCountry(professionalData.country || '');
+        setStateProvince(professionalData.state_province || '');
         setCity(professionalData.city || '');
         setSector(professionalData.sector || '');
         setOccupation(professionalData.occupation || '');
@@ -127,6 +130,7 @@ const Dashboard = () => {
             user_id: user.id,
             gender: gender || null,
             country,
+            state_province: stateProvince,
             city,
             sector,
             occupation,
@@ -218,9 +222,8 @@ const Dashboard = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="visitor">Visitor (Service Seeker)</SelectItem>
                         <SelectItem value="professional">Professional</SelectItem>
-                        <SelectItem value="mentor">Mentor</SelectItem>
-                        <SelectItem value="mentee">Mentee</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -259,6 +262,15 @@ const Dashboard = () => {
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
+                      <Label>State/Province</Label>
+                      <StateProvinceSelect 
+                        value={stateProvince} 
+                        onValueChange={setStateProvince}
+                        country={country}
+                      />
+                    </div>
+                    
+                    <div>
                       <Label htmlFor="city">City</Label>
                       <Input
                         id="city"
@@ -267,11 +279,11 @@ const Dashboard = () => {
                         placeholder="Enter your city"
                       />
                     </div>
-                    
-                    <div>
-                      <Label>University</Label>
-                      <UniversitySelect value={university} onValueChange={setUniversity} />
-                    </div>
+                  </div>
+
+                  <div>
+                    <Label>University</Label>
+                    <UniversitySelect value={university} onValueChange={setUniversity} />
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
@@ -310,15 +322,16 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              {/* Mentorship Preferences */}
-              <Card className="shadow-soft">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="w-5 h-5" />
-                    Mentorship & Skills
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+              {/* Mentorship Preferences - Only show for professionals */}
+              {role === 'professional' && (
+                <Card className="shadow-soft">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="w-5 h-5" />
+                      Mentorship & Skills
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
                   {/* Skills */}
                   <div>
                     <Label htmlFor="skills">Skills (Press Enter to add)</Label>
@@ -409,8 +422,9 @@ const Dashboard = () => {
                       ))}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
 
               <Button onClick={saveProfile} disabled={saving} variant="hero" size="lg">
                 {saving ? (

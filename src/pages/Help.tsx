@@ -25,7 +25,7 @@ const Help = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => document.getElementById('getting-started')?.scrollIntoView()}>
               <CardHeader className="text-center">
                 <Users className="h-12 w-12 mx-auto text-primary mb-2" />
                 <CardTitle>Getting Started</CardTitle>
@@ -37,7 +37,7 @@ const Help = () => {
               </CardContent>
             </Card>
 
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => document.getElementById('messaging')?.scrollIntoView()}>
               <CardHeader className="text-center">
                 <MessageCircle className="h-12 w-12 mx-auto text-primary mb-2" />
                 <CardTitle>Messaging</CardTitle>
@@ -49,7 +49,7 @@ const Help = () => {
               </CardContent>
             </Card>
 
-            <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => document.getElementById('privacy-safety')?.scrollIntoView()}>
               <CardHeader className="text-center">
                 <Shield className="h-12 w-12 mx-auto text-primary mb-2" />
                 <CardTitle>Privacy & Safety</CardTitle>
@@ -61,6 +61,88 @@ const Help = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Getting Started Section */}
+          <Card className="mb-8" id="getting-started">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Users className="h-5 w-5 mr-2" />
+                Getting Started
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold mb-2">Creating Your Profile</h3>
+                  <p className="text-muted-foreground mb-2">Start by completing your professional profile:</p>
+                  <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                    <li>Add your full name and professional details</li>
+                    <li>Select your occupation and industry sector</li>
+                    <li>Upload a professional photo</li>
+                    <li>Write a compelling bio highlighting your expertise</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-2">Finding Professionals</h3>
+                  <p className="text-muted-foreground">Use our search feature to discover professionals in your area of interest. Filter by location, skills, and experience level.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Messaging Section */}
+          <Card className="mb-8" id="messaging">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <MessageCircle className="h-5 w-5 mr-2" />
+                Messaging
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold mb-2">Sending Messages</h3>
+                  <p className="text-muted-foreground mb-2">Connect with other professionals through our secure messaging system:</p>
+                  <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                    <li>Visit a professional's profile and click "Send Message"</li>
+                    <li>Compose a clear, professional introduction</li>
+                    <li>Be specific about how you'd like to connect or collaborate</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-2">Managing Conversations</h3>
+                  <p className="text-muted-foreground">Access all your conversations from the Messages page. You can delete, archive, or report messages as needed.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Privacy & Safety Section */}
+          <Card className="mb-8" id="privacy-safety">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Shield className="h-5 w-5 mr-2" />
+                Privacy & Safety
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold mb-2">Your Privacy</h3>
+                  <p className="text-muted-foreground mb-2">We protect your information:</p>
+                  <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                    <li>Your personal contact information is never shared publicly</li>
+                    <li>You control what information appears on your profile</li>
+                    <li>All messages are encrypted and secure</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-2">Reporting Issues</h3>
+                  <p className="text-muted-foreground">If you encounter inappropriate behavior, use the report function on profiles or messages. Our team investigates all reports promptly.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           <Card className="mb-8">
             <CardHeader>
@@ -141,11 +223,11 @@ const Help = () => {
                 Can't find what you're looking for? Our support team is here to help.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button variant="outline" className="flex-1">
+                <Button variant="outline" className="flex-1" disabled>
                   <MessageCircle className="h-4 w-4 mr-2" />
-                  Live Chat
+                  Live Chat Coming Soon
                 </Button>
-                <Button className="flex-1">
+                <Button className="flex-1" onClick={() => window.location.href = '/contact'}>
                   Contact Support
                 </Button>
               </div>

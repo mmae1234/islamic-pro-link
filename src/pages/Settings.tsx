@@ -13,6 +13,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
 import { CountrySelect, UniversitySelect, SectorSelect, OccupationSelect, AvailabilitySelect } from "@/components/FormDropdowns";
+import { StateProvinceSelect } from "@/components/StateProvinceSelect";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { User, Briefcase, Users, X, Loader2 } from "lucide-react";
@@ -49,6 +50,7 @@ const Settings = () => {
     university: '',
     city: '',
     country: '',
+    state_province: '',
     experience_years: '',
     skills: [] as string[],
     availability: '',
@@ -101,6 +103,7 @@ const Settings = () => {
           university: professionalData.university || '',
           city: professionalData.city || '',
           country: professionalData.country || '',
+          state_province: professionalData.state_province || '',
           experience_years: professionalData.experience_years?.toString() || '',
           skills: professionalData.skills || [],
           availability: professionalData.availability || '',
@@ -148,6 +151,7 @@ const Settings = () => {
             university: formData.university,
             city: formData.city,
             country: formData.country,
+            state_province: formData.state_province,
             experience_years: formData.experience_years ? parseInt(formData.experience_years) : null,
             skills: formData.skills,
             availability: formData.availability,
@@ -362,19 +366,28 @@ const Settings = () => {
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="city">City</Label>
-                      <Input
-                        id="city"
-                        value={formData.city}
-                        onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                        placeholder="Enter your city"
-                      />
+                      <Label>Country</Label>
+                      <CountrySelect value={formData.country} onValueChange={(value) => setFormData(prev => ({ ...prev, country: value, state_province: '' }))} />
                     </div>
                     
                     <div>
-                      <Label>Country</Label>
-                      <CountrySelect value={formData.country} onValueChange={(value) => setFormData(prev => ({ ...prev, country: value }))} />
+                      <Label>State/Province</Label>
+                      <StateProvinceSelect 
+                        value={formData.state_province} 
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, state_province: value }))}
+                        country={formData.country}
+                      />
                     </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="city">City</Label>
+                    <Input
+                      id="city"
+                      value={formData.city}
+                      onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                      placeholder="Enter your city"
+                    />
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">

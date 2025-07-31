@@ -76,6 +76,7 @@ const Messages = () => {
           recipient_profile:profiles!messages_recipient_id_fkey(full_name)
         `)
         .eq('sender_id', user.id)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (sentError) throw sentError;
@@ -88,6 +89,7 @@ const Messages = () => {
           sender_profile:profiles!messages_sender_id_fkey(full_name)
         `)
         .eq('recipient_id', user.id)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
       if (inboxError) throw inboxError;

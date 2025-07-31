@@ -37,7 +37,16 @@ const Contact = () => {
                   <Label htmlFor="message">Message</Label>
                   <Textarea id="message" placeholder="Tell us more about your inquiry..." rows={6} />
                 </div>
-                <Button className="w-full">Send Message</Button>
+                <Button 
+                  className="w-full" 
+                  onClick={() => {
+                    const subject = (document.getElementById('subject') as HTMLInputElement)?.value || 'Support Request';
+                    const body = (document.getElementById('message') as HTMLTextAreaElement)?.value || '';
+                    window.location.href = `mailto:support@muslimspros.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                  }}
+                >
+                  Send Message
+                </Button>
               </CardContent>
             </Card>
 
