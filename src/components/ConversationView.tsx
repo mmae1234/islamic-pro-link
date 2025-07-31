@@ -7,7 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { Send, ArrowLeft } from 'lucide-react';
+import { Send, ArrowLeft, Trash2, Archive, Flag } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 interface Message {
   id: string;
@@ -33,6 +35,8 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     if (user && partnerId) {
@@ -53,6 +57,7 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
           recipient_profile:profiles!messages_recipient_id_fkey(full_name)
         `)
         .or(`and(sender_id.eq.${user.id},recipient_id.eq.${partnerId}),and(sender_id.eq.${partnerId},recipient_id.eq.${user.id})`)
+        .is('deleted_at', null)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
@@ -81,6 +86,80 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
         .is('read_at', null);
     } catch (error) {
       console.error('Error marking messages as read:', error);
+    }
+  };
+
+  const deleteMessage = async (messageId: string) => {
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', messageId);
+
+      if (error) throw error;
+      
+      loadConversation();
+      toast({
+        title: "Message deleted",
+        description: "The message has been deleted.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete message.",
+        variant: "destructive",
+      });
+    } finally {
+      setShowDeleteDialog(false);
+      setMessageToDelete(null);
+    }
+  };
+
+  const archiveMessage = async (messageId: string) => {
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .update({ archived_at: new Date().toISOString() })
+        .eq('id', messageId);
+
+      if (error) throw error;
+      
+      loadConversation();
+      toast({
+        title: "Message archived",
+        description: "The message has been archived.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to archive message.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const reportMessage = async (messageId: string) => {
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .update({ 
+          reported_at: new Date().toISOString(),
+          report_reason: 'Inappropriate content'
+        })
+        .eq('id', messageId);
+
+      if (error) throw error;
+      
+      toast({
+        title: "Message reported",
+        description: "The message has been reported to moderators.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to report message.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -182,11 +261,45 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
                       <p className="text-xs opacity-70">
                         {formatTime(message.created_at)}
                       </p>
-                      {message.sender_id === user?.id && !message.read_at && (
-                        <Badge variant="secondary" className="text-xs">
-                          Sent
-                        </Badge>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {message.sender_id === user?.id && !message.read_at && (
+                          <Badge variant="secondary" className="text-xs">
+                            Sent
+                          </Badge>
+                        )}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-50 hover:opacity-100">
+                              <span className="text-xs">⋯</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => archiveMessage(message.id)}>
+                              <Archive className="w-4 h-4 mr-2" />
+                              Archive
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => {
+                                setMessageToDelete(message.id);
+                                setShowDeleteDialog(true);
+                              }}
+                              className="text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                            {message.sender_id !== user?.id && (
+                              <DropdownMenuItem 
+                                onClick={() => reportMessage(message.id)}
+                                className="text-destructive"
+                              >
+                                <Flag className="w-4 h-4 mr-2" />
+                                Report
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -210,6 +323,27 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
           </div>
         </div>
       </CardContent>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Message</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this message? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => messageToDelete && deleteMessage(messageToDelete)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };

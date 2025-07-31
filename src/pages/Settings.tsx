@@ -213,21 +213,34 @@ const Settings = () => {
     
     setDeleting(true);
     try {
-      // Delete user data from our tables first
-      await supabase.from('professional_profiles').delete().eq('user_id', user.id);
-      await supabase.from('profiles').delete().eq('user_id', user.id);
-      await supabase.from('favorites').delete().eq('user_id', user.id);
-      await supabase.from('messages').delete().or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`);
-      await supabase.from('mentorship_requests').delete().or(`mentor_id.eq.${user.id},mentee_id.eq.${user.id}`);
+      // Get the current session to pass the JWT token
+      const { data: { session } } = await supabase.auth.getSession();
       
-      // Note: We cannot delete the auth user directly from client side
-      // This would need to be handled by a server function or admin action
+      if (!session?.access_token) {
+        throw new Error('No valid session found');
+      }
+
+      // Call the Edge Function to properly delete the user account
+      const response = await fetch(`https://zhtfygjxnyxqsmeoipst.supabase.co/functions/v1/delete-user-account`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to delete account');
+      }
       
       toast({
         title: "Account deleted",
-        description: "Your account and all data have been deleted.",
+        description: "Your account and all data have been permanently deleted.",
       });
       
+      // Sign out after successful deletion
       signOut();
     } catch (error: any) {
       toast({

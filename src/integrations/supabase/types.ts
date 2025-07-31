@@ -129,29 +129,41 @@ export type Database = {
       }
       messages: {
         Row: {
+          archived_at: string | null
           content: string
           created_at: string
+          deleted_at: string | null
           id: string
           read_at: string | null
           recipient_id: string
+          report_reason: string | null
+          reported_at: string | null
           request_id: string | null
           sender_id: string
         }
         Insert: {
+          archived_at?: string | null
           content: string
           created_at?: string
+          deleted_at?: string | null
           id?: string
           read_at?: string | null
           recipient_id: string
+          report_reason?: string | null
+          reported_at?: string | null
           request_id?: string | null
           sender_id: string
         }
         Update: {
+          archived_at?: string | null
           content?: string
           created_at?: string
+          deleted_at?: string | null
           id?: string
           read_at?: string | null
           recipient_id?: string
+          report_reason?: string | null
+          reported_at?: string | null
           request_id?: string | null
           sender_id?: string
         }
@@ -292,7 +304,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      delete_user_account: {
+        Args: { user_id_param: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

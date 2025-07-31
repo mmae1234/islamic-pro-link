@@ -396,7 +396,13 @@ const Messages = () => {
                         <Card 
                           key={message.id} 
                           className={`shadow-soft cursor-pointer ${!message.read_at ? 'border-primary/50' : ''}`}
-                          onClick={() => !message.read_at && markAsRead(message.id)}
+                          onClick={() => {
+                            if (!message.read_at) markAsRead(message.id);
+                            setSelectedConversation({
+                              partnerId: message.sender_id, 
+                              partnerName: message.sender_profile?.full_name || 'Unknown'
+                            });
+                          }}
                         >
                           <CardContent className="pt-6">
                             <div className="flex items-start justify-between">
@@ -450,7 +456,14 @@ const Messages = () => {
                   ) : (
                     <div className="space-y-4">
                       {sentMessages.map((message) => (
-                        <Card key={message.id} className="shadow-soft">
+                        <Card 
+                          key={message.id} 
+                          className="shadow-soft cursor-pointer"
+                          onClick={() => setSelectedConversation({
+                            partnerId: message.recipient_id, 
+                            partnerName: message.recipient_profile?.full_name || 'Unknown'
+                          })}
+                        >
                           <CardContent className="pt-6">
                             <div className="flex items-start justify-between">
                               <div className="flex items-start gap-3">
