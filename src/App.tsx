@@ -11,6 +11,7 @@ import About from "./pages/About";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Mentorship from "./pages/Mentorship";
+import Messages from "./pages/Messages";
 import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
@@ -43,6 +44,11 @@ const App = () => (
             <Route path="/mentorship" element={
               <ProtectedRoute>
                 <Mentorship />
+              </ProtectedRoute>
+            } />
+            <Route path="/messages" element={
+              <ProtectedRoute>
+                <Messages />
               </ProtectedRoute>
             } />
             <Route path="/contact" element={<Contact />} />

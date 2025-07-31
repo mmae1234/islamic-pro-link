@@ -260,10 +260,34 @@ const NotificationCenter = () => {
                   variant="ghost"
                   size="sm"
                   className="w-full text-sm"
-                  onClick={() => {
-                    setNotifications([]);
-                    setUnreadCount(0);
-                    setShowNotifications(false);
+                  onClick={async () => {
+                    if (!user) return;
+                    
+                    try {
+                      // Mark all messages as read
+                      await supabase
+                        .from('messages')
+                        .update({ read_at: new Date().toISOString() })
+                        .eq('recipient_id', user.id)
+                        .is('read_at', null);
+                      
+                      // Clear notifications from state
+                      setNotifications([]);
+                      setUnreadCount(0);
+                      setShowNotifications(false);
+                      
+                      toast({
+                        title: "Marked as read",
+                        description: "All notifications have been marked as read.",
+                      });
+                    } catch (error) {
+                      console.error('Error marking notifications as read:', error);
+                      toast({
+                        title: "Error",
+                        description: "Failed to mark notifications as read.",
+                        variant: "destructive",
+                      });
+                    }
                   }}
                 >
                   Mark all as read

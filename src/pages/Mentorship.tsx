@@ -82,8 +82,23 @@ const Mentorship = () => {
 
       if (profilesError) throw profilesError;
 
+      // Get existing mentorship requests from current user to filter out already requested mentors
+      const { data: existingRequests } = await supabase
+        .from('mentorship_requests')
+        .select('mentor_id, status')
+        .eq('mentee_id', user?.id);
+
+      // Filter out mentors who already have accepted requests or pending requests from current user
+      const excludedMentorIds = existingRequests
+        ?.filter(req => req.status === 'accepted' || req.status === 'pending')
+        .map(req => req.mentor_id) || [];
+
+      const availableProfilesData = profilesData?.filter(
+        profile => !excludedMentorIds.includes(profile.user_id)
+      ) || [];
+
       // Get corresponding user profiles
-      const userIds = profilesData?.map(p => p.user_id) || [];
+      const userIds = availableProfilesData?.map(p => p.user_id) || [];
       if (userIds.length === 0) {
         setMentors([]);
         return;
@@ -97,7 +112,7 @@ const Mentorship = () => {
       if (usersError) throw usersError;
 
       // Combine the data
-      const mentorsWithProfiles = profilesData?.map(profile => ({
+      const mentorsWithProfiles = availableProfilesData?.map(profile => ({
         ...profile,
         profiles: usersData?.find(u => u.user_id === profile.user_id) || { full_name: 'Unknown' }
       })) || [];
@@ -185,6 +200,7 @@ const Mentorship = () => {
       setSelectedMentor(null);
       setRequestMessage("");
       await loadRequests();
+      await loadMentors(); // Refresh mentors list to remove requested mentor
     } catch (error: any) {
       toast({
         title: "Error",
@@ -209,6 +225,7 @@ const Mentorship = () => {
       });
 
       await loadRequests();
+      await loadMentors(); // Refresh mentors list to show available mentors again if declined
     } catch (error: any) {
       toast({
         title: "Error",

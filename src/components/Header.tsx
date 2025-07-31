@@ -61,7 +61,7 @@ const Header = () => {
                   </Link>
                 </Button>
                 <Button variant="ghost" size="sm" asChild>
-                  <Link to="/mentorship">
+                  <Link to="/messages">
                     <MessageCircle className="w-4 h-4" />
                   </Link>
                 </Button>
@@ -139,6 +139,15 @@ const Header = () => {
               >
                 Mentorship
               </Link>
+              {user && (
+                <Link 
+                  to="/messages" 
+                  className="text-foreground hover:text-primary transition-smooth px-4 py-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Messages
+                </Link>
+              )}
               <Link 
                 to="/about" 
                 className="text-foreground hover:text-primary transition-smooth px-4 py-2"

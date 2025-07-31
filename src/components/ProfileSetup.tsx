@@ -19,6 +19,41 @@ const SKILLS_OPTIONS = [
   'Healthcare', 'Education', 'Consulting', 'Sales', 'HR', 'Legal', 'Engineering'
 ];
 
+const COUNTRIES = [
+  'Afghanistan', 'Albania', 'Algeria', 'Argentina', 'Australia', 'Austria', 'Bahrain', 'Bangladesh',
+  'Belgium', 'Bosnia and Herzegovina', 'Brazil', 'Brunei', 'Bulgaria', 'Canada', 'China',
+  'Croatia', 'Denmark', 'Egypt', 'France', 'Germany', 'India', 'Indonesia', 'Iran', 'Iraq',
+  'Ireland', 'Italy', 'Jordan', 'Kazakhstan', 'Kuwait', 'Lebanon', 'Libya', 'Malaysia',
+  'Maldives', 'Morocco', 'Netherlands', 'Nigeria', 'Norway', 'Oman', 'Pakistan', 'Palestine',
+  'Qatar', 'Russia', 'Saudi Arabia', 'Senegal', 'Somalia', 'South Africa', 'Spain', 'Sweden',
+  'Switzerland', 'Syria', 'Tunisia', 'Turkey', 'UAE', 'United Kingdom', 'United States', 'Yemen'
+];
+
+const UNIVERSITIES = [
+  'MIT - Massachusetts Institute of Technology', 'Harvard University', 'Stanford University',
+  'University of Cambridge', 'University of Oxford', 'California Institute of Technology',
+  'ETH Zurich', 'Imperial College London', 'University College London', 'King\'s College London',
+  'University of Toronto', 'McGill University', 'University of Melbourne', 'University of Sydney',
+  'National University of Singapore', 'Nanyang Technological University', 'University of Hong Kong',
+  'American University of Beirut', 'Cairo University', 'King Abdulaziz University',
+  'King Fahd University', 'Qatar University', 'UAE University', 'University of Karachi',
+  'Lahore University of Management Sciences', 'Other'
+];
+
+const SECTORS = [
+  'Technology', 'Finance & Banking', 'Healthcare & Medicine', 'Education', 'Engineering',
+  'Marketing & Advertising', 'Consulting', 'Legal', 'Real Estate', 'Manufacturing',
+  'Retail & E-commerce', 'Media & Entertainment', 'Non-profit', 'Government', 'Construction',
+  'Transportation', 'Energy & Utilities', 'Agriculture', 'Hospitality & Tourism', 'Other'
+];
+
+const OCCUPATIONS = [
+  'Software Engineer', 'Data Scientist', 'Product Manager', 'Marketing Manager', 'Financial Analyst',
+  'Consultant', 'Doctor', 'Nurse', 'Teacher', 'Professor', 'Lawyer', 'Engineer',
+  'Designer', 'Sales Manager', 'HR Manager', 'Business Analyst', 'Project Manager',
+  'Entrepreneur', 'Researcher', 'Student', 'Other'
+];
+
 const COMMUNICATION_OPTIONS = [
   { id: 'in_app_messaging', label: 'In-App Messaging' },
   { id: 'email', label: 'Email' },
@@ -226,13 +261,17 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="country">Country</Label>
-                  <Input
-                    id="country"
-                    value={profileData.country}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, country: e.target.value }))}
-                    placeholder="Country"
-                  />
+                  <Label>Country</Label>
+                  <Select value={profileData.country} onValueChange={(value) => setProfileData(prev => ({ ...prev, country: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COUNTRIES.map(country => (
+                        <SelectItem key={country} value={country}>{country}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>
@@ -250,44 +289,46 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
             
             <div className="space-y-4">
               <div>
-                <Label htmlFor="occupation">Current Role *</Label>
-                <Input
-                  id="occupation"
-                  value={profileData.occupation}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, occupation: e.target.value }))}
-                  placeholder="e.g., Software Engineer, Marketing Manager"
-                />
+                <Label>Current Role *</Label>
+                <Select value={profileData.occupation} onValueChange={(value) => setProfileData(prev => ({ ...prev, occupation: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your occupation" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {OCCUPATIONS.map(occupation => (
+                      <SelectItem key={occupation} value={occupation}>{occupation}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               
               <div>
-                <Label htmlFor="sector">Industry Sector *</Label>
+                <Label>Industry Sector *</Label>
                 <Select value={profileData.sector} onValueChange={(value) => setProfileData(prev => ({ ...prev, sector: value }))}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select your industry" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Technology">Technology</SelectItem>
-                    <SelectItem value="Finance">Finance</SelectItem>
-                    <SelectItem value="Healthcare">Healthcare</SelectItem>
-                    <SelectItem value="Education">Education</SelectItem>
-                    <SelectItem value="Marketing">Marketing</SelectItem>
-                    <SelectItem value="Engineering">Engineering</SelectItem>
-                    <SelectItem value="Consulting">Consulting</SelectItem>
-                    <SelectItem value="Legal">Legal</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
+                    {SECTORS.map(sector => (
+                      <SelectItem key={sector} value={sector}>{sector}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="university">University/Education</Label>
-                  <Input
-                    id="university"
-                    value={profileData.university}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, university: e.target.value }))}
-                    placeholder="Your university or education"
-                  />
+                  <Label>University/Education</Label>
+                  <Select value={profileData.university} onValueChange={(value) => setProfileData(prev => ({ ...prev, university: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select university" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {UNIVERSITIES.map(uni => (
+                        <SelectItem key={uni} value={uni}>{uni}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="experience_years">Years of Experience</Label>
