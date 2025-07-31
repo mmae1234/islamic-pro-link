@@ -205,7 +205,7 @@ const ProfessionalCard = ({
                     </Badge>
                   )}
                   {professional.is_seeking_mentor && (
-                    <Badge className="text-xs bg-gradient-to-r from-blue-500/20 to-blue-600/20 text-blue-700 border-blue-500/30 hover:shadow-glow">
+                    <Badge className="text-xs bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200">
                       <Star className="w-3 h-3 mr-1" />
                       Seeking Mentor
                     </Badge>
