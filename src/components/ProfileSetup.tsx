@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ImageUpload';
 import { CountrySelect, UniversitySelect, SectorSelect, OccupationSelect, AvailabilitySelect } from '@/components/FormDropdowns';
-import { CheckCircle, Plus, X, User, Briefcase, MessageSquare, Calendar } from 'lucide-react';
+import { CheckCircle, Plus, X, User, Briefcase, MessageSquare, Calendar, Users } from 'lucide-react';
 
 const SKILLS_OPTIONS = [
   'JavaScript', 'Python', 'React', 'Node.js', 'SQL', 'Machine Learning', 'Digital Marketing',
@@ -206,9 +206,9 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
 
   const getTotalSteps = () => {
     if (profileData.role === 'visitor') {
-      return profileData.wants_mentorship ? 4 : 3; // Personal, Mentorship (if wanted), Communication
+      return profileData.wants_mentorship ? 4 : 3; // Personal, Mentorship, Skills (if mentorship), Communication
     } else {
-      return profileData.wants_mentorship ? 5 : 4; // Personal, Professional, Mentorship (if wanted), Communication
+      return 4; // Personal, Professional, Skills & Mentorship, Communication
     }
   };
 
@@ -218,21 +218,15 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
         return profileData.full_name && profileData.bio && profileData.role;
       case 2:
         if (profileData.role === 'visitor') {
-          return true; // Skip to mentorship step for visitors
+          return true; // Mentorship question - always complete
         }
         return profileData.occupation && profileData.sector;
       case 3:
-        if (profileData.role === 'visitor' && profileData.wants_mentorship) {
-          return true; // Mentorship step for visitors
-        } else if (profileData.role === 'professional' && profileData.wants_mentorship) {
-          return profileData.skills.length > 0; // Skills step for professionals with mentorship
-        } else if (profileData.role === 'professional' && !profileData.wants_mentorship) {
-          return profileData.skills.length > 0; // Skills step for professionals without mentorship
+        if (profileData.role === 'visitor') {
+          return true; // Skills optional for visitors
         }
-        return true;
+        return profileData.skills.length > 0; // Skills required for professionals
       case 4:
-        return profileData.preferred_communication.length > 0;
-      case 5:
         return profileData.preferred_communication.length > 0;
       default:
         return false;
@@ -320,6 +314,51 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
         );
 
       case 2:
+        if (profileData.role === 'visitor') {
+          return (
+            <div className="space-y-6">
+              <div className="text-center mb-6">
+                <Users className="w-12 h-12 text-primary mx-auto mb-4" />
+                <h3 className="text-xl font-semibold">Mentorship Program</h3>
+                <p className="text-muted-foreground">Would you like to join our mentorship program?</p>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="text-center">
+                  <p className="text-lg mb-4">Do you want to join our Mentorship Program?</p>
+                  <p className="text-muted-foreground mb-6">
+                    Connect with experienced professionals who can guide you in your career journey or business ventures.
+                  </p>
+                  <div className="flex gap-4 justify-center">
+                    <Button
+                      variant={profileData.wants_mentorship ? "default" : "outline"}
+                      onClick={() => setProfileData(prev => ({ 
+                        ...prev, 
+                        wants_mentorship: true,
+                        is_seeking_mentor: true 
+                      }))}
+                    >
+                      Yes, I'm interested
+                    </Button>
+                    <Button
+                      variant={!profileData.wants_mentorship ? "default" : "outline"}
+                      onClick={() => setProfileData(prev => ({ 
+                        ...prev, 
+                        wants_mentorship: false,
+                        is_seeking_mentor: false,
+                        is_mentor: false,
+                        skills: []
+                      }))}
+                    >
+                      No, just browsing
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+        
         return (
           <div className="space-y-6">
             <div className="text-center mb-6">
@@ -360,17 +399,29 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
         );
 
       case 3:
+        if (profileData.role === 'visitor' && !profileData.wants_mentorship) {
+          // Skip to communication for visitors not interested in mentorship
+          return renderStep4();
+        }
+        
         return (
           <div className="space-y-6">
             <div className="text-center mb-6">
               <CheckCircle className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-xl font-semibold">Skills & Mentorship</h3>
-              <p className="text-muted-foreground">Your expertise and goals</p>
+              <h3 className="text-xl font-semibold">
+                {profileData.role === 'visitor' ? 'Skills (Optional)' : 'Skills & Mentorship'}
+              </h3>
+              <p className="text-muted-foreground">
+                {profileData.role === 'visitor' 
+                  ? 'What skills are you looking for in a mentor?'
+                  : 'Your expertise and goals'
+                }
+              </p>
             </div>
             
             <div className="space-y-4">
               <div>
-                <Label>Skills *</Label>
+                <Label>Skills {profileData.role === 'professional' ? '*' : '(Optional)'}</Label>
                 <div className="flex gap-2 mb-2">
                   <Input
                     value={newSkill}
@@ -407,62 +458,70 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="is_mentor"
-                    checked={profileData.is_mentor}
-                    onCheckedChange={(checked) => setProfileData(prev => ({ ...prev, is_mentor: checked as boolean }))}
-                  />
-                  <Label htmlFor="is_mentor">I want to be a mentor</Label>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="is_seeking_mentor"
-                    checked={profileData.is_seeking_mentor}
-                    onCheckedChange={(checked) => setProfileData(prev => ({ ...prev, is_seeking_mentor: checked as boolean }))}
-                  />
-                  <Label htmlFor="is_seeking_mentor">I'm looking for a mentor</Label>
-                </div>
-              </div>
+              {profileData.role === 'professional' && (
+                <>
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="is_mentor"
+                        checked={profileData.is_mentor}
+                        onCheckedChange={(checked) => setProfileData(prev => ({ ...prev, is_mentor: checked as boolean }))}
+                      />
+                      <Label htmlFor="is_mentor">I want to be a mentor</Label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="is_seeking_mentor"
+                        checked={profileData.is_seeking_mentor}
+                        onCheckedChange={(checked) => setProfileData(prev => ({ ...prev, is_seeking_mentor: checked as boolean }))}
+                      />
+                      <Label htmlFor="is_seeking_mentor">I'm looking for a mentor</Label>
+                    </div>
+                  </div>
 
-              <div>
-                <Label htmlFor="availability">Availability</Label>
-                <AvailabilitySelect value={profileData.availability} onValueChange={(value) => setProfileData(prev => ({ ...prev, availability: value }))} />
-              </div>
+                  <div>
+                    <Label htmlFor="availability">Availability</Label>
+                    <AvailabilitySelect value={profileData.availability} onValueChange={(value) => setProfileData(prev => ({ ...prev, availability: value }))} />
+                  </div>
+                </>
+              )}
             </div>
           </div>
         );
 
       case 4:
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <MessageSquare className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-xl font-semibold">Communication Preferences</h3>
-              <p className="text-muted-foreground">How would you like to connect?</p>
-            </div>
-            
-            <div className="space-y-4">
-              <Label>Preferred Communication Methods *</Label>
-              {COMMUNICATION_OPTIONS.map(option => (
-                <div key={option.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={option.id}
-                    checked={profileData.preferred_communication.includes(option.id)}
-                    onCheckedChange={(checked) => handleCommunicationChange(option.id, checked as boolean)}
-                  />
-                  <Label htmlFor={option.id}>{option.label}</Label>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
+        return renderStep4();
 
       default:
         return null;
     }
+  };
+
+  const renderStep4 = () => {
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-6">
+          <MessageSquare className="w-12 h-12 text-primary mx-auto mb-4" />
+          <h3 className="text-xl font-semibold">Communication Preferences</h3>
+          <p className="text-muted-foreground">How would you like to connect?</p>
+        </div>
+        
+        <div className="space-y-4">
+          <Label>Preferred Communication Methods *</Label>
+          {COMMUNICATION_OPTIONS.map(option => (
+            <div key={option.id} className="flex items-center space-x-2">
+              <Checkbox
+                id={option.id}
+                checked={profileData.preferred_communication.includes(option.id)}
+                onCheckedChange={(checked) => handleCommunicationChange(option.id, checked as boolean)}
+              />
+              <Label htmlFor={option.id}>{option.label}</Label>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -471,17 +530,17 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
         <CardHeader>
           <CardTitle className="text-center">Complete Your Profile</CardTitle>
           <div className="flex justify-center space-x-2 mt-4">
-            {[1, 2, 3, 4].map(step => (
+            {Array.from({ length: getTotalSteps() }, (_, i) => (
               <div
-                key={step}
+                key={i + 1}
                 className={`w-3 h-3 rounded-full ${
-                  step <= currentStep ? 'bg-primary' : 'bg-muted'
+                  (i + 1) <= currentStep ? 'bg-primary' : 'bg-muted'
                 }`}
               />
             ))}
           </div>
           <p className="text-center text-sm text-muted-foreground">
-            Step {currentStep} of 4
+            Step {currentStep} of {getTotalSteps()}
           </p>
         </CardHeader>
         
@@ -501,7 +560,7 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
               onClick={nextStep}
               disabled={!isStepComplete() || loading}
             >
-              {loading ? 'Saving...' : (currentStep === 4 ? 'Complete Profile' : 'Next')}
+              {loading ? 'Saving...' : (currentStep === getTotalSteps() ? 'Complete Profile' : 'Next')}
             </Button>
           </div>
         </CardContent>

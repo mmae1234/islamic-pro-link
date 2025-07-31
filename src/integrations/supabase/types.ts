@@ -208,6 +208,7 @@ export type Database = {
           preferred_communication: string[] | null
           sector: string | null
           skills: string[] | null
+          state_province: string | null
           university: string | null
           updated_at: string
           user_id: string
@@ -228,6 +229,7 @@ export type Database = {
           preferred_communication?: string[] | null
           sector?: string | null
           skills?: string[] | null
+          state_province?: string | null
           university?: string | null
           updated_at?: string
           user_id: string
@@ -248,6 +250,7 @@ export type Database = {
           preferred_communication?: string[] | null
           sector?: string | null
           skills?: string[] | null
+          state_province?: string | null
           university?: string | null
           updated_at?: string
           user_id?: string
