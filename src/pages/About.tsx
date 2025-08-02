@@ -221,13 +221,13 @@ const About = () => {
                 your journey and share your values.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button asChild size="lg">
+                <Button variant="secondary" size="lg" asChild>
                   <Link to="/search">Find Professionals</Link>
                 </Button>
-                <Button variant="outline" size="lg" asChild>
+                <Button variant="secondary" size="lg" asChild>
                   <Link to="/login">Join Our Community</Link>
                 </Button>
-                <Button variant="outline" size="lg" asChild>
+                <Button variant="secondary" size="lg" asChild>
                   <Link to="/donations">Support Our Mission</Link>
                 </Button>
               </div>
