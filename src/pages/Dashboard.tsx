@@ -42,7 +42,9 @@ const Dashboard = () => {
   const [role, setRole] = useState("professional");
   const [gender, setGender] = useState("");
   const [country, setCountry] = useState("");
+  const [countryCode, setCountryCode] = useState("");
   const [stateProvince, setStateProvince] = useState("");
+  const [stateCode, setStateCode] = useState("");
   const [city, setCity] = useState("");
 
   // Reset dependent fields when parent selections change
@@ -277,7 +279,17 @@ const Dashboard = () => {
                     
                     <div>
                       <Label>Country</Label>
-                      <CountrySelect value={country} onValueChange={setCountry} />
+                      <CountrySelect 
+                        value={country} 
+                        onValueChange={(countryName, code) => {
+                          setCountry(countryName);
+                          setCountryCode(code);
+                          // Reset dependent fields
+                          setStateProvince("");
+                          setStateCode("");
+                          setCity("");
+                        }} 
+                      />
                     </div>
                   </div>
 
@@ -285,17 +297,22 @@ const Dashboard = () => {
                     <div>
                       <Label>State/Province</Label>
                       <StateSelect 
-                        countryCode="" // Will need to update this logic
+                        countryCode={countryCode}
                         value={stateProvince} 
-                        onValueChange={(value, code) => setStateProvince(value)}
+                        onValueChange={(value, code) => {
+                          setStateProvince(value);
+                          setStateCode(code);
+                          // Reset city when state changes
+                          setCity("");
+                        }}
                       />
                     </div>
                     
                     <div>
                       <Label>City</Label>
                       <CitySelect 
-                        countryCode="" // Will need to update this logic
-                        stateCode=""
+                        countryCode={countryCode}
+                        stateCode={stateCode}
                         value={city} 
                         onValueChange={setCity}
                       />

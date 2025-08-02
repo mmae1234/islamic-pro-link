@@ -80,7 +80,12 @@ const UNIVERSITIES = [
   'Imam Muhammad ibn Saud Islamic University', 'Taibah University', 'Princess Nourah bint Abdulrahman University',
   
   'Other'
-];
+].sort((a, b) => {
+  // Keep 'Other' at the end
+  if (a === 'Other') return 1;
+  if (b === 'Other') return -1;
+  return a.localeCompare(b);
+});
 
 const SECTORS = [
   'Technology', 'Finance & Banking', 'Healthcare & Medicine', 'Education', 'Engineering',

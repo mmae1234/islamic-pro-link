@@ -63,7 +63,12 @@ const UNIVERSITIES = [
   'University of Tokyo', 'Kyoto University', 'Osaka University', 'Tohoku University',
   
   'Other'
-];
+].sort((a, b) => {
+  // Keep 'Other' at the end
+  if (a === 'Other') return 1;
+  if (b === 'Other') return -1;
+  return a.localeCompare(b);
+});
 
 const SECTORS = [
   'Technology', 'Finance & Banking', 'Healthcare & Medicine', 'Education', 'Engineering',
