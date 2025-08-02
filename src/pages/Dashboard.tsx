@@ -16,9 +16,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { CountrySelect, UniversitySelect, SectorSelect, OccupationSelect, AvailabilitySelect } from "@/components/FormDropdowns";
-import { StateProvinceSelect } from "@/components/StateProvinceSelect";
-import { CitySelect } from "@/components/CitySelect";
+import { 
+  CountrySelect, 
+  StateSelect, 
+  CitySelect,
+  UniversitySelect, 
+  SectorSelect, 
+  OccupationSelect, 
+  AvailabilitySelect 
+} from "@/components/EnhancedFormDropdowns";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Loader2, Save, User, Briefcase, Users, X } from "lucide-react";
@@ -278,20 +284,20 @@ const Dashboard = () => {
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <Label>State/Province</Label>
-                      <StateProvinceSelect 
+                      <StateSelect 
+                        countryCode="" // Will need to update this logic
                         value={stateProvince} 
-                        onValueChange={setStateProvince}
-                        country={country}
+                        onValueChange={(value, code) => setStateProvince(value)}
                       />
                     </div>
                     
                     <div>
                       <Label>City</Label>
                       <CitySelect 
+                        countryCode="" // Will need to update this logic
+                        stateCode=""
                         value={city} 
                         onValueChange={setCity}
-                        country={country}
-                        stateProvince={stateProvince}
                       />
                     </div>
                   </div>

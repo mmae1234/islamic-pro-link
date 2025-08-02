@@ -213,8 +213,7 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
       const { error } = await supabase
         .from('messages')
         .update({ deleted_at: new Date().toISOString() })
-        .or(`sender_id.eq.${user?.id},recipient_id.eq.${user?.id}`)
-        .or(`sender_id.eq.${partnerId},recipient_id.eq.${partnerId}`);
+        .or(`and(sender_id.eq.${user?.id},recipient_id.eq.${partnerId}),and(sender_id.eq.${partnerId},recipient_id.eq.${user?.id})`);
 
       if (error) throw error;
 

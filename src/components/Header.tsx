@@ -53,9 +53,19 @@ const Header = () => {
                 </Link>
               </>
             )}
-            <Link to="/about" className="text-foreground hover:text-primary transition-smooth">
-              About
-            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="text-foreground hover:text-primary transition-smooth">
+                About
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-popover border border-border shadow-elegant z-50">
+                <DropdownMenuItem asChild>
+                  <Link to="/about">About Us</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/donations">Donations</Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Desktop Auth Buttons */}
@@ -182,6 +192,13 @@ const Header = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 About
+              </Link>
+              <Link 
+                to="/donations" 
+                className="text-foreground hover:text-primary transition-smooth px-4 py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Donations
               </Link>
               <div className="flex flex-col space-y-2 px-4 pt-4 border-t border-border">
                 {user ? (

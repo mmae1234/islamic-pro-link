@@ -12,9 +12,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
-import { CountrySelect, UniversitySelect, SectorSelect, OccupationSelect, AvailabilitySelect } from "@/components/FormDropdowns";
-import { StateProvinceSelect } from "@/components/StateProvinceSelect";
-import { CitySelect } from "@/components/CitySelect";
+import { 
+  CountrySelect, 
+  StateSelect, 
+  CitySelect,
+  UniversitySelect, 
+  SectorSelect, 
+  OccupationSelect, 
+  AvailabilitySelect 
+} from "@/components/EnhancedFormDropdowns";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { User, Briefcase, Users, X, Loader2 } from "lucide-react";
@@ -373,10 +379,10 @@ const Settings = () => {
                     
                     <div>
                       <Label>State/Province</Label>
-                      <StateProvinceSelect 
+                      <StateSelect 
+                        countryCode="" // Will need to update this logic
                         value={formData.state_province} 
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, state_province: value }))}
-                        country={formData.country}
+                        onValueChange={(value, code) => setFormData(prev => ({ ...prev, state_province: value }))}
                       />
                     </div>
                   </div>
@@ -384,10 +390,10 @@ const Settings = () => {
                   <div>
                     <Label>City</Label>
                     <CitySelect 
+                      countryCode="" // Will need to update this logic
+                      stateCode=""
                       value={formData.city} 
                       onValueChange={(value) => setFormData(prev => ({ ...prev, city: value }))}
-                      country={formData.country}
-                      stateProvince={formData.state_province}
                     />
                   </div>
 

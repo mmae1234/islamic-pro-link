@@ -11,9 +11,15 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ImageUpload';
-import { CountrySelect, UniversitySelect, SectorSelect, OccupationSelect, AvailabilitySelect } from '@/components/FormDropdowns';
-import { StateProvinceSelect } from '@/components/StateProvinceSelect';
-import { CitySelect } from '@/components/CitySelect';
+import { 
+  CountrySelect, 
+  StateSelect, 
+  CitySelect,
+  UniversitySelect, 
+  SectorSelect, 
+  OccupationSelect, 
+  AvailabilitySelect 
+} from '@/components/EnhancedFormDropdowns';
 import { CheckCircle, Plus, X, User, Briefcase, MessageSquare, Calendar, Users } from 'lucide-react';
 
 const SKILLS_OPTIONS = [
@@ -87,6 +93,8 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
   });
 
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [countryCode, setCountryCode] = useState('');
+  const [stateCode, setStateCode] = useState('');
 
   const [newSkill, setNewSkill] = useState('');
 
@@ -296,18 +304,47 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <Label>Country</Label>
-                  <CountrySelect value={profileData.country} onValueChange={(value) => setProfileData(prev => ({ ...prev, country: value }))} />
+                  <CountrySelect 
+                    value={profileData.country} 
+                    onValueChange={(value, code) => {
+                      setProfileData(prev => ({ 
+                        ...prev, 
+                        country: value,
+                        state_province: '', // Reset dependent fields
+                        city: ''
+                      }));
+                      setCountryCode(code);
+                      setStateCode('');
+                    }} 
+                  />
                 </div>
                 <div>
-                  <Label htmlFor="city">City</Label>
-                  <Input
-                    id="city"
+                  <Label>State/Province</Label>
+                  <StateSelect
+                    countryCode={countryCode}
+                    value={profileData.state_province}
+                    onValueChange={(value, code) => {
+                      setProfileData(prev => ({ 
+                        ...prev, 
+                        state_province: value,
+                        city: '' // Reset city when state changes
+                      }));
+                      setStateCode(code);
+                    }}
+                  />
+                </div>
+                <div>
+                  <Label>City</Label>
+                  <CitySelect
+                    countryCode={countryCode}
+                    stateCode={stateCode}
                     value={profileData.city}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, city: e.target.value }))}
-                    placeholder="City"
+                    onValueChange={(value) => {
+                      setProfileData(prev => ({ ...prev, city: value }));
+                    }}
                   />
                 </div>
               </div>

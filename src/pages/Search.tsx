@@ -269,7 +269,7 @@ const Search = () => {
                 >
                   <ProfessionalCard
                     professional={professional}
-                    showMentorshipButton={!isGuest}
+                    showMentorshipButton={false}  // Hide mentorship button on Find Professionals page
                     showFavoriteButton={!isGuest}
                     onRequestSent={() => {
                       toast({
