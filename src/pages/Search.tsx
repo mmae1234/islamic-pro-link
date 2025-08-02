@@ -40,18 +40,20 @@ const Search = () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
-        .from('professional_profiles')
+      // Check if user has a basic profile first
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
         .select('*')
         .eq('user_id', user.id)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
-        throw error;
+      if (profileError && profileError.code !== 'PGRST116') {
+        throw profileError;
       }
 
-      setHasProfile(!!data);
-      if (!data) {
+      // If user has a basic profile, they've completed the setup
+      setHasProfile(!!profileData);
+      if (!profileData) {
         setShowProfileSetup(true);
       } else {
         // Load initial professionals
