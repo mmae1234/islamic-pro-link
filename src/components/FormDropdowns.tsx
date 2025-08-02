@@ -1,4 +1,7 @@
+import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const COUNTRIES = [
   'Afghanistan', 'Albania', 'Algeria', 'Argentina', 'Australia', 'Austria', 'Bahrain', 'Bangladesh',
@@ -66,14 +69,20 @@ const SECTORS = [
   'Technology', 'Finance & Banking', 'Healthcare & Medicine', 'Education', 'Engineering',
   'Marketing & Advertising', 'Consulting', 'Legal', 'Real Estate', 'Manufacturing',
   'Retail & E-commerce', 'Media & Entertainment', 'Non-profit', 'Government', 'Construction',
-  'Transportation', 'Energy & Utilities', 'Agriculture', 'Hospitality & Tourism', 'Other'
+  'Transportation', 'Energy & Utilities', 'Agriculture', 'Hospitality & Tourism', 
+  'Religious Services', 'Skilled Trades', 'Art & Design', 'Sports & Recreation',
+  'Food & Beverage', 'Security', 'Research & Development', 'Social Services', 'Other'
 ];
 
 const OCCUPATIONS = [
   'Software Engineer', 'Data Scientist', 'Product Manager', 'Marketing Manager', 'Financial Analyst',
   'Consultant', 'Doctor', 'Nurse', 'Teacher', 'Professor', 'Lawyer', 'Engineer',
   'Designer', 'Sales Manager', 'HR Manager', 'Business Analyst', 'Project Manager',
-  'Entrepreneur', 'Researcher', 'Student', 'Other'
+  'Entrepreneur', 'Researcher', 'Student', 'Imam', 'Sheikh', 'Quran Teacher',
+  'Islamic Scholar', 'Plumber', 'Electrician', 'Carpenter', 'Mechanic', 'Chef',
+  'Security Guard', 'Driver', 'Accountant', 'Pharmacist', 'Dentist', 'Therapist',
+  'Social Worker', 'Journalist', 'Photographer', 'Artist', 'Musician', 'Athlete',
+  'Taxi Driver', 'Shop Owner', 'Farmer', 'Cleaner', 'Waiter/Waitress', 'Other'
 ];
 
 const AVAILABILITIES = [
@@ -137,24 +146,67 @@ export const SectorSelect = ({ value, onValueChange, placeholder = "Select secto
   </Select>
 );
 
+
 interface OccupationSelectProps {
   value: string;
   onValueChange: (value: string) => void;
   placeholder?: string;
+  onOtherSelected?: (value: string) => void;
 }
 
-export const OccupationSelect = ({ value, onValueChange, placeholder = "Select occupation" }: OccupationSelectProps) => (
-  <Select value={value} onValueChange={onValueChange}>
-    <SelectTrigger>
-      <SelectValue placeholder={placeholder} />
-    </SelectTrigger>
-    <SelectContent>
-      {OCCUPATIONS.map(occupation => (
-        <SelectItem key={occupation} value={occupation}>{occupation}</SelectItem>
-      ))}
-    </SelectContent>
-  </Select>
-);
+export const OccupationSelect = ({ value, onValueChange, placeholder = "Select occupation", onOtherSelected }: OccupationSelectProps) => {
+  const [showOtherInput, setShowOtherInput] = useState(false);
+  const [otherValue, setOtherValue] = useState('');
+
+  const handleValueChange = (selectedValue: string) => {
+    if (selectedValue === 'Other') {
+      setShowOtherInput(true);
+    } else {
+      setShowOtherInput(false);
+      onValueChange(selectedValue);
+    }
+  };
+
+  const handleOtherSubmit = () => {
+    if (otherValue.trim()) {
+      onValueChange(otherValue.trim());
+      if (onOtherSelected) {
+        onOtherSelected(otherValue.trim());
+      }
+      setShowOtherInput(false);
+      setOtherValue('');
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <Select value={showOtherInput ? 'Other' : value} onValueChange={handleValueChange}>
+        <SelectTrigger>
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {OCCUPATIONS.map(occupation => (
+            <SelectItem key={occupation} value={occupation}>{occupation}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      
+      {showOtherInput && (
+        <div className="flex gap-2">
+          <Input
+            placeholder="Enter your occupation"
+            value={otherValue}
+            onChange={(e) => setOtherValue(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleOtherSubmit()}
+          />
+          <Button onClick={handleOtherSubmit} size="sm">
+            Add
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface AvailabilitySelectProps {
   value: string;

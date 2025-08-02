@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SearchFilters from "@/components/SearchFilters";
 import SearchSorting from "@/components/SearchSorting";
 import ProfessionalCard from "@/components/ProfessionalCard";
 import ProfileSetup from "@/components/ProfileSetup";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
@@ -22,10 +24,15 @@ const Search = () => {
   const [showProfileSetup, setShowProfileSetup] = useState(false);
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [isGuest, setIsGuest] = useState(!user);
 
   useEffect(() => {
+    setIsGuest(!user);
     if (user) {
       checkUserProfile();
+    } else {
+      // Load limited professionals for guests
+      handleSearch({});
     }
   }, [user]);
 
@@ -112,7 +119,7 @@ const Search = () => {
         query = query.neq('user_id', user.id);
       }
 
-      const { data, error } = await query.limit(50);
+      const { data, error } = await query.limit(isGuest ? 6 : 50);
 
       if (error) throw error;
 
@@ -135,7 +142,7 @@ const Search = () => {
     handleSearch({});
   };
 
-  if (showProfileSetup) {
+  if (showProfileSetup && user) {
     return <ProfileSetup onComplete={handleProfileSetupComplete} />;
   }
 
@@ -257,13 +264,13 @@ const Search = () => {
               {professionals.map((professional, index) => (
                 <div 
                   key={professional.id}
-                  className="animate-fade-in-up"
+                  className={`animate-fade-in-up ${isGuest && index >= 3 ? 'blur-sm' : ''}`}
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <ProfessionalCard
                     professional={professional}
-                    showMentorshipButton={false}
-                    showFavoriteButton={true}
+                    showMentorshipButton={!isGuest}
+                    showFavoriteButton={!isGuest}
                     onRequestSent={() => {
                       toast({
                         title: "Added to favorites!",
@@ -273,6 +280,21 @@ const Search = () => {
                   />
                 </div>
               ))}
+              {isGuest && professionals.length > 3 && (
+                <Card className="shadow-soft bg-primary/5 border-primary/20">
+                  <CardContent className="p-8 text-center">
+                    <h3 className="text-xl font-semibold text-foreground mb-2">
+                      Sign up to see more professionals
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      Join MuslimsPros to connect with professionals and access all features.
+                    </p>
+                    <Button asChild>
+                      <Link to="/login">Sign Up Today</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           )}
         </div>

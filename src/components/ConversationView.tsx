@@ -208,6 +208,56 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
     }
   };
 
+  const deleteThread = async () => {
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .update({ deleted_at: new Date().toISOString() })
+        .or(`sender_id.eq.${user?.id},recipient_id.eq.${user?.id}`)
+        .or(`sender_id.eq.${partnerId},recipient_id.eq.${partnerId}`);
+
+      if (error) throw error;
+
+      toast({
+        title: "Thread deleted",
+        description: "The conversation has been deleted.",
+      });
+      onBack();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const reportThread = async () => {
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .update({ 
+          reported_at: new Date().toISOString(),
+          report_reason: "Inappropriate content"
+        })
+        .or(`sender_id.eq.${partnerId},recipient_id.eq.${partnerId}`)
+        .eq('recipient_id', user?.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Thread reported",
+        description: "The conversation has been reported to moderators.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <Card>
@@ -235,6 +285,34 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
           </div>
         </div>
       </CardHeader>
+
+      {/* Thread Actions */}
+      <div className="px-4 py-2 border-b border-border">
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">
+            Conversation with {partnerName}
+          </div>
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <span className="text-xs">⋯</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={deleteThread} className="text-destructive">
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Thread
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={reportThread} className="text-destructive">
+                  <Flag className="w-4 h-4 mr-2" />
+                  Report Thread
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </div>
 
       <CardContent className="flex-1 flex flex-col p-0">
         <ScrollArea className="flex-1 p-4">

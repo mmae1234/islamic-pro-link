@@ -75,13 +75,15 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
     university: '',
     city: '',
     country: '',
+    state_province: '',
     experience_years: '',
     skills: [] as string[],
     availability: '',
     is_mentor: false,
     is_seeking_mentor: false,
     wants_mentorship: false, // New field for mentorship program
-    preferred_communication: ['in_app_messaging'] as string[]
+    preferred_communication: ['in_app_messaging'] as string[],
+    gender: ''
   });
 
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -138,30 +140,37 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
 
       if (profileError) throw profileError;
 
-      // Only save to professional_profiles if user is a professional
-      if (profileData.role === 'professional') {
+      // Save to professional_profiles for both professionals and visitors who want mentorship
+      if (profileData.role === 'professional' || (profileData.role === 'visitor' && profileData.wants_mentorship)) {
+        const professionalData = {
+          user_id: user.id,
+          bio: profileData.bio || null,
+          occupation: profileData.occupation || null,
+          sector: profileData.sector || null,
+          university: profileData.university || null,
+          city: profileData.city || null,
+          country: profileData.country || null,
+          state_province: profileData.state_province || null,
+          experience_years: profileData.experience_years ? parseInt(profileData.experience_years) : null,
+          skills: profileData.skills || [],
+          availability: profileData.availability || null,
+          is_mentor: profileData.is_mentor || false,
+          is_seeking_mentor: profileData.is_seeking_mentor || false,
+          preferred_communication: profileData.preferred_communication || ['in_app_messaging'],
+          avatar_url: avatarUrl,
+          gender: profileData.gender || null
+        };
+
         const { error: professionalError } = await supabase
           .from('professional_profiles')
-          .upsert({
-            user_id: user.id,
-            bio: profileData.bio,
-            occupation: profileData.occupation,
-            sector: profileData.sector,
-            university: profileData.university,
-            city: profileData.city,
-            country: profileData.country,
-            experience_years: profileData.experience_years ? parseInt(profileData.experience_years) : null,
-            skills: profileData.skills,
-            availability: profileData.availability,
-            is_mentor: profileData.is_mentor,
-            is_seeking_mentor: profileData.is_seeking_mentor,
-            preferred_communication: profileData.preferred_communication,
-            avatar_url: avatarUrl
-          }, {
+          .upsert(professionalData, {
             onConflict: 'user_id'
           });
 
-        if (professionalError) throw professionalError;
+        if (professionalError) {
+          console.error('Professional profile save error:', professionalError);
+          throw professionalError;
+        }
       }
 
       toast({

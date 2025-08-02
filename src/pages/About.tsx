@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -220,11 +221,14 @@ const About = () => {
                 your journey and share your values.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button variant="accent" size="lg" className="font-semibold">
-                  Create Your Profile
+                <Button asChild size="lg">
+                  <Link to="/search">Find Professionals</Link>
                 </Button>
-                <Button variant="elegant" size="lg" className="font-semibold">
-                  Explore Professionals
+                <Button variant="outline" size="lg" asChild>
+                  <Link to="/login">Join Our Community</Link>
+                </Button>
+                <Button variant="outline" size="lg" asChild>
+                  <Link to="/donations">Support Our Mission</Link>
                 </Button>
               </div>
             </div>

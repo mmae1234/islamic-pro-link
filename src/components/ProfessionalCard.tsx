@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -53,6 +53,31 @@ const ProfessionalCard = ({
   const [messageContent, setMessageContent] = useState('');
   const [loading, setLoading] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
+
+  // Check if professional is favorited on mount
+  useEffect(() => {
+    if (user && showFavoriteButton) {
+      checkFavoriteStatus();
+    }
+  }, [user, professional.user_id, showFavoriteButton]);
+
+  const checkFavoriteStatus = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('professional_id', professional.user_id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      setIsFavorited(!!data);
+    } catch (error) {
+      console.error('Error checking favorite status:', error);
+    }
+  };
 
   const sendMentorshipRequest = async () => {
     if (!user || !requestMessage.trim()) return;
