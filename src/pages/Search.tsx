@@ -88,12 +88,7 @@ const Search = () => {
 
       // Apply filters
       if (filters.searchTerm) {
-        query = query.or(`
-          occupation.ilike.%${filters.searchTerm}%,
-          bio.ilike.%${filters.searchTerm}%,
-          sector.ilike.%${filters.searchTerm}%,
-          profiles.full_name.ilike.%${filters.searchTerm}%
-        `);
+        query = query.or(`occupation.ilike.%${filters.searchTerm}%,bio.ilike.%${filters.searchTerm}%,sector.ilike.%${filters.searchTerm}%,profiles.full_name.ilike.%${filters.searchTerm}%`);
       }
 
       if (filters.country && filters.country !== 'all') {
@@ -301,7 +296,7 @@ const Search = () => {
                       Sign up to see more professionals
                     </h3>
                     <p className="text-muted-foreground mb-4">
-                      Join MuslimsPros to connect with professionals and access all features.
+                      Join Muslim Professionals to connect with professionals and access all features.
                     </p>
                     <Button asChild>
                       <Link to="/login">Sign Up Today</Link>

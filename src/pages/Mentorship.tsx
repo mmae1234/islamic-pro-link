@@ -274,6 +274,10 @@ const Mentorship = () => {
       filteredMentors = filteredMentors.filter(mentor => mentor.occupation === filters.occupation);
     }
 
+    if (filters.occupation && filters.occupation !== 'all') {
+      filteredMentors = filteredMentors.filter(mentor => mentor.occupation === filters.occupation);
+    }
+
     if (filters.experienceMin) {
       filteredMentors = filteredMentors.filter(mentor => 
         mentor.experience_years >= parseInt(filters.experienceMin)
@@ -332,7 +336,7 @@ const Mentorship = () => {
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              MuslimsPros Mentorship - السلام عليكم
+              Muslim Professionals Mentorship - السلام عليكم
             </h1>
             <p className="text-lg text-muted-foreground">
               Connect with experienced Muslim professionals and grow your career with Islamic values. Build meaningful relationships guided by Islamic principles of helping one another.

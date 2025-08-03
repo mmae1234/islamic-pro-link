@@ -35,7 +35,7 @@ const Header = () => {
             <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-lg">MP</span>
             </div>
-            <span className="text-xl font-bold text-foreground">MuslimsPros</span>
+            <span className="text-xl font-bold text-foreground">Muslim Professionals</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -55,9 +55,18 @@ const Header = () => {
             )}
             <DropdownMenu>
               <DropdownMenuTrigger className="text-foreground hover:text-primary transition-smooth">
-                About
+                Resources
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-popover border border-border shadow-elegant z-50">
+                <DropdownMenuItem asChild>
+                  <Link to="/careers">Careers</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/scholarships">Scholarships</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/organizations">Organizations</Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/about">About Us</Link>
                 </DropdownMenuItem>
@@ -192,6 +201,27 @@ const Header = () => {
                   </Link>
                 </>
               )}
+              <Link 
+                to="/careers" 
+                className="text-foreground hover:text-primary transition-smooth px-4 py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Careers
+              </Link>
+              <Link 
+                to="/scholarships" 
+                className="text-foreground hover:text-primary transition-smooth px-4 py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Scholarships
+              </Link>
+              <Link 
+                to="/organizations" 
+                className="text-foreground hover:text-primary transition-smooth px-4 py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Organizations
+              </Link>
               <Link 
                 to="/about" 
                 className="text-foreground hover:text-primary transition-smooth px-4 py-2"

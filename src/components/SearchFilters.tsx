@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SectorSelect, OccupationSelect } from '@/components/EnhancedFormDropdowns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -110,42 +111,28 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
 
           <div>
             <Label>Sector</Label>
-            <Select value={filters.sector} onValueChange={(value) => setFilters(prev => ({ ...prev, sector: value }))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select sector" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Sectors</SelectItem>
-                <SelectItem value="Technology">Technology</SelectItem>
-                <SelectItem value="Finance">Finance</SelectItem>
-                <SelectItem value="Healthcare">Healthcare</SelectItem>
-                <SelectItem value="Marketing">Marketing</SelectItem>
-                <SelectItem value="Engineering">Engineering</SelectItem>
-                <SelectItem value="Education">Education</SelectItem>
-                <SelectItem value="Consulting">Consulting</SelectItem>
-                <SelectItem value="Legal">Legal</SelectItem>
-              </SelectContent>
-            </Select>
+            <SectorSelect 
+              value={filters.sector === 'all' ? '' : filters.sector} 
+              onValueChange={(value) => {
+                setFilters(prev => ({ 
+                  ...prev, 
+                  sector: value || 'all',
+                  occupation: 'all' // Reset occupation when sector changes
+                }));
+              }}
+              placeholder="All Sectors"
+            />
           </div>
 
           <div>
             <Label>Occupation</Label>
-            <Select value={filters.occupation} onValueChange={(value) => setFilters(prev => ({ ...prev, occupation: value }))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select occupation" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Occupations</SelectItem>
-                <SelectItem value="Software Engineer">Software Engineer</SelectItem>
-                <SelectItem value="Doctor">Doctor</SelectItem>
-                <SelectItem value="Lawyer">Lawyer</SelectItem>
-                <SelectItem value="Teacher">Teacher</SelectItem>
-                <SelectItem value="Manager">Manager</SelectItem>
-                <SelectItem value="Consultant">Consultant</SelectItem>
-                <SelectItem value="Analyst">Analyst</SelectItem>
-                <SelectItem value="Designer">Designer</SelectItem>
-              </SelectContent>
-            </Select>
+            <OccupationSelect 
+              value={filters.occupation === 'all' ? '' : filters.occupation} 
+              onValueChange={(value) => setFilters(prev => ({ ...prev, occupation: value || 'all' }))}
+              sector={filters.sector === 'all' ? '' : filters.sector}
+              disabled={filters.sector === 'all'}
+              placeholder="All Occupations"
+            />
           </div>
         </div>
 

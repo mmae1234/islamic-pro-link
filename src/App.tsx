@@ -24,6 +24,9 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Donations from "./pages/Donations";
 import News from "./pages/News";
+import Organizations from "./pages/Organizations";
+import Careers from "./pages/Careers";
+import Scholarships from "./pages/Scholarships";
 
 const queryClient = new QueryClient();
 
@@ -73,6 +76,9 @@ const App = () => (
             <Route path="/help" element={<Help />} />
             <Route path="/donations" element={<Donations />} />
             <Route path="/news" element={<News />} />
+            <Route path="/organizations" element={<Organizations />} />
+            <Route path="/careers" element={<Careers />} />
+            <Route path="/scholarships" element={<Scholarships />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
