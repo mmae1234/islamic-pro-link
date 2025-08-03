@@ -14,12 +14,12 @@ const SKILLS_OPTIONS = [
   'Healthcare', 'Education', 'Consulting', 'Sales', 'HR', 'Legal', 'Engineering'
 ];
 
-interface SearchFiltersProps {
+interface MentorshipSearchFiltersProps {
   onSearch: (filters: any) => void;
   loading?: boolean;
 }
 
-const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
+const MentorshipSearchFilters = ({ onSearch, loading = false }: MentorshipSearchFiltersProps) => {
   const [filters, setFilters] = useState({
     searchTerm: '',
     country: 'all',
@@ -83,7 +83,7 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
             <Label htmlFor="search">Name or Keyword</Label>
             <Input
               id="search"
-              placeholder="Search professionals..."
+              placeholder="Search mentors..."
               value={filters.searchTerm}
               onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
             />
@@ -230,7 +230,7 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
             size="lg"
           >
             <SearchIcon className="w-4 h-4 mr-2" />
-            {loading ? 'Searching...' : 'Search Professionals'}
+            {loading ? 'Searching...' : 'Search Mentors'}
           </Button>
           <Button variant="outline" onClick={clearFilters} className="hover:shadow-soft">
             Clear Filters
@@ -241,4 +241,4 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
   );
 };
 
-export default SearchFilters;
+export default MentorshipSearchFilters;

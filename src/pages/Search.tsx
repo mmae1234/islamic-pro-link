@@ -91,7 +91,8 @@ const Search = () => {
         query = query.or(`
           occupation.ilike.%${filters.searchTerm}%,
           bio.ilike.%${filters.searchTerm}%,
-          sector.ilike.%${filters.searchTerm}%
+          sector.ilike.%${filters.searchTerm}%,
+          profiles.full_name.ilike.%${filters.searchTerm}%
         `);
       }
 
@@ -101,6 +102,10 @@ const Search = () => {
 
       if (filters.sector && filters.sector !== 'all') {
         query = query.eq('sector', filters.sector);
+      }
+
+      if (filters.occupation && filters.occupation !== 'all') {
+        query = query.eq('occupation', filters.occupation);
       }
 
       if (filters.isMentor) {

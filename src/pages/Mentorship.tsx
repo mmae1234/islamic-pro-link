@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import SearchFilters from "@/components/SearchFilters";
+import MentorshipSearchFilters from "@/components/MentorshipSearchFilters";
 import { 
   Search, 
   Users, 
@@ -270,6 +270,10 @@ const Mentorship = () => {
       filteredMentors = filteredMentors.filter(mentor => mentor.sector === filters.sector);
     }
 
+    if (filters.occupation && filters.occupation !== 'all') {
+      filteredMentors = filteredMentors.filter(mentor => mentor.occupation === filters.occupation);
+    }
+
     if (filters.experienceMin) {
       filteredMentors = filteredMentors.filter(mentor => 
         mentor.experience_years >= parseInt(filters.experienceMin)
@@ -364,7 +368,7 @@ const Mentorship = () => {
               </Card>
 
               {/* Advanced Filters */}
-              <SearchFilters onSearch={handleMentorSearch} loading={false} />
+              <MentorshipSearchFilters onSearch={handleMentorSearch} loading={false} />
 
               <Card>
                 <CardContent>

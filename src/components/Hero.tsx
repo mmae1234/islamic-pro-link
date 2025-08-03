@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Search, Users, MessageCircle, Award } from "lucide-react";
-import heroImage from "@/assets/new-hero-image.jpg";
+import heroImage from "@/assets/diverse-professionals-hero.jpg";
 
 const Hero = () => {
   const { user } = useAuth();
