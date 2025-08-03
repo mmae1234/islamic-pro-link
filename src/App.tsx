@@ -10,6 +10,7 @@ import Search from "./pages/Search";
 import About from "./pages/About";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
 import Mentorship from "./pages/Mentorship";
 import Messages from "./pages/Messages";
 import Favorites from "./pages/Favorites";
@@ -45,6 +46,7 @@ const App = () => (
                 <Dashboard />
               </ProtectedRoute>
             } />
+            <Route path="/profile/:userId" element={<Profile />} />
             <Route path="/mentorship" element={
               <ProtectedRoute>
                 <Mentorship />

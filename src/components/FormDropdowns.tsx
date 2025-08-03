@@ -1,65 +1,76 @@
 import { useState } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Check } from "lucide-react";
 
 const COUNTRIES = [
   'Afghanistan', 'Albania', 'Algeria', 'Argentina', 'Australia', 'Austria', 'Bahrain', 'Bangladesh',
-  'Belgium', 'Bosnia and Herzegovina', 'Brazil', 'Brunei', 'Bulgaria', 'Canada', 'China',
-  'Croatia', 'Denmark', 'Egypt', 'France', 'Germany', 'India', 'Indonesia', 'Iran', 'Iraq',
-  'Ireland', 'Italy', 'Jordan', 'Kazakhstan', 'Kuwait', 'Lebanon', 'Libya', 'Malaysia',
-  'Maldives', 'Morocco', 'Netherlands', 'Nigeria', 'Norway', 'Oman', 'Pakistan', 'Palestine',
-  'Qatar', 'Russia', 'Saudi Arabia', 'Senegal', 'Somalia', 'South Africa', 'Spain', 'Sweden',
-  'Switzerland', 'Syria', 'Tunisia', 'Turkey', 'UAE', 'United Kingdom', 'United States', 'Yemen'
+  'Belgium', 'Bosnia and Herzegovina', 'Brazil', 'Brunei', 'Bulgaria', 'Canada', 'China', 'Croatia',
+  'Czech Republic', 'Denmark', 'Egypt', 'Finland', 'France', 'Germany', 'Ghana', 'Greece',
+  'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Italy', 'Japan',
+  'Jordan', 'Kazakhstan', 'Kenya', 'Kuwait', 'Lebanon', 'Libya', 'Malaysia', 'Morocco',
+  'Netherlands', 'New Zealand', 'Nigeria', 'Norway', 'Oman', 'Pakistan', 'Palestine', 'Philippines',
+  'Poland', 'Portugal', 'Qatar', 'Romania', 'Russia', 'Saudi Arabia', 'Senegal', 'Singapore',
+  'South Africa', 'South Korea', 'Spain', 'Sri Lanka', 'Sudan', 'Sweden', 'Switzerland', 'Syria',
+  'Thailand', 'Tunisia', 'Turkey', 'UAE', 'Ukraine', 'United Kingdom', 'United States', 'Uzbekistan',
+  'Venezuela', 'Vietnam', 'Yemen'
 ];
 
 const UNIVERSITIES = [
-  // Top Global Universities
-  'MIT - Massachusetts Institute of Technology', 'Harvard University', 'Stanford University',
-  'University of Cambridge', 'University of Oxford', 'California Institute of Technology',
-  'ETH Zurich', 'Imperial College London', 'University College London', 'King\'s College London',
-  'University of Toronto', 'McGill University', 'University of Melbourne', 'University of Sydney',
-  'National University of Singapore', 'Nanyang Technological University', 'University of Hong Kong',
+  // US Universities
+  'Harvard University', 'Stanford University', 'MIT', 'Yale University', 'Princeton University',
+  'Columbia University', 'University of Pennsylvania', 'Cornell University', 'Dartmouth College',
+  'Brown University', 'University of Chicago', 'Northwestern University', 'Duke University',
+  'Johns Hopkins University', 'Vanderbilt University', 'Rice University', 'Washington University in St. Louis',
+  'University of Notre Dame', 'University of California, Berkeley', 'UCLA', 'USC',
+  'University of Michigan', 'University of Virginia', 'Carnegie Mellon University', 'Emory University',
+  'Georgetown University', 'University of Rochester', 'Tufts University', 'Boston University',
+  'New York University', 'Brandeis University', 'Case Western Reserve University',
   
-  // Middle East & Islamic Universities
-  'American University of Beirut', 'Cairo University', 'King Abdulaziz University',
-  'King Fahd University', 'Qatar University', 'UAE University', 'Al-Azhar University',
-  'Jordan University of Science and Technology', 'Kuwait University', 'University of Tehran',
-  'Sharif University of Technology', 'Istanbul Technical University', 'Bogazici University',
-  'Middle East Technical University', 'American University of Cairo', 'Lebanese American University',
+  // UK Universities
+  'University of Oxford', 'University of Cambridge', 'Imperial College London', 'London School of Economics',
+  'University College London', 'King\'s College London', 'University of Edinburgh', 'University of Manchester',
+  'University of Warwick', 'University of Bristol', 'University of Glasgow', 'University of Birmingham',
+  'University of Sheffield', 'University of Nottingham', 'University of Southampton', 'University of Leeds',
+  'University of York', 'Lancaster University', 'University of Bath', 'University of Exeter',
   
-  // South Asian Universities
-  'University of Karachi', 'Lahore University of Management Sciences', 'Indian Institute of Technology Delhi',
-  'Indian Institute of Technology Bombay', 'University of Delhi', 'Jawaharlal Nehru University',
-  'Aligarh Muslim University', 'Jamia Millia Islamia', 'University of Punjab', 'Quaid-i-Azam University',
-  'National University of Sciences and Technology', 'Dhaka University', 'Bangladesh University of Engineering',
+  // Canadian Universities
+  'University of Toronto', 'McGill University', 'University of British Columbia', 'University of Alberta',
+  'McMaster University', 'University of Montreal', 'University of Waterloo', 'Queen\'s University',
+  'University of Calgary', 'Simon Fraser University', 'University of Ottawa', 'Dalhousie University',
+  
+  // Australian Universities
+  'University of Melbourne', 'Australian National University', 'University of Sydney', 'University of Queensland',
+  'University of New South Wales', 'Monash University', 'University of Western Australia', 'University of Adelaide',
+  'University of Technology Sydney', 'Macquarie University', 'Queensland University of Technology',
   
   // European Universities
-  'Sorbonne University', 'Technical University of Munich', 'KTH Royal Institute of Technology',
-  'Delft University of Technology', 'University of Amsterdam', 'Utrecht University',
-  'KU Leuven', 'Université catholique de Louvain', 'University of Copenhagen',
-  'Stockholm University', 'University of Oslo', 'Norwegian University of Science and Technology',
+  'ETH Zurich', 'University of Zurich', 'Technical University of Munich', 'University of Amsterdam',
+  'Delft University of Technology', 'KU Leuven', 'University of Copenhagen', 'Stockholm University',
+  'University of Oslo', 'University of Helsinki', 'Karolinska Institute', 'Technical University of Denmark',
   
-  // North American Universities
-  'University of California Berkeley', 'University of Michigan', 'Carnegie Mellon University',
-  'Yale University', 'Princeton University', 'Columbia University', 'University of Pennsylvania',
-  'Northwestern University', 'University of Chicago', 'Johns Hopkins University',
-  'University of British Columbia', 'University of Waterloo', 'McMaster University',
+  // Middle Eastern Universities
+  'King Fahd University of Petroleum and Minerals', 'King Saud University', 'American University of Beirut',
+  'University of Jordan', 'Cairo University', 'American University in Cairo', 'Qatar University',
+  'United Arab Emirates University', 'Khalifa University', 'Istanbul Technical University',
+  'Bogazici University', 'Middle East Technical University', 'Sabanci University',
   
-  // African Universities
-  'University of Cape Town', 'University of the Witwatersrand', 'Stellenbosch University',
-  'Cairo University', 'Alexandria University', 'Ain Shams University', 'University of Khartoum',
-  'Makerere University', 'University of Ghana', 'University of Ibadan',
-  
-  // Southeast Asian Universities
-  'University of Malaya', 'Universiti Teknologi Malaysia', 'Universiti Putra Malaysia',
-  'Universiti Kebangsaan Malaysia', 'Universiti Sains Malaysia', 'University of Indonesia',
-  'Bandung Institute of Technology', 'Gadjah Mada University', 'Chulalongkorn University',
-  
-  // Other Notable Universities
-  'Australian National University', 'Monash University', 'University of New South Wales',
-  'University of Queensland', 'University of Adelaide', 'RMIT University',
-  'Tsinghua University', 'Peking University', 'Fudan University', 'Shanghai Jiao Tong University',
+  // Asian Universities
+  'National University of Singapore', 'Nanyang Technological University', 'University of Hong Kong',
+  'Chinese University of Hong Kong', 'Seoul National University', 'KAIST', 'Yonsei University',
+  'Peking University', 'Tsinghua University', 'Fudan University', 'Shanghai Jiao Tong University',
+  'Indian Institute of Technology Bombay', 'Indian Institute of Technology Delhi', 'Indian Institute of Science',
+  'University of Malaya', 'Universiti Kebangsaan Malaysia', 'Universiti Sains Malaysia',
+  'Bandung Institute of Technology', 'University of Indonesia', 'Gadjah Mada University',
+  'Lahore University of Management Sciences', 'University of the Punjab', 'Quaid-i-Azam University',
+  'University of Dhaka', 'Bangladesh University of Engineering and Technology',
   'University of Tokyo', 'Kyoto University', 'Osaka University', 'Tohoku University',
   
   'Other'
@@ -72,23 +83,101 @@ const UNIVERSITIES = [
 
 const SECTORS = [
   'Technology', 'Finance & Banking', 'Healthcare & Medicine', 'Education', 'Engineering',
-  'Marketing & Advertising', 'Consulting', 'Legal', 'Real Estate', 'Manufacturing',
-  'Retail & E-commerce', 'Media & Entertainment', 'Non-profit', 'Government', 'Construction',
-  'Transportation', 'Energy & Utilities', 'Agriculture', 'Hospitality & Tourism', 
-  'Religious Services', 'Skilled Trades', 'Art & Design', 'Sports & Recreation',
-  'Food & Beverage', 'Security', 'Research & Development', 'Social Services', 'Other'
+  'Legal', 'Marketing & Sales', 'Media & Communication', 'Arts & Design', 'Business & Management',
+  'Construction & Trades', 'Transportation & Logistics', 'Hospitality & Tourism', 'Sports & Fitness',
+  'Security & Safety', 'Islamic Services', 'Agriculture & Environment', 'Social Services',
+  'Retail & Customer Service', 'Manufacturing', 'Other'
 ];
 
-const OCCUPATIONS = [
-  'Software Engineer', 'Data Scientist', 'Product Manager', 'Marketing Manager', 'Financial Analyst',
-  'Consultant', 'Doctor', 'Nurse', 'Teacher', 'Professor', 'Lawyer', 'Engineer',
-  'Designer', 'Sales Manager', 'HR Manager', 'Business Analyst', 'Project Manager',
-  'Entrepreneur', 'Researcher', 'Student', 'Imam', 'Sheikh', 'Quran Teacher',
-  'Islamic Scholar', 'Plumber', 'Electrician', 'Carpenter', 'Mechanic', 'Chef',
-  'Security Guard', 'Driver', 'Accountant', 'Pharmacist', 'Dentist', 'Therapist',
-  'Social Worker', 'Journalist', 'Photographer', 'Artist', 'Musician', 'Athlete',
-  'Taxi Driver', 'Shop Owner', 'Farmer', 'Cleaner', 'Waiter/Waitress', 'Other'
-];
+const SECTOR_OCCUPATIONS: Record<string, string[]> = {
+  'Technology': [
+    'Software Engineer', 'Data Scientist', 'Product Manager', 'Web Developer', 
+    'DevOps Engineer', 'UI/UX Designer', 'Systems Administrator', 'Cybersecurity Analyst',
+    'Database Administrator', 'Mobile App Developer', 'AI/ML Engineer', 'Cloud Architect'
+  ],
+  'Healthcare & Medicine': [
+    'Doctor', 'Nurse', 'Pharmacist', 'Dentist', 'Therapist', 'Surgeon',
+    'Medical Technician', 'Healthcare Administrator', 'Medical Researcher', 'Radiologist',
+    'Psychiatrist', 'Physical Therapist', 'Veterinarian'
+  ],
+  'Finance & Banking': [
+    'Financial Analyst', 'Investment Banker', 'Accountant', 'Financial Advisor',
+    'Credit Analyst', 'Insurance Agent', 'Tax Consultant', 'Auditor',
+    'Risk Manager', 'Portfolio Manager', 'Loan Officer'
+  ],
+  'Education': [
+    'Teacher', 'Professor', 'Principal', 'Academic Coordinator', 'Researcher',
+    'Educational Consultant', 'Curriculum Developer', 'School Counselor',
+    'Librarian', 'Training Specialist'
+  ],
+  'Engineering': [
+    'Civil Engineer', 'Mechanical Engineer', 'Electrical Engineer', 'Chemical Engineer',
+    'Aerospace Engineer', 'Environmental Engineer', 'Structural Engineer',
+    'Industrial Engineer', 'Petroleum Engineer', 'Biomedical Engineer'
+  ],
+  'Legal': [
+    'Lawyer', 'Judge', 'Paralegal', 'Legal Consultant', 'Court Reporter',
+    'Legal Secretary', 'Mediator', 'Legal Researcher', 'Patent Attorney'
+  ],
+  'Marketing & Sales': [
+    'Marketing Manager', 'Sales Manager', 'Digital Marketing Specialist', 'Sales Representative',
+    'Brand Manager', 'Social Media Manager', 'Content Creator', 'SEO Specialist',
+    'Public Relations Specialist', 'Market Research Analyst'
+  ],
+  'Media & Communication': [
+    'Journalist', 'Editor', 'Photographer', 'Videographer', 'Content Writer',
+    'Communications Manager', 'Radio Host', 'TV Producer', 'Graphic Designer'
+  ],
+  'Arts & Design': [
+    'Artist', 'Graphic Designer', 'Interior Designer', 'Fashion Designer',
+    'Architect', 'Musician', 'Writer', 'Animator', 'Web Designer'
+  ],
+  'Business & Management': [
+    'Business Analyst', 'Project Manager', 'HR Manager', 'Operations Manager',
+    'Consultant', 'Entrepreneur', 'Executive Assistant', 'Business Development Manager'
+  ],
+  'Construction & Trades': [
+    'Plumber', 'Electrician', 'Carpenter', 'Mason', 'Painter', 'Roofer',
+    'HVAC Technician', 'Construction Manager', 'Welder', 'Heavy Equipment Operator'
+  ],
+  'Transportation & Logistics': [
+    'Driver', 'Pilot', 'Logistics Coordinator', 'Supply Chain Manager',
+    'Fleet Manager', 'Warehouse Manager', 'Delivery Driver', 'Ship Captain'
+  ],
+  'Hospitality & Tourism': [
+    'Hotel Manager', 'Chef', 'Waiter/Waitress', 'Tour Guide', 'Event Planner',
+    'Restaurant Manager', 'Travel Agent', 'Concierge', 'Bartender'
+  ],
+  'Sports & Fitness': [
+    'Athlete', 'Coach', 'Personal Trainer', 'Sports Manager', 'Physiotherapist',
+    'Sports Commentator', 'Fitness Instructor', 'Sports Photographer'
+  ],
+  'Security & Safety': [
+    'Security Guard', 'Police Officer', 'Firefighter', 'Security Manager',
+    'Emergency Medical Technician', 'Safety Inspector', 'Private Investigator'
+  ],
+  'Islamic Services': [
+    'Imam', 'Sheikh', 'Quran Teacher', 'Islamic Scholar', 'Mosque Administrator',
+    'Islamic Counselor', 'Halal Food Inspector', 'Islamic Finance Advisor'
+  ],
+  'Agriculture & Environment': [
+    'Farmer', 'Agricultural Engineer', 'Environmental Scientist', 'Forestry Specialist',
+    'Veterinarian', 'Agricultural Inspector', 'Landscape Architect'
+  ],
+  'Social Services': [
+    'Social Worker', 'Community Organizer', 'Counselor', 'Case Manager',
+    'Non-profit Director', 'Program Coordinator', 'Youth Worker'
+  ],
+  'Retail & Customer Service': [
+    'Shop Owner', 'Store Manager', 'Sales Associate', 'Customer Service Representative',
+    'Cashier', 'Merchandiser', 'Inventory Manager'
+  ],
+  'Manufacturing': [
+    'Production Manager', 'Quality Control Inspector', 'Machine Operator',
+    'Manufacturing Engineer', 'Assembly Line Worker', 'Plant Manager'
+  ],
+  'Other': ['Other']
+};
 
 const AVAILABILITIES = [
   'Weekdays', 'Weekends', 'Evenings', 'Flexible', 'Mornings only', 'Afternoons only', 'By appointment'
@@ -119,18 +208,58 @@ interface UniversitySelectProps {
   placeholder?: string;
 }
 
-export const UniversitySelect = ({ value, onValueChange, placeholder = "Select university" }: UniversitySelectProps) => (
-  <Select value={value} onValueChange={onValueChange}>
-    <SelectTrigger>
-      <SelectValue placeholder={placeholder} />
-    </SelectTrigger>
-    <SelectContent>
-      {UNIVERSITIES.map(uni => (
-        <SelectItem key={uni} value={uni}>{uni}</SelectItem>
-      ))}
-    </SelectContent>
-  </Select>
-);
+export const UniversitySelect = ({ value, onValueChange, placeholder = "Select university" }: UniversitySelectProps) => {
+  const [showOtherInput, setShowOtherInput] = useState(false);
+  const [otherValue, setOtherValue] = useState('');
+
+  const handleValueChange = (selectedValue: string) => {
+    if (selectedValue === 'Other') {
+      setShowOtherInput(true);
+      setOtherValue(value === 'Other' || UNIVERSITIES.includes(value) ? '' : value);
+    } else {
+      onValueChange(selectedValue);
+      setShowOtherInput(false);
+      setOtherValue('');
+    }
+  };
+
+  const handleOtherSubmit = () => {
+    if (otherValue.trim()) {
+      onValueChange(otherValue.trim());
+      setShowOtherInput(false);
+      setOtherValue('');
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <Select value={showOtherInput ? 'Other' : value} onValueChange={handleValueChange}>
+        <SelectTrigger>
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {UNIVERSITIES.map(university => (
+            <SelectItem key={university} value={university}>{university}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      
+      {showOtherInput && (
+        <div className="flex gap-2">
+          <Input
+            placeholder="Enter your university"
+            value={otherValue}
+            onChange={(e) => setOtherValue(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleOtherSubmit()}
+          />
+          <Button onClick={handleOtherSubmit} size="sm">
+            <Check className="w-4 h-4" />
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface SectorSelectProps {
   value: string;
@@ -151,65 +280,47 @@ export const SectorSelect = ({ value, onValueChange, placeholder = "Select secto
   </Select>
 );
 
-
 interface OccupationSelectProps {
   value: string;
   onValueChange: (value: string) => void;
   placeholder?: string;
-  onOtherSelected?: (value: string) => void;
+  sector?: string;
+  disabled?: boolean;
 }
 
-export const OccupationSelect = ({ value, onValueChange, placeholder = "Select occupation", onOtherSelected }: OccupationSelectProps) => {
-  const [showOtherInput, setShowOtherInput] = useState(false);
-  const [otherValue, setOtherValue] = useState('');
-
-  const handleValueChange = (selectedValue: string) => {
-    if (selectedValue === 'Other') {
-      setShowOtherInput(true);
-    } else {
-      setShowOtherInput(false);
-      onValueChange(selectedValue);
-    }
-  };
-
-  const handleOtherSubmit = () => {
-    if (otherValue.trim()) {
-      onValueChange(otherValue.trim());
-      if (onOtherSelected) {
-        onOtherSelected(otherValue.trim());
-      }
-      setShowOtherInput(false);
-      setOtherValue('');
-    }
-  };
-
-  return (
-    <div className="space-y-2">
-      <Select value={showOtherInput ? 'Other' : value} onValueChange={handleValueChange}>
+export const OccupationSelect = ({ 
+  value, 
+  onValueChange, 
+  placeholder = "Select occupation", 
+  sector,
+  disabled
+}: OccupationSelectProps) => {
+  const occupations = sector ? SECTOR_OCCUPATIONS[sector] || [] : [];
+  
+  if (disabled || !sector) {
+    return (
+      <Select disabled>
         <SelectTrigger>
-          <SelectValue placeholder={placeholder} />
+          <SelectValue placeholder={sector ? placeholder : "Select sector first"} />
         </SelectTrigger>
         <SelectContent>
-          {OCCUPATIONS.map(occupation => (
-            <SelectItem key={occupation} value={occupation}>{occupation}</SelectItem>
-          ))}
+          <SelectItem value="none">Select sector first</SelectItem>
         </SelectContent>
       </Select>
-      
-      {showOtherInput && (
-        <div className="flex gap-2">
-          <Input
-            placeholder="Enter your occupation"
-            value={otherValue}
-            onChange={(e) => setOtherValue(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleOtherSubmit()}
-          />
-          <Button onClick={handleOtherSubmit} size="sm">
-            Add
-          </Button>
-        </div>
-      )}
-    </div>
+    );
+  }
+
+  return (
+    <Select value={value} onValueChange={onValueChange}>
+      <SelectTrigger>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        {occupations.map(occupation => (
+          <SelectItem key={occupation} value={occupation}>{occupation}</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 };
 

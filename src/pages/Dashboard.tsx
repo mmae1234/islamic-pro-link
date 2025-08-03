@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +33,7 @@ import { Loader2, Save, User, Briefcase, Users, X } from "lucide-react";
 const Dashboard = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<any>(null);
@@ -60,7 +62,15 @@ const Dashboard = () => {
       setCity(""); // Reset city when country changes
     }
   }, [country]);
+
   const [sector, setSector] = useState("");
+  
+  // Reset occupation when sector changes
+  useEffect(() => {
+    if (sector) {
+      setOccupation(""); // Reset occupation when sector changes
+    }
+  }, [sector]);
   const [occupation, setOccupation] = useState("");
   const [university, setUniversity] = useState("");
   const [bio, setBio] = useState("");
@@ -178,6 +188,11 @@ const Dashboard = () => {
       });
 
       await loadUserData();
+      
+      // Redirect to profile page
+      if (professionalProfile || (country && city && sector && occupation)) {
+        navigate(`/profile/${user.id}`);
+      }
     } catch (error) {
       console.error('Error saving profile:', error);
       toast({
@@ -332,7 +347,12 @@ const Dashboard = () => {
                     
                     <div>
                       <Label>Occupation</Label>
-                      <OccupationSelect value={occupation} onValueChange={setOccupation} />
+                      <OccupationSelect 
+                        value={occupation} 
+                        onValueChange={setOccupation}
+                        sector={sector}
+                        disabled={!sector}
+                      />
                     </div>
                   </div>
 
@@ -341,6 +361,7 @@ const Dashboard = () => {
                     <Input
                       id="experienceYears"
                       type="number"
+                      min="0"
                       value={experienceYears}
                       onChange={(e) => setExperienceYears(e.target.value)}
                       placeholder="Enter years of experience"

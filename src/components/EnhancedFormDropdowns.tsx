@@ -96,16 +96,95 @@ const SECTORS = [
   'Food & Beverage', 'Security', 'Research & Development', 'Social Services', 'Other'
 ];
 
-const OCCUPATIONS = [
-  'Software Engineer', 'Data Scientist', 'Product Manager', 'Marketing Manager', 'Financial Analyst',
-  'Consultant', 'Doctor', 'Nurse', 'Teacher', 'Professor', 'Lawyer', 'Engineer',
-  'Designer', 'Sales Manager', 'HR Manager', 'Business Analyst', 'Project Manager',
-  'Entrepreneur', 'Researcher', 'Student', 'Imam', 'Sheikh', 'Quran Teacher',
-  'Islamic Scholar', 'Plumber', 'Electrician', 'Carpenter', 'Mechanic', 'Chef',
-  'Security Guard', 'Driver', 'Accountant', 'Pharmacist', 'Dentist', 'Therapist',
-  'Social Worker', 'Journalist', 'Photographer', 'Artist', 'Musician', 'Athlete',
-  'Taxi Driver', 'Shop Owner', 'Farmer', 'Cleaner', 'Waiter/Waitress', 'Other'
-];
+const SECTOR_OCCUPATIONS: Record<string, string[]> = {
+  'Technology': [
+    'Software Engineer', 'Data Scientist', 'Product Manager', 'Web Developer', 
+    'DevOps Engineer', 'UI/UX Designer', 'Systems Administrator', 'Cybersecurity Analyst',
+    'Database Administrator', 'Mobile App Developer', 'AI/ML Engineer', 'Cloud Architect'
+  ],
+  'Healthcare & Medicine': [
+    'Doctor', 'Nurse', 'Pharmacist', 'Dentist', 'Therapist', 'Surgeon',
+    'Medical Technician', 'Healthcare Administrator', 'Medical Researcher', 'Radiologist',
+    'Psychiatrist', 'Physical Therapist', 'Veterinarian'
+  ],
+  'Finance & Banking': [
+    'Financial Analyst', 'Investment Banker', 'Accountant', 'Financial Advisor',
+    'Credit Analyst', 'Insurance Agent', 'Tax Consultant', 'Auditor',
+    'Risk Manager', 'Portfolio Manager', 'Loan Officer'
+  ],
+  'Education': [
+    'Teacher', 'Professor', 'Principal', 'Academic Coordinator', 'Researcher',
+    'Educational Consultant', 'Curriculum Developer', 'School Counselor',
+    'Librarian', 'Training Specialist'
+  ],
+  'Engineering': [
+    'Civil Engineer', 'Mechanical Engineer', 'Electrical Engineer', 'Chemical Engineer',
+    'Aerospace Engineer', 'Environmental Engineer', 'Structural Engineer',
+    'Industrial Engineer', 'Petroleum Engineer', 'Biomedical Engineer'
+  ],
+  'Legal': [
+    'Lawyer', 'Judge', 'Paralegal', 'Legal Consultant', 'Court Reporter',
+    'Legal Secretary', 'Mediator', 'Legal Researcher', 'Patent Attorney'
+  ],
+  'Marketing & Sales': [
+    'Marketing Manager', 'Sales Manager', 'Digital Marketing Specialist', 'Sales Representative',
+    'Brand Manager', 'Social Media Manager', 'Content Creator', 'SEO Specialist',
+    'Public Relations Specialist', 'Market Research Analyst'
+  ],
+  'Media & Communication': [
+    'Journalist', 'Editor', 'Photographer', 'Videographer', 'Content Writer',
+    'Communications Manager', 'Radio Host', 'TV Producer', 'Graphic Designer'
+  ],
+  'Arts & Design': [
+    'Artist', 'Graphic Designer', 'Interior Designer', 'Fashion Designer',
+    'Architect', 'Musician', 'Writer', 'Animator', 'Web Designer'
+  ],
+  'Business & Management': [
+    'Business Analyst', 'Project Manager', 'HR Manager', 'Operations Manager',
+    'Consultant', 'Entrepreneur', 'Executive Assistant', 'Business Development Manager'
+  ],
+  'Construction & Trades': [
+    'Plumber', 'Electrician', 'Carpenter', 'Mason', 'Painter', 'Roofer',
+    'HVAC Technician', 'Construction Manager', 'Welder', 'Heavy Equipment Operator'
+  ],
+  'Transportation & Logistics': [
+    'Driver', 'Pilot', 'Logistics Coordinator', 'Supply Chain Manager',
+    'Fleet Manager', 'Warehouse Manager', 'Delivery Driver', 'Ship Captain'
+  ],
+  'Hospitality & Tourism': [
+    'Hotel Manager', 'Chef', 'Waiter/Waitress', 'Tour Guide', 'Event Planner',
+    'Restaurant Manager', 'Travel Agent', 'Concierge', 'Bartender'
+  ],
+  'Sports & Fitness': [
+    'Athlete', 'Coach', 'Personal Trainer', 'Sports Manager', 'Physiotherapist',
+    'Sports Commentator', 'Fitness Instructor', 'Sports Photographer'
+  ],
+  'Security & Safety': [
+    'Security Guard', 'Police Officer', 'Firefighter', 'Security Manager',
+    'Emergency Medical Technician', 'Safety Inspector', 'Private Investigator'
+  ],
+  'Islamic Services': [
+    'Imam', 'Sheikh', 'Quran Teacher', 'Islamic Scholar', 'Mosque Administrator',
+    'Islamic Counselor', 'Halal Food Inspector', 'Islamic Finance Advisor'
+  ],
+  'Agriculture & Environment': [
+    'Farmer', 'Agricultural Engineer', 'Environmental Scientist', 'Forestry Specialist',
+    'Veterinarian', 'Agricultural Inspector', 'Landscape Architect'
+  ],
+  'Social Services': [
+    'Social Worker', 'Community Organizer', 'Counselor', 'Case Manager',
+    'Non-profit Director', 'Program Coordinator', 'Youth Worker'
+  ],
+  'Retail & Customer Service': [
+    'Shop Owner', 'Store Manager', 'Sales Associate', 'Customer Service Representative',
+    'Cashier', 'Merchandiser', 'Inventory Manager'
+  ],
+  'Manufacturing': [
+    'Production Manager', 'Quality Control Inspector', 'Machine Operator',
+    'Manufacturing Engineer', 'Assembly Line Worker', 'Plant Manager'
+  ],
+  'Other': ['Other']
+};
 
 const AVAILABILITIES = [
   'Weekdays', 'Weekends', 'Evenings', 'Flexible', 'Mornings only', 'Afternoons only', 'By appointment'
@@ -217,18 +296,56 @@ interface UniversitySelectProps {
   placeholder?: string;
 }
 
-export const UniversitySelect = ({ value, onValueChange, placeholder = "Select university" }: UniversitySelectProps) => (
-  <Select value={value} onValueChange={onValueChange}>
-    <SelectTrigger>
-      <SelectValue placeholder={placeholder} />
-    </SelectTrigger>
-    <SelectContent>
-      {UNIVERSITIES.map(uni => (
-        <SelectItem key={uni} value={uni}>{uni}</SelectItem>
-      ))}
-    </SelectContent>
-  </Select>
-);
+export const UniversitySelect = ({ value, onValueChange, placeholder = "Select university" }: UniversitySelectProps) => {
+  const [showOtherInput, setShowOtherInput] = useState(false);
+  const [otherValue, setOtherValue] = useState('');
+
+  const handleValueChange = (selectedValue: string) => {
+    if (selectedValue === 'Other') {
+      setShowOtherInput(true);
+    } else {
+      setShowOtherInput(false);
+      onValueChange(selectedValue);
+    }
+  };
+
+  const handleOtherSubmit = () => {
+    if (otherValue.trim()) {
+      onValueChange(otherValue.trim());
+      setShowOtherInput(false);
+      setOtherValue('');
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <Select value={showOtherInput ? 'Other' : value} onValueChange={handleValueChange}>
+        <SelectTrigger>
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {UNIVERSITIES.map(uni => (
+            <SelectItem key={uni} value={uni}>{uni}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      
+      {showOtherInput && (
+        <div className="flex gap-2">
+          <Input
+            placeholder="Enter your university"
+            value={otherValue}
+            onChange={(e) => setOtherValue(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleOtherSubmit()}
+          />
+          <Button onClick={handleOtherSubmit} size="sm">
+            Add
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface SectorSelectProps {
   value: string;
@@ -253,12 +370,36 @@ interface OccupationSelectProps {
   value: string;
   onValueChange: (value: string) => void;
   placeholder?: string;
+  sector?: string;
+  disabled?: boolean;
   onOtherSelected?: (value: string) => void;
 }
 
-export const OccupationSelect = ({ value, onValueChange, placeholder = "Select occupation", onOtherSelected }: OccupationSelectProps) => {
+export const OccupationSelect = ({ 
+  value, 
+  onValueChange, 
+  placeholder = "Select occupation", 
+  sector,
+  disabled,
+  onOtherSelected 
+}: OccupationSelectProps) => {
   const [showOtherInput, setShowOtherInput] = useState(false);
   const [otherValue, setOtherValue] = useState('');
+
+  const occupations = sector ? SECTOR_OCCUPATIONS[sector] || [] : [];
+  
+  if (disabled || !sector) {
+    return (
+      <Select disabled>
+        <SelectTrigger>
+          <SelectValue placeholder={sector ? placeholder : "Select sector first"} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="none">Select sector first</SelectItem>
+        </SelectContent>
+      </Select>
+    );
+  }
 
   const handleValueChange = (selectedValue: string) => {
     if (selectedValue === 'Other') {
@@ -287,7 +428,7 @@ export const OccupationSelect = ({ value, onValueChange, placeholder = "Select o
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
-          {OCCUPATIONS.map(occupation => (
+          {occupations.map(occupation => (
             <SelectItem key={occupation} value={occupation}>{occupation}</SelectItem>
           ))}
         </SelectContent>

@@ -101,6 +101,12 @@ const Header = () => {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
+                      <Link to={`/profile/${user.id}`} className="flex items-center">
+                        <User className="w-4 h-4 mr-2" />
+                        My Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
                       <Link to="/messages" className="flex items-center">
                         <MessageCircle className="w-4 h-4 mr-2" />
                         Messages
