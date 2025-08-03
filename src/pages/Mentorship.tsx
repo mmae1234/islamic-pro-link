@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SearchFilters from "@/components/SearchFilters";
 import { 
   Search, 
   Users, 
@@ -58,6 +59,7 @@ const Mentorship = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [mentors, setMentors] = useState<MentorProfile[]>([]);
+  const [allMentors, setAllMentors] = useState<MentorProfile[]>([]);
   const [requests, setRequests] = useState<MentorshipRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -118,6 +120,7 @@ const Mentorship = () => {
       })) || [];
 
       setMentors(mentorsWithProfiles);
+      setAllMentors(mentorsWithProfiles);
     } catch (error) {
       console.error('Error loading mentors:', error);
     }
@@ -235,12 +238,65 @@ const Mentorship = () => {
     }
   };
 
-  const filteredMentors = mentors.filter(mentor =>
-    mentor.profiles.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    mentor.sector.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    mentor.occupation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    mentor.skills?.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const handleMentorSearch = (filters: any) => {
+    let filteredMentors = [...allMentors];
+
+    // Apply search term filter (from the search input)
+    if (searchTerm) {
+      filteredMentors = filteredMentors.filter(mentor =>
+        mentor.profiles.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        mentor.sector.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        mentor.occupation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        mentor.skills?.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+
+    // Apply advanced filters
+    if (filters.searchTerm) {
+      filteredMentors = filteredMentors.filter(mentor =>
+        mentor.profiles.full_name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+        mentor.sector.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+        mentor.occupation.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+        mentor.bio?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+        mentor.skills?.some(skill => skill.toLowerCase().includes(filters.searchTerm.toLowerCase()))
+      );
+    }
+
+    if (filters.country && filters.country !== 'all') {
+      filteredMentors = filteredMentors.filter(mentor => mentor.country === filters.country);
+    }
+
+    if (filters.sector && filters.sector !== 'all') {
+      filteredMentors = filteredMentors.filter(mentor => mentor.sector === filters.sector);
+    }
+
+    if (filters.experienceMin) {
+      filteredMentors = filteredMentors.filter(mentor => 
+        mentor.experience_years >= parseInt(filters.experienceMin)
+      );
+    }
+
+    if (filters.experienceMax) {
+      filteredMentors = filteredMentors.filter(mentor => 
+        mentor.experience_years <= parseInt(filters.experienceMax)
+      );
+    }
+
+    if (filters.skills && filters.skills.length > 0) {
+      filteredMentors = filteredMentors.filter(mentor =>
+        mentor.skills?.some(skill => filters.skills.includes(skill))
+      );
+    }
+
+    setMentors(filteredMentors);
+  };
+
+  // Apply search term filtering when searchTerm changes
+  useEffect(() => {
+    handleMentorSearch({});
+  }, [searchTerm, allMentors]);
+
+  const filteredMentors = mentors;
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -305,6 +361,12 @@ const Mentorship = () => {
                     </div>
                   </div>
                 </CardHeader>
+              </Card>
+
+              {/* Advanced Filters */}
+              <SearchFilters onSearch={handleMentorSearch} loading={false} />
+
+              <Card>
                 <CardContent>
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredMentors.map((mentor) => (

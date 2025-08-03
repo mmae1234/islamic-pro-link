@@ -31,10 +31,17 @@ const Search = () => {
     if (user) {
       checkUserProfile();
     } else {
-      // Load limited professionals for guests
+      // Load initial professionals for guests
       handleSearch({});
     }
   }, [user]);
+
+  // Load initial professionals when the component mounts
+  useEffect(() => {
+    if (!user) {
+      handleSearch({});
+    }
+  }, []);
 
   const checkUserProfile = async () => {
     if (!user) return;
