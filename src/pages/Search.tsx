@@ -88,7 +88,7 @@ const Search = () => {
 
       // Apply filters
       if (filters.searchTerm) {
-        query = query.or(`occupation.ilike.%${filters.searchTerm}%,bio.ilike.%${filters.searchTerm}%,sector.ilike.%${filters.searchTerm}%,profiles.full_name.ilike.%${filters.searchTerm}%`);
+        query = query.or(`occupation.ilike.%${filters.searchTerm}%,bio.ilike.%${filters.searchTerm}%,sector.ilike.%${filters.searchTerm}%,profiles!professional_profiles_user_id_profiles_fkey.full_name.ilike.%${filters.searchTerm}%`);
       }
 
       if (filters.country && filters.country !== 'all') {
