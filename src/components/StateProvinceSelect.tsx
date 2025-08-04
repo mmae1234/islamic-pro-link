@@ -4,6 +4,8 @@ interface StateProvinceSelectProps {
   value: string;
   onValueChange: (value: string) => void;
   country: string;
+  disabled?: boolean;
+  placeholder?: string;
 }
 
 const stateProvinceData: Record<string, string[]> = {
@@ -41,7 +43,7 @@ const stateProvinceData: Record<string, string[]> = {
   ]
 };
 
-export const StateProvinceSelect = ({ value, onValueChange, country }: StateProvinceSelectProps) => {
+export const StateProvinceSelect = ({ value, onValueChange, country, disabled = false, placeholder = "Select state/province" }: StateProvinceSelectProps) => {
   const options = stateProvinceData[country] || [];
 
   if (options.length === 0) {
@@ -49,9 +51,9 @@ export const StateProvinceSelect = ({ value, onValueChange, country }: StateProv
   }
 
   return (
-    <Select value={value} onValueChange={onValueChange}>
+    <Select value={value} onValueChange={onValueChange} disabled={disabled}>
       <SelectTrigger>
-        <SelectValue placeholder={`Select ${country === "United States" ? "state" : "province/region"}`} />
+        <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => (

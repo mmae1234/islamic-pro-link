@@ -40,7 +40,7 @@ const ForgotPassword = () => {
           </CardTitle>
           <CardDescription>
             {sent 
-              ? 'We have sent password reset instructions to your email address.' 
+              ? 'We have sent password reset instructions to your email address. This reset link is valid for 60 minutes and can only be used once.' 
               : 'Enter your email address and we will send you instructions to reset your password.'}
           </CardDescription>
         </CardHeader>

@@ -198,10 +198,14 @@ const Profile = () => {
                           {professionalProfile.occupation} • {professionalProfile.sector}
                         </p>
                       )}
-                      {professionalProfile?.city && professionalProfile?.country && (
-                        <div className="flex items-center text-muted-foreground mb-2">
-                          <MapPin className="w-4 h-4 mr-2" />
-                          {professionalProfile.city}, {professionalProfile.country}
+                      {professionalProfile && (
+                        <div className="space-y-2">
+                          {(professionalProfile.city || professionalProfile.country) && (
+                            <div className="flex items-center text-muted-foreground">
+                              <MapPin className="w-4 h-4 mr-2" />
+                              {[professionalProfile.city, professionalProfile.state_province, professionalProfile.country].filter(Boolean).join(', ')}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -304,6 +308,43 @@ const Profile = () => {
 
             {/* Sidebar */}
             <div className="space-y-6">
+              {/* Personal Information */}
+              <Card className="shadow-soft">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="w-5 h-5" />
+                    Personal Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {professionalProfile?.languages && professionalProfile.languages.length > 0 && (
+                    <div>
+                      <p className="text-muted-foreground mb-2">Languages:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {professionalProfile.languages.map((language: string, index: number) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {language}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {professionalProfile?.preferred_communication && (
+                    <div>
+                      <p className="text-muted-foreground mb-2">Preferred Communication:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {professionalProfile.preferred_communication.map((method: string, index: number) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {method.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
               {/* Professional Details */}
               <Card className="shadow-soft">
                 <CardHeader>
@@ -334,19 +375,6 @@ const Profile = () => {
                       <p className="font-medium">
                         {professionalProfile.university}
                       </p>
-                    </div>
-                  )}
-
-                  {professionalProfile?.preferred_communication && (
-                    <div>
-                      <p className="text-muted-foreground mb-2">Preferred Communication:</p>
-                      <div className="flex flex-wrap gap-1">
-                        {professionalProfile.preferred_communication.map((method: string, index: number) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {method.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
-                          </Badge>
-                        ))}
-                      </div>
                     </div>
                   )}
                 </CardContent>

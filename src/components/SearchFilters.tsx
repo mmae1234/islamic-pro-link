@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { SectorSelect, OccupationSelect } from '@/components/EnhancedFormDropdowns';
+import { CountrySelect, SectorSelect, OccupationSelect } from '@/components/EnhancedFormDropdowns';
+import { StateProvinceSelect } from '@/components/StateProvinceSelect';
 import { UniversitySearchSelect, LanguageSelect } from '@/components/SearchableMultiSelect';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +26,7 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
   const [filters, setFilters] = useState({
     searchTerm: '',
     country: 'all',
+    stateProvince: 'all',
     sector: 'all',
     occupation: 'all',
     universities: [] as string[],
@@ -60,6 +62,7 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
     setFilters({
       searchTerm: '',
       country: 'all',
+      stateProvince: 'all',
       sector: 'all',
       occupation: 'all',
       universities: [],
@@ -84,7 +87,7 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Basic Search */}
-        <div className="grid md:grid-cols-4 gap-4">
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
           <div>
             <Label htmlFor="search">Name or Keyword</Label>
             <Input
@@ -97,21 +100,26 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
           
           <div>
             <Label>Country</Label>
-            <Select value={filters.country} onValueChange={(value) => setFilters(prev => ({ ...prev, country: value }))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select country" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Countries</SelectItem>
-                <SelectItem value="Canada">Canada</SelectItem>
-                <SelectItem value="UK">United Kingdom</SelectItem>
-                <SelectItem value="UAE">United Arab Emirates</SelectItem>
-                <SelectItem value="USA">United States</SelectItem>
-                <SelectItem value="Malaysia">Malaysia</SelectItem>
-                <SelectItem value="Turkey">Turkey</SelectItem>
-                <SelectItem value="Indonesia">Indonesia</SelectItem>
-              </SelectContent>
-            </Select>
+            <CountrySelect
+              value={filters.country === 'all' ? '' : filters.country}
+              onValueChange={(value) => setFilters(prev => ({ 
+                ...prev, 
+                country: value || 'all',
+                stateProvince: 'all' // Reset state when country changes
+              }))}
+              placeholder="All Countries"
+            />
+          </div>
+
+          <div>
+            <Label>State/Province</Label>
+            <StateProvinceSelect
+              value={filters.stateProvince === 'all' ? '' : filters.stateProvince}
+              onValueChange={(value) => setFilters(prev => ({ ...prev, stateProvince: value || 'all' }))}
+              country={filters.country === 'all' ? '' : filters.country}
+              disabled={filters.country === 'all'}
+              placeholder="All States"
+            />
           </div>
 
           <div>

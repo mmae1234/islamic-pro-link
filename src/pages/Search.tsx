@@ -98,6 +98,10 @@ const Search = () => {
         query = query.eq('country', filters.country);
       }
 
+      if (filters.stateProvince && filters.stateProvince !== 'all') {
+        query = query.eq('state_province', filters.stateProvince);
+      }
+
       if (filters.sector && filters.sector !== 'all') {
         query = query.eq('sector', filters.sector);
       }

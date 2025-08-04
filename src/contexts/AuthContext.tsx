@@ -130,7 +130,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       toast({
         title: "Password reset sent",
-        description: "Check your email for password reset instructions.",
+        description: "This reset link is valid for 60 minutes and can only be used once. Check your email for password reset instructions.",
       });
     } catch (error) {
       const authError = error as AuthError;

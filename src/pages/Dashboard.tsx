@@ -17,6 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { ImageUpload } from "@/components/ImageUpload";
 import { 
   CountrySelect, 
   StateProvinceSelect, 
@@ -26,9 +27,10 @@ import {
   OccupationSelect, 
   AvailabilitySelect 
 } from "@/components/EnhancedFormDropdowns";
+import { SearchableMultiSelect } from "@/components/SearchableMultiSelect";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Loader2, Save, User, Briefcase, Users, X } from "lucide-react";
+import { Loader2, Save, User, Briefcase, Users, X, Globe } from "lucide-react";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -38,6 +40,7 @@ const Dashboard = () => {
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const [professionalProfile, setProfessionalProfile] = useState<any>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   // Form states
   const [fullName, setFullName] = useState("");
@@ -76,6 +79,7 @@ const Dashboard = () => {
   const [bio, setBio] = useState("");
   const [experienceYears, setExperienceYears] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
+  const [languages, setLanguages] = useState<string[]>([]);
   const [availability, setAvailability] = useState("");
   const [isMentor, setIsMentor] = useState(false);
   const [isSeekingMentor, setIsSeekingMentor] = useState(false);
@@ -125,10 +129,16 @@ const Dashboard = () => {
         setBio(professionalData.bio || '');
         setExperienceYears(professionalData.experience_years?.toString() || '');
         setSkills(professionalData.skills || []);
+        setLanguages(professionalData.languages || []);
         setAvailability(professionalData.availability || '');
         setIsMentor(professionalData.is_mentor || false);
         setIsSeekingMentor(professionalData.is_seeking_mentor || false);
         setPreferredCommunication(professionalData.preferred_communication || ["in_app_messaging"]);
+        setAvatarUrl(professionalData.avatar_url);
+      }
+
+      if (profileData) {
+        setAvatarUrl(profileData.avatar_url || avatarUrl);
       }
     } catch (error) {
       console.error('Error loading user data:', error);
@@ -148,16 +158,17 @@ const Dashboard = () => {
       const lastName = names.slice(1).join(' ') || '';
 
       // Save basic profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({
-          user_id: user.id,
-          first_name: firstName,
-          last_name: lastName,
-          role: role as any,
-        }, {
-          onConflict: 'user_id'
-        });
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({
+            user_id: user.id,
+            first_name: firstName,
+            last_name: lastName,
+            role: role as any,
+            avatar_url: avatarUrl,
+          }, {
+            onConflict: 'user_id'
+          });
 
       if (profileError) throw profileError;
 
@@ -179,10 +190,12 @@ const Dashboard = () => {
             bio,
             experience_years: experienceYears ? parseInt(experienceYears) : null,
             skills,
+            languages,
             availability,
             is_mentor: isMentor,
             is_seeking_mentor: isSeekingMentor,
             preferred_communication: preferredCommunication,
+            avatar_url: avatarUrl,
           }, {
             onConflict: 'user_id'
           });

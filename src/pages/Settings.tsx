@@ -370,15 +370,6 @@ const Settings = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="flex justify-center">
-                  <ImageUpload
-                    currentImageUrl={avatarUrl}
-                    onImageChange={setAvatarUrl}
-                    fallbackInitials={formData.first_name ? formData.first_name.charAt(0).toUpperCase() : '?'}
-                    size="lg"
-                  />
-                </div>
-
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="first_name">First Name</Label>
@@ -405,43 +396,6 @@ const Settings = () => {
                     />
                     {validationErrors.last_name && (
                       <p className="text-sm text-destructive mt-1">{validationErrors.last_name}</p>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="grid md:grid-cols-2 gap-4">
-                  
-                  <div>
-                    <Label>Role</Label>
-                    <Select value={formData.role} onValueChange={(value) => setFormData(prev => ({ ...prev, role: value }))}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="visitor">Visitor (Service Seeker)</SelectItem>
-                        <SelectItem value="professional">Professional</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea
-                    id="bio"
-                    value={formData.bio}
-                    onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                    placeholder="Tell us about yourself... (max 500 characters)"
-                    rows={4}
-                    maxLength={500}
-                    className={validationErrors.bio ? 'border-destructive' : ''}
-                  />
-                  <div className="flex justify-between items-center mt-1">
-                    <span className="text-sm text-muted-foreground">
-                      {formData.bio.length}/500 characters
-                    </span>
-                    {validationErrors.bio && (
-                      <p className="text-sm text-destructive">{validationErrors.bio}</p>
                     )}
                   </div>
                 </div>

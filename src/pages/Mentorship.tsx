@@ -29,6 +29,7 @@ interface MentorProfile {
   sector: string;
   occupation: string;
   country: string;
+  state_province?: string;
   city: string;
   bio: string;
   skills: string[];
@@ -294,6 +295,10 @@ const Mentorship = () => {
 
     if (filters.country && filters.country !== 'all') {
       filteredMentors = filteredMentors.filter(mentor => mentor.country === filters.country);
+    }
+
+    if (filters.stateProvince && filters.stateProvince !== 'all') {
+      filteredMentors = filteredMentors.filter(mentor => mentor.state_province === filters.stateProvince);
     }
 
     if (filters.sector && filters.sector !== 'all') {
