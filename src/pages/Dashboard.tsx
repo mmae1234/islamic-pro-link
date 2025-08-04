@@ -86,6 +86,7 @@ const Dashboard = () => {
   const [isMentor, setIsMentor] = useState(false);
   const [isSeekingMentor, setIsSeekingMentor] = useState(false);
   const [preferredCommunication, setPreferredCommunication] = useState<string[]>(["in_app_messaging"]);
+  const [profileViews, setProfileViews] = useState(0);
 
   useEffect(() => {
     if (user) {
