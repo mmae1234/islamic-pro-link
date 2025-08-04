@@ -63,7 +63,7 @@ const Features = () => {
             <span className="block text-primary">Build Your Career</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            MuslimsPros provides comprehensive tools and features to help you connect, 
+            Muslim Pros provides comprehensive tools and features to help you connect, 
             grow, and succeed in your professional journey.
           </p>
         </div>

@@ -42,7 +42,7 @@ const Contact = () => {
                   onClick={() => {
                     const subject = (document.getElementById('subject') as HTMLInputElement)?.value || 'Support Request';
                     const body = (document.getElementById('message') as HTMLTextAreaElement)?.value || '';
-                    window.location.href = `mailto:support@muslimspros.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                    window.location.href = `mailto:support@muslimpros.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
                   }}
                 >
                   Send Message
@@ -58,7 +58,7 @@ const Contact = () => {
                 <CardContent className="space-y-4">
                   <div className="flex items-center space-x-3">
                     <Mail className="h-5 w-5 text-primary" />
-                    <span>support@muslimspros.com</span>
+                    <span>support@muslimpros.com</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <Phone className="h-5 w-5 text-primary" />

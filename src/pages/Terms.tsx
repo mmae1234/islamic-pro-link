@@ -14,7 +14,7 @@ const Terms = () => {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">1. Acceptance of Terms</h2>
             <p className="mb-4">
-              By accessing and using MuslimsPros ("the Service"), you accept and agree to be bound by 
+              By accessing and using Muslim Pros ("the Service"), you accept and agree to be bound by 
               the terms and provision of this agreement. These Terms of Service are governed by the 
               laws of the State of Oregon, United States.
             </p>
@@ -23,7 +23,7 @@ const Terms = () => {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">2. Description of Service</h2>
             <p className="mb-4">
-              MuslimsPros is a professional networking platform that connects Muslim professionals, 
+              Muslim Pros is a professional networking platform that connects Muslim professionals, 
               entrepreneurs, and individuals seeking professional services within the Muslim community.
             </p>
           </section>
@@ -78,7 +78,7 @@ const Terms = () => {
               PERMITTED BY LAW, WE DISCLAIM ALL WARRANTIES, EXPRESS OR IMPLIED.
             </p>
             <p className="mb-4">
-              IN NO EVENT SHALL MUSLIMSPROS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, 
+              IN NO EVENT SHALL MUSLIM PROS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, 
               CONSEQUENTIAL, OR PUNITIVE DAMAGES.
             </p>
           </section>
@@ -86,7 +86,7 @@ const Terms = () => {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">8. Indemnification</h2>
             <p className="mb-4">
-              You agree to indemnify and hold MuslimsPros harmless from any claims, damages, or 
+              You agree to indemnify and hold Muslim Pros harmless from any claims, damages, or 
               expenses arising from your use of the Service or violation of these Terms.
             </p>
           </section>
@@ -127,7 +127,7 @@ const Terms = () => {
               If you have any questions about these Terms of Service, please contact us at:
             </p>
             <p className="mb-4">
-              Email: legal@muslimspros.com<br />
+              Email: legal@muslimpros.com<br />
               Address: Portland, Oregon, USA
             </p>
           </section>

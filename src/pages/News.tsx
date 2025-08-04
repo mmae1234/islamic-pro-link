@@ -105,7 +105,7 @@ const News = () => {
 
               <p className="text-sm text-muted-foreground mt-6">
                 Want to be notified when the news feed launches? 
-                <a href="mailto:news@muslimspros.com" className="text-primary hover:underline ml-1">
+                <a href="mailto:news@muslimpros.com" className="text-primary hover:underline ml-1">
                   Contact us
                 </a> to join our early notification list.
               </p>

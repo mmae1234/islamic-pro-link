@@ -76,7 +76,7 @@ const Donations = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground text-sm">
-                  Research and implement cutting-edge features to keep MuslimsPros at the forefront of professional networking.
+                  Research and implement cutting-edge features to keep Muslim Pros at the forefront of professional networking.
                 </p>
               </CardContent>
             </Card>

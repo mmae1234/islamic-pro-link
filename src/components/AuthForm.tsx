@@ -84,7 +84,7 @@ const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
             <span className="text-primary-foreground font-bold text-2xl">MP</span>
           </div>
           <CardTitle className="text-2xl font-bold">
-            {mode === 'login' ? 'Welcome Back' : 'Join MuslimsPros'}
+            {mode === 'login' ? 'Welcome Back' : 'Join Muslim Pros'}
           </CardTitle>
           <CardDescription>
             {mode === 'login' 

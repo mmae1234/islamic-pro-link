@@ -12,7 +12,7 @@ const Footer = () => {
               <div className="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
                 <span className="text-primary font-bold text-lg">MP</span>
               </div>
-              <span className="text-xl font-bold">MuslimsPros</span>
+              <span className="text-xl font-bold">Muslim Pros</span>
             </div>
             <p className="text-primary-foreground/80 mb-4 leading-relaxed">
               Connecting Muslim professionals worldwide to build careers that align with their values and faith.
@@ -88,7 +88,7 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center text-primary-foreground/80">
                 <Mail className="w-4 h-4 mr-3 text-accent" />
-                <span className="text-sm">hello@muslimspros.com</span>
+                <span className="text-sm">hello@muslimpros.com</span>
               </div>
               <div className="flex items-center text-primary-foreground/80">
                 <Phone className="w-4 h-4 mr-3 text-accent" />
@@ -106,7 +106,7 @@ const Footer = () => {
         <div className="border-t border-primary-foreground/20 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-sm text-primary-foreground/70 mb-4 md:mb-0">
-              © 2024 MuslimsPros. All rights reserved.
+              © 2024 Muslim Pros. All rights reserved.
             </div>
             <div className="flex space-x-6">
               <Link to="/facebook" className="text-primary-foreground/70 hover:text-accent transition-smooth">
