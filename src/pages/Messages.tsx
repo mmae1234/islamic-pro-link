@@ -301,12 +301,8 @@ const Messages = () => {
             </p>
           </div>
 
-          <Tabs defaultValue="conversations" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="conversations" className="flex items-center gap-2">
-                <MessageCircle className="w-4 h-4" />
-                Conversations
-              </TabsTrigger>
+          <Tabs defaultValue="inbox" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="inbox" className="flex items-center gap-2">
                 <Inbox className="w-4 h-4" />
                 Inbox
@@ -321,62 +317,6 @@ const Messages = () => {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="conversations" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Conversations</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {conversations.length === 0 ? (
-                    <div className="text-center py-12">
-                      <MessageCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-foreground mb-2">No conversations yet</h3>
-                      <p className="text-muted-foreground">
-                        Start a conversation by sending a message to a professional.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {conversations.map((conv) => (
-                        <Card 
-                          key={conv.partner_id} 
-                          className="shadow-soft hover:shadow-lg transition-shadow cursor-pointer"
-                          onClick={() => setSelectedConversation({partnerId: conv.partner_id, partnerName: conv.partner_name})}
-                        >
-                          <CardContent className="pt-6">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center">
-                                  <span className="text-primary-foreground font-semibold text-sm">
-                                    {conv.partner_name.split(' ').map(n => n[0]).join('')}
-                                  </span>
-                                </div>
-                                <div>
-                                  <h3 className="font-medium text-foreground">{conv.partner_name}</h3>
-                                  <p className="text-sm text-muted-foreground line-clamp-1">
-                                    {conv.last_message}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-xs text-muted-foreground">
-                                  {formatTime(conv.last_message_time)}
-                                </p>
-                                {conv.unread_count > 0 && (
-                                  <Badge variant="destructive" className="mt-1">
-                                    {conv.unread_count}
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
 
             <TabsContent value="inbox" className="space-y-6">
               <Card>

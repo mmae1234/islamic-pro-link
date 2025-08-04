@@ -119,6 +119,11 @@ const SECTOR_OCCUPATIONS: Record<string, string[]> = {
     'Lawyer', 'Judge', 'Paralegal', 'Legal Consultant', 'Court Reporter',
     'Legal Secretary', 'Mediator', 'Legal Researcher', 'Patent Attorney'
   ],
+  'Marketing & Advertising': [
+    'Marketing Manager', 'Advertising Executive', 'Digital Marketing Specialist', 'Brand Manager',
+    'Social Media Manager', 'Content Creator', 'SEO Specialist', 'PPC Specialist',
+    'Public Relations Specialist', 'Market Research Analyst', 'Creative Director', 'Copywriter'
+  ],
   'Marketing & Sales': [
     'Marketing Manager', 'Sales Manager', 'Digital Marketing Specialist', 'Sales Representative',
     'Brand Manager', 'Social Media Manager', 'Content Creator', 'SEO Specialist',
@@ -175,6 +180,74 @@ const SECTOR_OCCUPATIONS: Record<string, string[]> = {
   'Manufacturing': [
     'Production Manager', 'Quality Control Inspector', 'Machine Operator',
     'Manufacturing Engineer', 'Assembly Line Worker', 'Plant Manager'
+  ],
+  'Consulting': [
+    'Management Consultant', 'Strategy Consultant', 'IT Consultant', 'Financial Consultant',
+    'Business Consultant', 'HR Consultant', 'Marketing Consultant', 'Operations Consultant'
+  ],
+  'Real Estate': [
+    'Real Estate Agent', 'Property Manager', 'Real Estate Developer', 'Real Estate Broker',
+    'Property Appraiser', 'Leasing Consultant', 'Real Estate Investor', 'Property Inspector'
+  ],
+  'Retail & E-commerce': [
+    'Store Manager', 'E-commerce Manager', 'Retail Sales Associate', 'Merchandiser',
+    'Product Manager', 'Customer Service Representative', 'Inventory Manager', 'Buyer'
+  ],
+  'Media & Entertainment': [
+    'Film Director', 'Actor', 'Producer', 'Sound Engineer', 'Video Editor',
+    'Media Planner', 'Entertainment Manager', 'Scriptwriter', 'Cinematographer'
+  ],
+  'Non-Profit': [
+    'Program Manager', 'Fundraising Coordinator', 'Community Outreach Specialist',
+    'Grant Writer', 'Volunteer Coordinator', 'Non-Profit Director', 'Social Impact Manager'
+  ],
+  'Government': [
+    'Civil Servant', 'Policy Analyst', 'Government Administrator', 'Public Affairs Specialist',
+    'Legislative Assistant', 'City Planner', 'Government Contractor', 'Diplomat'
+  ],
+  'Construction': [
+    'Project Manager', 'Site Supervisor', 'Architect', 'Civil Engineer',
+    'Construction Worker', 'Estimator', 'Safety Manager', 'Foreman'
+  ],
+  'Transportation': [
+    'Truck Driver', 'Logistics Coordinator', 'Fleet Manager', 'Dispatcher',
+    'Airline Pilot', 'Ship Captain', 'Transportation Planner', 'Delivery Driver'
+  ],
+  'Energy & Utilities': [
+    'Power Plant Operator', 'Electrical Engineer', 'Energy Analyst', 'Utility Worker',
+    'Renewable Energy Specialist', 'Grid Operator', 'Energy Consultant', 'Technician'
+  ],
+  'Agriculture': [
+    'Farmer', 'Agricultural Scientist', 'Farm Manager', 'Agricultural Inspector',
+    'Crop Specialist', 'Livestock Manager', 'Agricultural Engineer', 'Food Scientist'
+  ],
+  'Religious Services': [
+    'Imam', 'Religious Teacher', 'Chaplain', 'Religious Counselor',
+    'Mosque Administrator', 'Islamic Scholar', 'Religious Writer', 'Community Leader'
+  ],
+  'Skilled Trades': [
+    'Electrician', 'Plumber', 'Carpenter', 'Welder', 'HVAC Technician',
+    'Auto Mechanic', 'Painter', 'Roofer', 'Mason', 'Heavy Equipment Operator'
+  ],
+  'Art & Design': [
+    'Graphic Designer', 'UI/UX Designer', 'Interior Designer', 'Fashion Designer',
+    'Illustrator', 'Photographer', 'Web Designer', 'Product Designer', 'Art Director'
+  ],
+  'Sports & Recreation': [
+    'Professional Athlete', 'Sports Coach', 'Personal Trainer', 'Sports Manager',
+    'Fitness Instructor', 'Sports Commentator', 'Recreation Director', 'Athletic Trainer'
+  ],
+  'Food & Beverage': [
+    'Chef', 'Restaurant Manager', 'Food Service Worker', 'Barista',
+    'Food Inspector', 'Nutritionist', 'Catering Manager', 'Sommelier'
+  ],
+  'Security': [
+    'Security Guard', 'Security Manager', 'Cybersecurity Analyst', 'Private Investigator',
+    'Loss Prevention Specialist', 'Security Consultant', 'Surveillance Operator'
+  ],
+  'Research & Development': [
+    'Research Scientist', 'R&D Engineer', 'Lab Technician', 'Product Developer',
+    'Clinical Research Associate', 'Data Analyst', 'Innovation Manager', 'Research Director'
   ],
   'Other': ['Other']
 };

@@ -67,11 +67,18 @@ const Header = () => {
                 <DropdownMenuItem asChild>
                   <Link to="/organizations">Organizations</Link>
                 </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="text-foreground hover:text-primary transition-smooth">
+                About
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-popover border border-border shadow-elegant z-50">
                 <DropdownMenuItem asChild>
                   <Link to="/about">About Us</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/donations">Donations</Link>
+                  <Link to="/donations">Support Our Mission</Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -201,41 +208,51 @@ const Header = () => {
                   </Link>
                 </>
               )}
-              <Link 
-                to="/careers" 
-                className="text-foreground hover:text-primary transition-smooth px-4 py-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Careers
-              </Link>
-              <Link 
-                to="/scholarships" 
-                className="text-foreground hover:text-primary transition-smooth px-4 py-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Scholarships
-              </Link>
-              <Link 
-                to="/organizations" 
-                className="text-foreground hover:text-primary transition-smooth px-4 py-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Organizations
-              </Link>
-              <Link 
-                to="/about" 
-                className="text-foreground hover:text-primary transition-smooth px-4 py-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                About
-              </Link>
-              <Link 
-                to="/donations" 
-                className="text-foreground hover:text-primary transition-smooth px-4 py-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Donations
-              </Link>
+              <div className="px-4 py-2">
+                <p className="text-sm font-medium text-foreground">Resources</p>
+                <div className="ml-2 mt-2 space-y-2">
+                  <Link 
+                    to="/careers" 
+                    className="block text-foreground hover:text-primary transition-smooth py-1"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Careers
+                  </Link>
+                  <Link 
+                    to="/scholarships" 
+                    className="block text-foreground hover:text-primary transition-smooth py-1"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Scholarships
+                  </Link>
+                  <Link 
+                    to="/organizations" 
+                    className="block text-foreground hover:text-primary transition-smooth py-1"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Organizations
+                  </Link>
+                </div>
+              </div>
+              <div className="px-4 py-2">
+                <p className="text-sm font-medium text-foreground">About</p>
+                <div className="ml-2 mt-2 space-y-2">
+                  <Link 
+                    to="/about" 
+                    className="block text-foreground hover:text-primary transition-smooth py-1"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    About Us
+                  </Link>
+                  <Link 
+                    to="/donations" 
+                    className="block text-foreground hover:text-primary transition-smooth py-1"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Support Our Mission
+                  </Link>
+                </div>
+              </div>
               <div className="flex flex-col space-y-2 px-4 pt-4 border-t border-border">
                 {user ? (
                   <>

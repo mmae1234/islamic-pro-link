@@ -238,6 +238,31 @@ const Mentorship = () => {
     }
   };
 
+  const cancelMentorshipRequest = async (requestId: string) => {
+    try {
+      const { error } = await supabase
+        .from('mentorship_requests')
+        .update({ status: 'cancelled' })
+        .eq('id', requestId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Request cancelled",
+        description: "Your mentorship request has been cancelled successfully.",
+      });
+
+      await loadRequests();
+      await loadMentors(); // Refresh mentors list to show available mentors again
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to cancel request.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleMentorSearch = (filters: any) => {
     let filteredMentors = [...allMentors];
 
@@ -515,6 +540,19 @@ const Mentorship = () => {
                                   onClick={() => updateRequestStatus(request.id, 'declined')}
                                 >
                                   Decline
+                                </Button>
+                              </div>
+                            )}
+
+                            {request.mentee_id === user?.id && request.status === 'pending' && (
+                              <div className="flex gap-2 ml-4">
+                                <Button 
+                                  size="sm" 
+                                  variant="destructive"
+                                  onClick={() => cancelMentorshipRequest(request.id)}
+                                >
+                                  <XCircle className="w-4 h-4 mr-2" />
+                                  Cancel Request
                                 </Button>
                               </div>
                             )}

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
   Heart, 
@@ -13,6 +14,8 @@ import {
 } from "lucide-react";
 
 const About = () => {
+  const { user } = useAuth();
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -22,7 +25,7 @@ const About = () => {
         <section className="py-20 bg-gradient-primary text-primary-foreground">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              About MuslimsPros
+              About Muslim Professionals
             </h1>
             <p className="text-xl text-primary-foreground/90 max-w-3xl mx-auto">
               Empowering the Muslim professional community through meaningful connections, 
@@ -40,7 +43,7 @@ const About = () => {
                   Our Story
                 </h2>
                 <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
-                  I created MuslimsPros while being unemployed, believing that the best thing I can do in my life right now is to help others, hoping that Allah accepts this from me.
+                  I created Muslim Professionals while being unemployed, believing that the best thing I can do in my life right now is to help others, hoping that Allah accepts this from me.
                 </p>
                 
                 <blockquote className="border-l-4 border-primary pl-6 mb-6 bg-muted/30 p-4 rounded-r-lg">
@@ -53,12 +56,14 @@ const About = () => {
                 </blockquote>
                 
                 <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                  MuslimsPros is my way of applying this Hadith — a platform for Muslims to support, connect with, and uplift each other. We believe that faith and professional success go hand in hand, and our platform provides a space where professionals can build meaningful relationships while staying true to their Islamic values.
+                  Muslim Professionals is my way of applying this Hadith — a platform for Muslims to support, connect with, and uplift each other. We believe that faith and professional success go hand in hand, and our platform provides a space where professionals can build meaningful relationships while staying true to their Islamic values.
                 </p>
                 
-                <Button variant="hero" size="lg">
-                  Join Our Community
-                </Button>
+                {!user && (
+                  <Button variant="hero" size="lg" asChild>
+                    <Link to="/login">Join Our Community</Link>
+                  </Button>
+                )}
               </div>
               
               <div className="grid gap-6">
@@ -154,7 +159,7 @@ const About = () => {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Why Choose MuslimsPros?
+                Why Choose Muslim Professionals?
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                 We understand the unique challenges and opportunities facing Muslim professionals.
@@ -217,16 +222,18 @@ const About = () => {
                 Ready to Build Your Professional Network?
               </h2>
               <p className="text-xl text-primary-foreground/90 mb-8">
-                Join MuslimsPros today and connect with professionals who understand 
+                Join Muslim Professionals today and connect with professionals who understand 
                 your journey and share your values.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button variant="secondary" size="lg" asChild>
                   <Link to="/search">Find Professionals</Link>
                 </Button>
-                <Button variant="secondary" size="lg" asChild>
-                  <Link to="/login">Join Our Community</Link>
-                </Button>
+                {!user && (
+                  <Button variant="secondary" size="lg" asChild>
+                    <Link to="/login">Join Our Community</Link>
+                  </Button>
+                )}
                 <Button variant="secondary" size="lg" asChild>
                   <Link to="/donations">Support Our Mission</Link>
                 </Button>

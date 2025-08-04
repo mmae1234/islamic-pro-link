@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,6 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Heart, Target, Users, Zap } from "lucide-react";
 
 const Donations = () => {
+  useEffect(() => {
+    // Scroll to top when component mounts
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -14,7 +20,7 @@ const Donations = () => {
           {/* Header Section */}
           <div className="text-center mb-12">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Support MuslimsPros
+              Support Muslim Professionals
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Help us build a stronger platform for the Muslim professional community. 
@@ -30,7 +36,7 @@ const Donations = () => {
                 Our Mission
               </h2>
               <p className="text-muted-foreground">
-                MuslimsPros was created to help Muslim professionals connect, grow their careers, 
+                Muslim Professionals was created to help Muslim professionals connect, grow their careers, 
                 and support each other in alignment with Islamic values. Every donation helps us 
                 maintain this platform and develop new features to better serve our community.
               </p>
@@ -108,7 +114,7 @@ const Donations = () => {
 
               <div className="text-center pt-4 border-t">
                 <p className="text-xs text-muted-foreground">
-                  MuslimsPros is committed to transparency. All donations will be used exclusively 
+                  Muslim Professionals is committed to transparency. All donations will be used exclusively 
                   for platform development and community support.
                 </p>
               </div>
@@ -121,7 +127,7 @@ const Donations = () => {
               Interested in making a larger contribution or becoming a sponsor?
             </p>
             <Button variant="outline" asChild>
-              <a href="mailto:donations@muslimspros.com">
+              <a href="mailto:donations@muslimpros.net">
                 Contact Us
               </a>
             </Button>
