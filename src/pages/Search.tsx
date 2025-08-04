@@ -88,16 +88,10 @@ const Search = () => {
 
       // Apply filters
       if (filters.searchTerm) {
-        // Search by first name, last name, occupation, bio, and sector
-        query = query.or(`
-          first_name.ilike.%${filters.searchTerm}%,
-          last_name.ilike.%${filters.searchTerm}%,
-          profiles.first_name.ilike.%${filters.searchTerm}%,
-          profiles.last_name.ilike.%${filters.searchTerm}%,
-          occupation.ilike.%${filters.searchTerm}%,
-          bio.ilike.%${filters.searchTerm}%,
-          sector.ilike.%${filters.searchTerm}%
-        `);
+        const term = filters.searchTerm;
+        query = query.or(
+          `first_name.ilike.%${term}%,last_name.ilike.%${term}%,profiles.first_name.ilike.%${term}%,profiles.last_name.ilike.%${term}%,occupation.ilike.%${term}%,bio.ilike.%${term}%,sector.ilike.%${term}%`
+        );
       }
 
       if (filters.country && filters.country !== 'all') {
