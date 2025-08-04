@@ -23,7 +23,8 @@ import {
 interface MentorProfile {
   user_id: string;
   profiles: {
-    full_name: string;
+    first_name: string;
+    last_name: string;
   };
   sector: string;
   occupation: string;
@@ -44,11 +45,13 @@ interface MentorshipRequest {
   mentor_id: string;
   mentee_id: string;
   profiles: {
-    full_name: string;
+    first_name: string;
+    last_name: string;
   };
   mentor_profile?: {
     profiles: {
-      full_name: string;
+      first_name: string;
+      last_name: string;
     };
     sector: string;
     occupation: string;
@@ -108,7 +111,7 @@ const Mentorship = () => {
 
       const { data: usersData, error: usersError } = await supabase
         .from('profiles')
-        .select('user_id, full_name')
+        .select('user_id, first_name, last_name')
         .in('user_id', userIds);
 
       if (usersError) throw usersError;
@@ -116,7 +119,7 @@ const Mentorship = () => {
       // Combine the data
       const mentorsWithProfiles = availableProfilesData?.map(profile => ({
         ...profile,
-        profiles: usersData?.find(u => u.user_id === profile.user_id) || { full_name: 'Unknown' }
+        profiles: usersData?.find(u => u.user_id === profile.user_id) || { first_name: 'Unknown', last_name: '' }
       })) || [];
 
       setMentors(mentorsWithProfiles);
@@ -147,7 +150,7 @@ const Mentorship = () => {
       const menteeIds = requestsData.map(r => r.mentee_id);
       const { data: menteesData } = await supabase
         .from('profiles')
-        .select('user_id, full_name')
+        .select('user_id, first_name, last_name')
         .in('user_id', menteeIds);
 
       // Get mentor profiles
@@ -159,15 +162,15 @@ const Mentorship = () => {
 
       const { data: mentorNamesData } = await supabase
         .from('profiles')
-        .select('user_id, full_name')
+        .select('user_id, first_name, last_name')
         .in('user_id', mentorIds);
 
       // Combine the data
       const requestsWithProfiles = requestsData.map(request => ({
         ...request,
-        profiles: menteesData?.find(m => m.user_id === request.mentee_id) || { full_name: 'Unknown' },
+        profiles: menteesData?.find(m => m.user_id === request.mentee_id) || { first_name: 'Unknown', last_name: '' },
         mentor_profile: {
-          profiles: mentorNamesData?.find(m => m.user_id === request.mentor_id) || { full_name: 'Unknown' },
+          profiles: mentorNamesData?.find(m => m.user_id === request.mentor_id) || { first_name: 'Unknown', last_name: '' },
           ...mentorsData?.find(m => m.user_id === request.mentor_id) || { sector: '', occupation: '' }
         }
       }));
@@ -268,23 +271,25 @@ const Mentorship = () => {
 
     // Apply search term filter (from the search input)
     if (searchTerm) {
-      filteredMentors = filteredMentors.filter(mentor =>
-        mentor.profiles.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        mentor.sector.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        mentor.occupation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        mentor.skills?.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
+      filteredMentors = filteredMentors.filter(mentor => {
+        const fullName = `${mentor.profiles.first_name || ''} ${mentor.profiles.last_name || ''}`.trim();
+        return fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          mentor.sector.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          mentor.occupation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          mentor.skills?.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
+      });
     }
 
     // Apply advanced filters
     if (filters.searchTerm) {
-      filteredMentors = filteredMentors.filter(mentor =>
-        mentor.profiles.full_name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-        mentor.sector.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-        mentor.occupation.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-        mentor.bio?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-        mentor.skills?.some(skill => skill.toLowerCase().includes(filters.searchTerm.toLowerCase()))
-      );
+      filteredMentors = filteredMentors.filter(mentor => {
+        const fullName = `${mentor.profiles.first_name || ''} ${mentor.profiles.last_name || ''}`.trim();
+        return fullName.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+          mentor.sector.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+          mentor.occupation.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+          mentor.bio?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+          mentor.skills?.some(skill => skill.toLowerCase().includes(filters.searchTerm.toLowerCase()));
+      });
     }
 
     if (filters.country && filters.country !== 'all') {
@@ -408,11 +413,11 @@ const Mentorship = () => {
                           <div className="flex items-center gap-3">
                             <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center">
                               <span className="text-primary-foreground font-semibold">
-                                {mentor.profiles.full_name.split(' ').map(n => n[0]).join('')}
+                                {`${mentor.profiles.first_name || ''} ${mentor.profiles.last_name || ''}`.trim().split(' ').map(n => n[0]).join('')}
                               </span>
                             </div>
                             <div>
-                              <h3 className="font-semibold text-foreground">{mentor.profiles.full_name}</h3>
+                              <h3 className="font-semibold text-foreground">{`${mentor.profiles.first_name || ''} ${mentor.profiles.last_name || ''}`.trim() || 'Unknown'}</h3>
                               <p className="text-sm text-muted-foreground">{mentor.occupation}</p>
                             </div>
                           </div>
@@ -498,8 +503,8 @@ const Mentorship = () => {
                                 {getStatusIcon(request.status)}
                                 <h3 className="font-medium">
                                   {request.mentor_id === user?.id 
-                                    ? `Request from ${request.profiles.full_name}`
-                                    : `Request to ${request.mentor_profile?.profiles.full_name}`
+                                    ? `Request from ${`${request.profiles.first_name || ''} ${request.profiles.last_name || ''}`.trim() || 'Unknown'}`
+                                    : `Request to ${`${request.mentor_profile?.profiles.first_name || ''} ${request.mentor_profile?.profiles.last_name || ''}`.trim() || 'Unknown'}`
                                   }
                                 </h3>
                                 <Badge variant={
@@ -592,7 +597,7 @@ const Mentorship = () => {
             <CardHeader>
               <CardTitle>Request Mentorship</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Send a request to {selectedMentor.profiles.full_name}
+                Send a request to {`${selectedMentor.profiles.first_name || ''} ${selectedMentor.profiles.last_name || ''}`.trim() || 'Unknown'}
               </p>
             </CardHeader>
             <CardContent className="space-y-4">

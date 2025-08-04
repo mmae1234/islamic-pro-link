@@ -24,11 +24,13 @@ interface MentorshipRequest {
   mentor_id: string;
   mentee_id: string;
   mentor_profile?: {
-    full_name: string;
+    first_name: string;
+    last_name: string;
     role: string;
   };
   mentee_profile?: {
-    full_name: string;
+    first_name: string;
+    last_name: string;
     role: string;
   };
 }
@@ -63,8 +65,8 @@ const MentorshipRequests = () => {
         .from('mentorship_requests')
         .select(`
           *,
-          mentor_profile:profiles!mentorship_requests_mentor_id_fkey(full_name, role),
-          mentee_profile:profiles!mentorship_requests_mentee_id_fkey(full_name, role)
+          mentor_profile:profiles!mentorship_requests_mentor_id_fkey(first_name, last_name, role),
+          mentee_profile:profiles!mentorship_requests_mentee_id_fkey(first_name, last_name, role)
         `)
         .or(`mentor_id.eq.${user.id},mentee_id.eq.${user.id}`)
         .order('created_at', { ascending: false });
@@ -213,9 +215,9 @@ const MentorshipRequests = () => {
                         <div className="flex items-center gap-2 mb-2">
                           <h3 className="font-semibold">
                             {isCurrentUserMentor(request) ? (
-                              <>Request from {request.mentee_profile?.full_name || 'Unknown'}</>
+                              <>Request from {`${request.mentee_profile?.first_name || ''} ${request.mentee_profile?.last_name || ''}`.trim() || 'Unknown'}</>
                             ) : (
-                              <>Request to {request.mentor_profile?.full_name || 'Unknown'}</>
+                              <>Request to {`${request.mentor_profile?.first_name || ''} ${request.mentor_profile?.last_name || ''}`.trim() || 'Unknown'}</>
                             )}
                           </h3>
                           <Badge className={getStatusColor(request.status)}>

@@ -83,15 +83,21 @@ const Search = () => {
         .from('professional_profiles')
         .select(`
           *,
-          profiles!professional_profiles_user_id_profiles_fkey(full_name)
+          profiles!professional_profiles_user_id_profiles_fkey(first_name, last_name, avatar_url)
         `);
 
       // Apply filters
       if (filters.searchTerm) {
-        // Use separate or conditions for proper syntax
-        query = query.or(`occupation.ilike.%${filters.searchTerm}%,bio.ilike.%${filters.searchTerm}%,sector.ilike.%${filters.searchTerm}%`);
-        // Add name search separately with proper join syntax
-        query = query.or(`profiles.full_name.ilike.%${filters.searchTerm}%`);
+        // Search by first name, last name, occupation, bio, and sector
+        query = query.or(`
+          first_name.ilike.%${filters.searchTerm}%,
+          last_name.ilike.%${filters.searchTerm}%,
+          profiles.first_name.ilike.%${filters.searchTerm}%,
+          profiles.last_name.ilike.%${filters.searchTerm}%,
+          occupation.ilike.%${filters.searchTerm}%,
+          bio.ilike.%${filters.searchTerm}%,
+          sector.ilike.%${filters.searchTerm}%
+        `);
       }
 
       if (filters.country && filters.country !== 'all') {
@@ -221,8 +227,8 @@ const Search = () => {
                     let bVal = b[newSortBy];
                     
                     if (newSortBy === 'name') {
-                      aVal = a.profiles?.full_name || '';
-                      bVal = b.profiles?.full_name || '';
+                      aVal = `${a.profiles?.first_name || ''} ${a.profiles?.last_name || ''}`.trim();
+                      bVal = `${b.profiles?.first_name || ''} ${b.profiles?.last_name || ''}`.trim();
                     }
                     
                     if (typeof aVal === 'string' && typeof bVal === 'string') {

@@ -18,8 +18,8 @@ interface Message {
   sender_id: string;
   recipient_id: string;
   read_at: string | null;
-  sender_profile?: { full_name: string };
-  recipient_profile?: { full_name: string };
+  sender_profile?: { first_name: string; last_name: string };
+  recipient_profile?: { first_name: string; last_name: string };
 }
 
 interface ConversationViewProps {
@@ -53,8 +53,8 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
         .from('messages')
         .select(`
           *,
-          sender_profile:profiles!messages_sender_id_fkey(full_name),
-          recipient_profile:profiles!messages_recipient_id_fkey(full_name)
+          sender_profile:profiles!messages_sender_id_fkey(first_name, last_name),
+          recipient_profile:profiles!messages_recipient_id_fkey(first_name, last_name)
         `)
         .or(`and(sender_id.eq.${user.id},recipient_id.eq.${partnerId}),and(sender_id.eq.${partnerId},recipient_id.eq.${user.id})`)
         .is('deleted_at', null)

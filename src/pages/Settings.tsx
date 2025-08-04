@@ -113,7 +113,7 @@ const Settings = () => {
       if (profileData) {
         setFormData(prev => ({
           ...prev,
-          full_name: profileData.full_name || '',
+          full_name: `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim(),
           role: profileData.role || 'professional'
         }));
         setAvatarUrl(profileData.avatar_url);

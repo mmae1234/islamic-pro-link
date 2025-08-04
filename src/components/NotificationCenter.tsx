@@ -44,7 +44,7 @@ const NotificationCenter = () => {
           content,
           created_at,
           sender_id,
-          profiles!messages_sender_id_fkey(full_name)
+          profiles!messages_sender_id_fkey(first_name, last_name)
         `)
         .eq('recipient_id', user.id)
         .is('read_at', null)
@@ -60,7 +60,7 @@ const NotificationCenter = () => {
           status,
           created_at,
           mentee_id,
-          profiles!mentorship_requests_mentee_id_fkey(full_name)
+          profiles!mentorship_requests_mentee_id_fkey(first_name, last_name)
         `)
         .eq('mentor_id', user.id)
         .eq('status', 'pending')
@@ -75,7 +75,7 @@ const NotificationCenter = () => {
           id: `msg-${msg.id}`,
           type: 'message',
           title: 'New Message',
-          description: `${msg.profiles?.full_name || 'Someone'} sent you a message`,
+          description: `${`${msg.profiles?.first_name || ''} ${msg.profiles?.last_name || ''}`.trim() || 'Someone'} sent you a message`,
           read: false,
           created_at: msg.created_at,
           data: { messageId: msg.id, senderId: msg.sender_id }
@@ -88,7 +88,7 @@ const NotificationCenter = () => {
           id: `req-${req.id}`,
           type: 'mentorship_request',
           title: 'New Mentorship Request',
-          description: `${req.profiles?.full_name || 'Someone'} wants you as a mentor`,
+          description: `${`${req.profiles?.first_name || ''} ${req.profiles?.last_name || ''}`.trim() || 'Someone'} wants you as a mentor`,
           read: false,
           created_at: req.created_at,
           data: { requestId: req.id }

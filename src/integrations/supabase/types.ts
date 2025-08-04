@@ -200,11 +200,13 @@ export type Database = {
           country: string | null
           created_at: string
           experience_years: number | null
+          first_name: string | null
           gender: string | null
           id: string
           is_mentor: boolean | null
           is_seeking_mentor: boolean | null
           languages: string[] | null
+          last_name: string | null
           occupation: string | null
           preferred_communication: string[] | null
           sector: string | null
@@ -222,11 +224,13 @@ export type Database = {
           country?: string | null
           created_at?: string
           experience_years?: number | null
+          first_name?: string | null
           gender?: string | null
           id?: string
           is_mentor?: boolean | null
           is_seeking_mentor?: boolean | null
           languages?: string[] | null
+          last_name?: string | null
           occupation?: string | null
           preferred_communication?: string[] | null
           sector?: string | null
@@ -244,11 +248,13 @@ export type Database = {
           country?: string | null
           created_at?: string
           experience_years?: number | null
+          first_name?: string | null
           gender?: string | null
           id?: string
           is_mentor?: boolean | null
           is_seeking_mentor?: boolean | null
           languages?: string[] | null
+          last_name?: string | null
           occupation?: string | null
           preferred_communication?: string[] | null
           sector?: string | null
@@ -279,8 +285,9 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
-          full_name: string | null
+          first_name: string | null
           id: string
+          last_name: string | null
           role: string | null
           updated_at: string
           user_id: string
@@ -288,8 +295,9 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
-          full_name?: string | null
+          first_name?: string | null
           id?: string
+          last_name?: string | null
           role?: string | null
           updated_at?: string
           user_id: string
@@ -297,8 +305,9 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
-          full_name?: string | null
+          first_name?: string | null
           id?: string
+          last_name?: string | null
           role?: string | null
           updated_at?: string
           user_id?: string

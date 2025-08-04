@@ -100,7 +100,7 @@ const Dashboard = () => {
         console.error('Error loading profile:', profileError);
       } else if (profileData) {
         setProfile(profileData);
-        setFullName(profileData.full_name || '');
+        setFullName(`${profileData.first_name || ''} ${profileData.last_name || ''}`.trim());
         setRole(profileData.role || 'professional');
       }
 
@@ -142,12 +142,18 @@ const Dashboard = () => {
     
     setSaving(true);
     try {
+      // Split full name into first and last names
+      const names = fullName.trim().split(' ');
+      const firstName = names[0] || '';
+      const lastName = names.slice(1).join(' ') || '';
+
       // Save basic profile
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert({
           user_id: user.id,
-          full_name: fullName,
+          first_name: firstName,
+          last_name: lastName,
           role: role as any,
         }, {
           onConflict: 'user_id'
@@ -161,6 +167,8 @@ const Dashboard = () => {
           .from('professional_profiles')
           .upsert({
             user_id: user.id,
+            first_name: firstName,
+            last_name: lastName,
             gender: gender || null,
             country,
             state_province: stateProvince,

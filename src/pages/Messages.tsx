@@ -28,10 +28,12 @@ interface Message {
   recipient_id: string;
   read_at: string | null;
   sender_profile?: {
-    full_name: string;
+    first_name: string;
+    last_name: string;
   };
   recipient_profile?: {
-    full_name: string;
+    first_name: string;
+    last_name: string;
   };
 }
 
@@ -73,7 +75,7 @@ const Messages = () => {
         .from('messages')
         .select(`
           *,
-          recipient_profile:profiles!messages_recipient_id_fkey(full_name)
+          recipient_profile:profiles!messages_recipient_id_fkey(first_name, last_name)
         `)
         .eq('sender_id', user.id)
         .is('deleted_at', null)
@@ -86,7 +88,7 @@ const Messages = () => {
         .from('messages')
         .select(`
           *,
-          sender_profile:profiles!messages_sender_id_fkey(full_name)
+          sender_profile:profiles!messages_sender_id_fkey(first_name, last_name)
         `)
         .eq('recipient_id', user.id)
         .is('deleted_at', null)
@@ -114,7 +116,7 @@ const Messages = () => {
       if (!conversationMap.has(msg.recipient_id)) {
         conversationMap.set(msg.recipient_id, {
           partner_id: msg.recipient_id,
-          partner_name: msg.recipient_profile?.full_name || 'Unknown',
+          partner_name: `${msg.recipient_profile?.first_name || ''} ${msg.recipient_profile?.last_name || ''}`.trim() || 'Unknown',
           last_message: msg.content,
           last_message_time: msg.created_at,
           unread_count: 0
@@ -128,7 +130,7 @@ const Messages = () => {
       if (!existing || new Date(msg.created_at) > new Date(existing.last_message_time)) {
         conversationMap.set(msg.sender_id, {
           partner_id: msg.sender_id,
-          partner_name: msg.sender_profile?.full_name || 'Unknown',
+          partner_name: `${msg.sender_profile?.first_name || ''} ${msg.sender_profile?.last_name || ''}`.trim() || 'Unknown',
           last_message: msg.content,
           last_message_time: msg.created_at,
           unread_count: existing?.unread_count || 0
@@ -158,7 +160,7 @@ const Messages = () => {
           user_id,
           occupation,
           sector,
-          profiles!professional_profiles_user_id_fkey(full_name)
+          profiles!professional_profiles_user_id_fkey(first_name, last_name)
         `)
         .neq('user_id', user?.id);
 
@@ -249,11 +251,12 @@ const Messages = () => {
     }
   };
 
-  const filteredProfessionals = professionals.filter(prof =>
-    prof.profiles?.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    prof.occupation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    prof.sector.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredProfessionals = professionals.filter(prof => {
+    const fullName = `${prof.profiles?.first_name || ''} ${prof.profiles?.last_name || ''}`.trim();
+    return fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      prof.occupation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      prof.sector.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   if (loading) {
     return (
@@ -342,7 +345,7 @@ const Messages = () => {
                             if (!message.read_at) markAsRead(message.id);
                             setSelectedConversation({
                               partnerId: message.sender_id, 
-                              partnerName: message.sender_profile?.full_name || 'Unknown'
+                              partnerName: `${message.sender_profile?.first_name || ''} ${message.sender_profile?.last_name || ''}`.trim() || 'Unknown'
                             });
                           }}
                         >
@@ -351,13 +354,13 @@ const Messages = () => {
                               <div className="flex items-start gap-3">
                                 <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center">
                                   <span className="text-primary-foreground font-semibold text-sm">
-                                    {message.sender_profile?.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
+                                    {`${message.sender_profile?.first_name || ''} ${message.sender_profile?.last_name || ''}`.trim().split(' ').map(n => n[0]).join('') || 'U'}
                                   </span>
                                 </div>
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-1">
                                     <h3 className="font-medium text-foreground">
-                                      {message.sender_profile?.full_name || 'Unknown'}
+                                      {`${message.sender_profile?.first_name || ''} ${message.sender_profile?.last_name || ''}`.trim() || 'Unknown'}
                                     </h3>
                                     {!message.read_at && (
                                       <Badge variant="destructive" className="text-xs">New</Badge>
@@ -403,7 +406,7 @@ const Messages = () => {
                           className="shadow-soft cursor-pointer"
                           onClick={() => setSelectedConversation({
                             partnerId: message.recipient_id, 
-                            partnerName: message.recipient_profile?.full_name || 'Unknown'
+                            partnerName: `${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim() || 'Unknown'
                           })}
                         >
                           <CardContent className="pt-6">
@@ -411,12 +414,12 @@ const Messages = () => {
                               <div className="flex items-start gap-3">
                                 <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center">
                                   <span className="text-primary-foreground font-semibold text-sm">
-                                    {message.recipient_profile?.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
+                                    {`${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim().split(' ').map(n => n[0]).join('') || 'U'}
                                   </span>
                                 </div>
                                 <div className="flex-1">
                                   <h3 className="font-medium text-foreground mb-1">
-                                    To: {message.recipient_profile?.full_name || 'Unknown'}
+                                    To: {`${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim() || 'Unknown'}
                                   </h3>
                                   <p className="text-sm text-muted-foreground">
                                     {message.content}
@@ -468,11 +471,11 @@ const Messages = () => {
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
                                 <span className="text-primary-foreground font-semibold text-xs">
-                                  {prof.profiles?.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
+                                  {`${prof.profiles?.first_name || ''} ${prof.profiles?.last_name || ''}`.trim().split(' ').map(n => n[0]).join('') || 'U'}
                                 </span>
                               </div>
                               <div>
-                                <p className="font-medium text-sm">{prof.profiles?.full_name}</p>
+                                <p className="font-medium text-sm">{`${prof.profiles?.first_name || ''} ${prof.profiles?.last_name || ''}`.trim() || 'Unknown'}</p>
                                 <p className="text-xs text-muted-foreground">{prof.occupation} • {prof.sector}</p>
                               </div>
                             </div>
@@ -486,7 +489,7 @@ const Messages = () => {
                     <div className="space-y-4">
                       <div className="p-3 bg-muted rounded-lg">
                         <p className="text-sm font-medium">
-                          Sending to: {selectedRecipient.profiles?.full_name}
+                          Sending to: {`${selectedRecipient.profiles?.first_name || ''} ${selectedRecipient.profiles?.last_name || ''}`.trim() || 'Unknown'}
                         </p>
                       </div>
 

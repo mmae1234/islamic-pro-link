@@ -20,7 +20,8 @@ interface Message {
 
 interface Conversation {
   user_id: string;
-  full_name: string;
+  first_name: string;
+  last_name: string;
   last_message?: Message;
   unread_count: number;
 }
@@ -135,7 +136,8 @@ const MessageCenter = ({ requestId, recipientId, recipientName }: MessageCenterP
         if (!conversationMap.has(partnerId)) {
           conversationMap.set(partnerId, {
             user_id: partnerId,
-            full_name: 'Loading...',
+            first_name: 'Loading...',
+            last_name: '',
             unread_count: 0
           });
         }
@@ -158,13 +160,14 @@ const MessageCenter = ({ requestId, recipientId, recipientName }: MessageCenterP
       if (partnerIds.length > 0) {
         const { data: profiles } = await supabase
           .from('profiles')
-          .select('user_id, full_name')
+          .select('user_id, first_name, last_name')
           .in('user_id', partnerIds);
 
         profiles?.forEach(profile => {
           const conversation = conversationMap.get(profile.user_id);
           if (conversation) {
-            conversation.full_name = profile.full_name;
+            conversation.first_name = profile.first_name || '';
+            conversation.last_name = profile.last_name || '';
           }
         });
       }
@@ -294,11 +297,11 @@ const MessageCenter = ({ requestId, recipientId, recipientName }: MessageCenterP
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
                           <span className="text-xs text-primary-foreground font-medium">
-                            {conversation.full_name.split(' ').map(n => n[0]).join('')}
+                            {`${conversation.first_name || ''} ${conversation.last_name || ''}`.trim().split(' ').map(n => n[0]).join('')}
                           </span>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">{conversation.full_name}</p>
+                          <p className="font-medium text-sm truncate">{`${conversation.first_name || ''} ${conversation.last_name || ''}`.trim() || 'Unknown'}</p>
                           {conversation.last_message && (
                             <p className="text-xs text-muted-foreground truncate">
                               {conversation.last_message.content}
@@ -333,7 +336,10 @@ const MessageCenter = ({ requestId, recipientId, recipientName }: MessageCenterP
           <>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg">
-                {conversations.find(c => c.user_id === selectedConversation)?.full_name || recipientName}
+                {(() => {
+                  const conv = conversations.find(c => c.user_id === selectedConversation);
+                  return conv ? `${conv.first_name || ''} ${conv.last_name || ''}`.trim() || 'Unknown' : recipientName;
+                })()}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
