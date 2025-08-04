@@ -518,8 +518,27 @@ const Dashboard = () => {
               </Button>
             </div>
 
-            {/* Profile Summary */}
+            {/* Profile Picture & Summary */}
             <div className="space-y-6">
+              <Card className="shadow-soft">
+                <CardHeader>
+                  <CardTitle>Profile Picture</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col items-center space-y-4">
+                    <ImageUpload
+                      currentImageUrl={avatarUrl}
+                      onImageChange={setAvatarUrl}
+                      fallbackInitials={`${fullName.charAt(0)}${fullName.charAt(fullName.indexOf(' ') + 1) || ''}`.toUpperCase()}
+                      size="lg"
+                    />
+                    <p className="text-sm text-muted-foreground text-center">
+                      Upload or change your profile picture
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card className="shadow-soft">
                 <CardHeader>
                   <CardTitle>Profile Summary</CardTitle>

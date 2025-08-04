@@ -143,7 +143,7 @@ const Search = () => {
         query = query.neq('user_id', user.id);
       }
 
-      const { data, error } = await query.limit(isGuest ? 6 : 50);
+      const { data, error } = await query.limit(isGuest ? 2 : 50);
 
       if (error) throw error;
 

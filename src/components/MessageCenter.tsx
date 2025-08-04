@@ -300,14 +300,14 @@ const MessageCenter = ({ requestId, recipientId, recipientName }: MessageCenterP
                             {`${conversation.first_name || ''} ${conversation.last_name || ''}`.trim().split(' ').map(n => n[0]).join('')}
                           </span>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">{`${conversation.first_name || ''} ${conversation.last_name || ''}`.trim() || 'Unknown'}</p>
-                          {conversation.last_message && (
-                            <p className="text-xs text-muted-foreground truncate">
-                              {conversation.last_message.content}
-                            </p>
-                          )}
-                        </div>
+                         <div className="flex-1 min-w-0">
+                           <p className="font-medium text-sm truncate">{`${conversation.first_name || ''} ${conversation.last_name || ''}`.trim() || 'Unknown'}</p>
+                           {conversation.last_message && (
+                             <p className="text-xs text-muted-foreground truncate">
+                               {conversation.last_message.sender_id === user?.id ? 'You: ' : ''}{conversation.last_message.content}
+                             </p>
+                           )}
+                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-1">
                         {conversation.last_message && (
@@ -357,13 +357,18 @@ const MessageCenter = ({ requestId, recipientId, recipientName }: MessageCenterP
                             : 'bg-muted'
                         }`}
                       >
-                        <p className="text-sm">{message.content}</p>
-                        <div className="flex items-center justify-end gap-1 mt-1">
-                          <Clock className="w-3 h-3 opacity-60" />
-                          <span className="text-xs opacity-60">
-                            {formatTime(message.created_at)}
-                          </span>
-                        </div>
+                         <p className="text-sm">{message.content}</p>
+                         <div className="flex items-center justify-end gap-1 mt-1">
+                           <Clock className="w-3 h-3 opacity-60" />
+                           <span className="text-xs opacity-60">
+                             {formatTime(message.created_at)}
+                           </span>
+                           {message.sender_id === user?.id && (
+                             <span className="text-xs opacity-60">
+                               {message.read_at ? '✓✓' : '✓'}
+                             </span>
+                           )}
+                         </div>
                       </div>
                     </div>
                   ))}
