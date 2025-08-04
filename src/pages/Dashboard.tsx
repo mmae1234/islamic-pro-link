@@ -76,10 +76,12 @@ const Dashboard = () => {
   }, [sector]);
   const [occupation, setOccupation] = useState("");
   const [university, setUniversity] = useState("");
+  const [educationLevel, setEducationLevel] = useState("");
+  const [educationCountry, setEducationCountry] = useState("");
+  const [languages, setLanguages] = useState<string[]>([]);
   const [bio, setBio] = useState("");
   const [experienceYears, setExperienceYears] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
-  const [languages, setLanguages] = useState<string[]>([]);
   const [availability, setAvailability] = useState("");
   const [isMentor, setIsMentor] = useState(false);
   const [isSeekingMentor, setIsSeekingMentor] = useState(false);
@@ -352,10 +354,70 @@ const Dashboard = () => {
                     </div>
                   </div>
 
-                  <div>
-                    <Label>University</Label>
-                    <UniversitySelect value={university} onValueChange={setUniversity} />
-                  </div>
+                   <div className="grid md:grid-cols-2 gap-4">
+                     <div>
+                       <Label>Education Country</Label>
+                       <CountrySelect 
+                         value={educationCountry} 
+                         onValueChange={setEducationCountry} 
+                       />
+                     </div>
+                     
+                     <div>
+                       <Label>Education Level</Label>
+                       <Select value={educationLevel} onValueChange={setEducationLevel}>
+                         <SelectTrigger>
+                           <SelectValue placeholder="Select education level" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="high_school">High School</SelectItem>
+                           <SelectItem value="associate">Associate Degree</SelectItem>
+                           <SelectItem value="bachelor">Bachelor's Degree</SelectItem>
+                           <SelectItem value="master">Master's Degree</SelectItem>
+                           <SelectItem value="doctorate">Doctorate</SelectItem>
+                           <SelectItem value="professional">Professional Degree</SelectItem>
+                           <SelectItem value="certificate">Certificate</SelectItem>
+                         </SelectContent>
+                       </Select>
+                     </div>
+                   </div>
+
+                   <div>
+                     <Label>University/School</Label>
+                     <UniversitySelect value={university} onValueChange={setUniversity} />
+                   </div>
+
+                   <div>
+                     <Label>Languages (Press Enter to add)</Label>
+                     <div className="space-y-2">
+                       <Input
+                         placeholder="e.g., English, Arabic, French"
+                         onKeyPress={(e) => {
+                           if (e.key === 'Enter') {
+                             e.preventDefault();
+                             const value = e.currentTarget.value.trim();
+                             if (value && !languages.includes(value)) {
+                               setLanguages([...languages, value]);
+                               e.currentTarget.value = '';
+                             }
+                           }
+                         }}
+                       />
+                       {languages.length > 0 && (
+                         <div className="flex flex-wrap gap-2">
+                           {languages.map((language, index) => (
+                             <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                               {language}
+                               <X 
+                                 className="w-3 h-3 cursor-pointer" 
+                                 onClick={() => setLanguages(languages.filter((_, i) => i !== index))}
+                               />
+                             </Badge>
+                           ))}
+                         </div>
+                       )}
+                     </div>
+                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>

@@ -31,16 +31,14 @@ const Search = () => {
     if (user) {
       checkUserProfile();
     } else {
-      // Load initial professionals for guests
-      handleSearch({});
+      // Load initial professionals for guests - show only 2 results
+      handleSearch({}, true);
     }
   }, [user]);
 
   // Load initial professionals when the component mounts
   useEffect(() => {
-    if (!user) {
-      handleSearch({});
-    }
+    handleSearch({}, !user);
   }, []);
 
   const checkUserProfile = async () => {
@@ -76,7 +74,7 @@ const Search = () => {
     }
   };
 
-  const handleSearch = async (filters: any) => {
+  const handleSearch = async (filters: any, limitForGuests = false) => {
     setLoading(true);
     try {
       let query = supabase
@@ -143,7 +141,7 @@ const Search = () => {
         query = query.neq('user_id', user.id);
       }
 
-      const { data, error } = await query.limit(isGuest ? 2 : 50);
+      const { data, error } = await query.limit(limitForGuests ? 2 : 50);
 
       if (error) throw error;
 

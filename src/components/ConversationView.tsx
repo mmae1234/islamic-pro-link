@@ -343,17 +343,17 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
                         : 'bg-muted'
                     }`}
                   >
-                    <p className="text-sm">{message.content}</p>
-                    <div className="flex items-center justify-between mt-1 gap-2">
-                      <p className="text-xs opacity-70">
-                        {formatTime(message.created_at)}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        {message.sender_id === user?.id && !message.read_at && (
-                          <Badge variant="secondary" className="text-xs">
-                            Sent
-                          </Badge>
-                        )}
+                     <p className="text-sm">{message.content}</p>
+                     <div className="flex items-center justify-between mt-1 gap-2">
+                       <p className="text-xs opacity-70">
+                         {formatTime(message.created_at)}
+                       </p>
+                       <div className="flex items-center gap-2">
+                         {message.sender_id === user?.id && (
+                           <span className="text-xs opacity-70">
+                             {message.read_at ? '✓✓' : '✓'}
+                           </span>
+                         )}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-50 hover:opacity-100">
