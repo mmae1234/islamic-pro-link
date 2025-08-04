@@ -76,10 +76,10 @@ export const GLOBAL_UNIVERSITIES = [
 ];
 
 // Get language options from ISO-639-1
-export const LANGUAGES = ISO6391.getAllNames().map(name => ({
+export const LANGUAGES = (ISO6391.getAllNames() || []).map(name => ({
   code: ISO6391.getCode(name),
   name: name
-})).sort((a, b) => a.name.localeCompare(b.name));
+})).filter(lang => lang.code && lang.name).sort((a, b) => a.name.localeCompare(b.name));
 
 interface SearchableMultiSelectProps {
   value: string[];
@@ -106,6 +106,7 @@ export const SearchableMultiSelect = ({
   };
 
   const filteredOptions = useMemo(() => {
+    if (!options || !Array.isArray(options)) return [];
     const searchTerm = searchValue.toLowerCase();
     return options.filter(option => {
       if (isOptionObject(option)) {
