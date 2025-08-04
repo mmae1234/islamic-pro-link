@@ -17,7 +17,8 @@ interface AuthFormProps {
 const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
@@ -40,10 +41,16 @@ const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
     }
     
     if (mode === 'signup') {
-      const nameValidation = validateName(fullName);
-      if (!nameValidation.isValid) {
-        errors.fullName = nameValidation.error!;
+      const firstNameValidation = validateName(firstName);
+      if (!firstNameValidation.isValid) {
+        errors.firstName = firstNameValidation.error!;
       }
+      
+      const lastNameValidation = validateName(lastName);
+      if (!lastNameValidation.isValid) {
+        errors.lastName = lastNameValidation.error!;
+      }
+      
       if (password.length < 8) {
         errors.password = 'Password must be at least 8 characters long';
       }
@@ -58,8 +65,9 @@ const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
     setLoading(true);
     try {
       if (mode === 'signup') {
-        const nameValidation = validateName(fullName);
-        await signUp(emailValidation.sanitized, password, nameValidation.sanitized);
+        const firstNameValidation = validateName(firstName);
+        const lastNameValidation = validateName(lastName);
+        await signUp(emailValidation.sanitized, password, firstNameValidation.sanitized, lastNameValidation.sanitized);
         setSignupSuccess(true);
       } else {
         await signIn(emailValidation.sanitized, password);
@@ -125,25 +133,47 @@ const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
             <>
               <form onSubmit={handleSubmit} className="space-y-4">
                 {mode === 'signup' && (
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="fullName"
-                        type="text"
-                        placeholder="Enter your full name"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        className={`pl-9 ${validationErrors.fullName ? 'border-destructive' : ''}`}
-                        maxLength={50}
-                        required
-                      />
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">First Name</Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="firstName"
+                          type="text"
+                          placeholder="Enter your first name"
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          className={`pl-9 ${validationErrors.firstName ? 'border-destructive' : ''}`}
+                          maxLength={50}
+                          required
+                        />
+                      </div>
+                      {validationErrors.firstName && (
+                        <p className="text-sm text-destructive">{validationErrors.firstName}</p>
+                      )}
                     </div>
-                    {validationErrors.fullName && (
-                      <p className="text-sm text-destructive">{validationErrors.fullName}</p>
-                    )}
-                  </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="lastName"
+                          type="text"
+                          placeholder="Enter your last name"
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          className={`pl-9 ${validationErrors.lastName ? 'border-destructive' : ''}`}
+                          maxLength={50}
+                          required
+                        />
+                      </div>
+                      {validationErrors.lastName && (
+                        <p className="text-sm text-destructive">{validationErrors.lastName}</p>
+                      )}
+                    </div>
+                  </>
                 )}
                 
                 <div className="space-y-2">

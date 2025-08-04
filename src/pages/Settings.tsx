@@ -50,7 +50,8 @@ const Settings = () => {
   const [deleting, setDeleting] = useState(false);
 
   const [formData, setFormData] = useState({
-    full_name: '',
+    first_name: '',
+    last_name: '',
     role: 'professional',
     bio: '',
     occupation: '',
@@ -115,7 +116,8 @@ const Settings = () => {
       if (profileData) {
         setFormData(prev => ({
           ...prev,
-          full_name: `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim(),
+          first_name: profileData.first_name || '',
+          last_name: profileData.last_name || '',
           role: profileData.role || 'professional'
         }));
         setAvatarUrl(profileData.avatar_url);
@@ -151,11 +153,13 @@ const Settings = () => {
     if (!user) return;
     
     // Validate all inputs before saving
-    const nameValidation = validateName(formData.full_name);
+    const firstNameValidation = validateName(formData.first_name);
+    const lastNameValidation = validateName(formData.last_name);
     const bioValidation = validateBio(formData.bio);
     
     const errors: Record<string, string> = {};
-    if (!nameValidation.isValid) errors.full_name = nameValidation.error!;
+    if (!firstNameValidation.isValid) errors.first_name = firstNameValidation.error!;
+    if (!lastNameValidation.isValid) errors.last_name = lastNameValidation.error!;
     if (!bioValidation.isValid) errors.bio = bioValidation.error!;
     
     // Validate all skills
@@ -185,7 +189,8 @@ const Settings = () => {
         .from('profiles')
         .upsert({
           user_id: user.id,
-          full_name: nameValidation.sanitized,
+          first_name: firstNameValidation.sanitized,
+          last_name: lastNameValidation.sanitized,
           role: formData.role,
           avatar_url: avatarUrl
         }, {
@@ -369,25 +374,42 @@ const Settings = () => {
                   <ImageUpload
                     currentImageUrl={avatarUrl}
                     onImageChange={setAvatarUrl}
-                    fallbackInitials={formData.full_name ? formData.full_name.charAt(0).toUpperCase() : '?'}
+                    fallbackInitials={formData.first_name ? formData.first_name.charAt(0).toUpperCase() : '?'}
                     size="lg"
                   />
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="full_name">Full Name</Label>
+                    <Label htmlFor="first_name">First Name</Label>
                     <Input
-                      id="full_name"
-                      value={formData.full_name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
-                      placeholder="Enter your full name"
-                      className={validationErrors.full_name ? 'border-destructive' : ''}
+                      id="first_name"
+                      value={formData.first_name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
+                      placeholder="Enter your first name"
+                      className={validationErrors.first_name ? 'border-destructive' : ''}
                     />
-                    {validationErrors.full_name && (
-                      <p className="text-sm text-destructive mt-1">{validationErrors.full_name}</p>
+                    {validationErrors.first_name && (
+                      <p className="text-sm text-destructive mt-1">{validationErrors.first_name}</p>
                     )}
                   </div>
+                  
+                  <div>
+                    <Label htmlFor="last_name">Last Name</Label>
+                    <Input
+                      id="last_name"
+                      value={formData.last_name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
+                      placeholder="Enter your last name"
+                      className={validationErrors.last_name ? 'border-destructive' : ''}
+                    />
+                    {validationErrors.last_name && (
+                      <p className="text-sm text-destructive mt-1">{validationErrors.last_name}</p>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="grid md:grid-cols-2 gap-4">
                   
                   <div>
                     <Label>Role</Label>
