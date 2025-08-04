@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
 import { 
   CountrySelect, 
-  StateSelect, 
+  StateProvinceSelect, 
   CitySelect,
   UniversitySelect, 
   SectorSelect, 
@@ -630,10 +630,10 @@ const Settings = () => {
                     
                     <div>
                       <Label>State/Province</Label>
-                      <StateSelect 
-                        countryCode="" // Will need to update this logic
+                      <StateProvinceSelect 
+                        country={formData.country}
                         value={formData.state_province} 
-                        onValueChange={(value, code) => setFormData(prev => ({ ...prev, state_province: value }))}
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, state_province: value, city: '' }))}
                       />
                     </div>
                   </div>
@@ -641,8 +641,8 @@ const Settings = () => {
                   <div>
                     <Label>City</Label>
                     <CitySelect 
-                      countryCode="" // Will need to update this logic
-                      stateCode=""
+                      country={formData.country}
+                      stateProvince={formData.state_province}
                       value={formData.city} 
                       onValueChange={(value) => setFormData(prev => ({ ...prev, city: value }))}
                     />

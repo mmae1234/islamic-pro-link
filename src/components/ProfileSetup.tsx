@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ImageUpload';
 import { 
   CountrySelect, 
-  StateSelect, 
+  StateProvinceSelect, 
   CitySelect,
   UniversitySelect, 
   SectorSelect, 
@@ -333,40 +333,37 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <Label>Country</Label>
-                  <CountrySelect 
-                    value={profileData.country} 
-                    onValueChange={(value, code) => {
-                      setProfileData(prev => ({ 
-                        ...prev, 
-                        country: value,
-                        state_province: '', // Reset dependent fields
-                        city: ''
-                      }));
-                      setCountryCode(code);
-                      setStateCode('');
-                    }} 
-                  />
+                   <CountrySelect 
+                     value={profileData.country} 
+                     onValueChange={(value) => {
+                       setProfileData(prev => ({ 
+                         ...prev, 
+                         country: value,
+                         state_province: '', // Reset dependent fields
+                         city: ''
+                       }));
+                     }} 
+                   />
                 </div>
                 <div>
                   <Label>State/Province</Label>
-                  <StateSelect
-                    countryCode={countryCode}
+                  <StateProvinceSelect
+                    country={profileData.country}
                     value={profileData.state_province}
-                    onValueChange={(value, code) => {
+                    onValueChange={(value) => {
                       setProfileData(prev => ({ 
                         ...prev, 
                         state_province: value,
                         city: '' // Reset city when state changes
                       }));
-                      setStateCode(code);
                     }}
                   />
                 </div>
                 <div>
                   <Label>City</Label>
                   <CitySelect
-                    countryCode={countryCode}
-                    stateCode={stateCode}
+                    country={profileData.country}
+                    stateProvince={profileData.state_province}
                     value={profileData.city}
                     onValueChange={(value) => {
                       setProfileData(prev => ({ ...prev, city: value }));

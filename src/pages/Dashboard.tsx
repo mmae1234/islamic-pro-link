@@ -19,7 +19,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { 
   CountrySelect, 
-  StateSelect, 
+  StateProvinceSelect, 
   CitySelect,
   UniversitySelect, 
   SectorSelect, 
@@ -304,12 +304,10 @@ const Dashboard = () => {
                       <Label>Country</Label>
                       <CountrySelect 
                         value={country} 
-                        onValueChange={(countryName, code) => {
+                        onValueChange={(countryName) => {
                           setCountry(countryName);
-                          setCountryCode(code);
                           // Reset dependent fields
                           setStateProvince("");
-                          setStateCode("");
                           setCity("");
                         }} 
                       />
@@ -319,12 +317,11 @@ const Dashboard = () => {
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <Label>State/Province</Label>
-                      <StateSelect 
-                        countryCode={countryCode}
+                      <StateProvinceSelect 
+                        country={country}
                         value={stateProvince} 
-                        onValueChange={(value, code) => {
+                        onValueChange={(value) => {
                           setStateProvince(value);
-                          setStateCode(code);
                           // Reset city when state changes
                           setCity("");
                         }}
@@ -334,8 +331,8 @@ const Dashboard = () => {
                     <div>
                       <Label>City</Label>
                       <CitySelect 
-                        countryCode={countryCode}
-                        stateCode={stateCode}
+                        country={country}
+                        stateProvince={stateProvince}
                         value={city} 
                         onValueChange={setCity}
                       />

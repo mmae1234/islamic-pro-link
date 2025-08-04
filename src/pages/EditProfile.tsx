@@ -391,7 +391,7 @@ const EditProfile = () => {
                 <SearchableMultiSelect
                   options={SKILLS_OPTIONS}
                   value={skills}
-                  onChange={setSkills}
+                  onValueChange={setSkills}
                   placeholder="Select your skills"
                 />
               </div>
@@ -402,7 +402,7 @@ const EditProfile = () => {
                 <SearchableMultiSelect
                   options={LANGUAGES}
                   value={languages}
-                  onChange={setLanguages}
+                  onValueChange={setLanguages}
                   placeholder="Select languages you speak"
                 />
               </div>
