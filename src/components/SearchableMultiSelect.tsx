@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import ISO6391 from "iso-639-1";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Check, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -158,21 +157,24 @@ export const SearchableMultiSelect = ({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-full p-0" style={{ width: 'var(--radix-popover-trigger-width)' }}>
-          <Command>
-            <CommandInput 
-              placeholder={searchPlaceholder} 
+          <div className="p-2 border-b">
+            <input
+              className="w-full px-3 py-2 text-sm border rounded-md"
+              placeholder={searchPlaceholder}
               value={searchValue}
-              onValueChange={setSearchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
             />
-            <CommandEmpty>No options found.</CommandEmpty>
-            <CommandGroup className="max-h-64 overflow-auto">
-              {filteredOptions && filteredOptions.length > 0 ? filteredOptions.map((option) => {
+          </div>
+          <div className="max-h-64 overflow-auto">
+            {filteredOptions && filteredOptions.length > 0 ? (
+              filteredOptions.map((option) => {
                 const optValue = optionValue(option);
                 const isSelected = safeValue.includes(optValue);
                 return (
-                  <CommandItem
+                  <div
                     key={optValue}
-                    onSelect={() => handleSelect(optValue)}
+                    className="flex items-center px-3 py-2 cursor-pointer hover:bg-accent"
+                    onClick={() => handleSelect(optValue)}
                   >
                     <Check
                       className={cn(
@@ -180,12 +182,16 @@ export const SearchableMultiSelect = ({
                         isSelected ? "opacity-100" : "opacity-0"
                       )}
                     />
-                    {displayValue(option)}
-                  </CommandItem>
+                    <span className="text-sm">{displayValue(option)}</span>
+                  </div>
                 );
-              }) : null}
-            </CommandGroup>
-          </Command>
+              })
+            ) : (
+              <div className="px-3 py-2 text-sm text-muted-foreground">
+                No options found.
+              </div>
+            )}
+          </div>
         </PopoverContent>
       </Popover>
       
