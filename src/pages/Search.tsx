@@ -148,6 +148,13 @@ const Search = () => {
         query = query.neq('user_id', user.id);
       }
 
+      // Apply sorting
+      if (sortBy === 'name') {
+        query = query.order('first_name', { ascending: sortOrder === 'asc' });
+      } else {
+        query = query.order(sortBy, { ascending: sortOrder === 'asc' });
+      }
+
       const { data, error } = await query.limit(limitForGuests ? 2 : 50);
 
       if (error) throw error;
@@ -292,23 +299,43 @@ const Search = () => {
             <div className="relative">
               <div className="grid gap-6 animate-fade-in">
                 {professionals.map((professional, index) => (
-                  <div 
-                    key={professional.id}
-                    className={`animate-fade-in-up ${isGuest && index >= 2 ? 'blur-sm' : ''}`}
-                    style={{ animationDelay: `${index * 0.1}s` }}
-                  >
-                    <ProfessionalCard
-                      professional={professional}
-                      showMentorshipButton={false}  // Hide mentorship button on Find Professionals page
-                      showFavoriteButton={!isGuest}
-                      onRequestSent={() => {
-                        toast({
-                          title: "Added to favorites!",
-                          description: "Professional added to your favorites.",
-                        });
-                      }}
-                    />
-                  </div>
+                           <div 
+                     key={professional.id}
+                     className={`animate-fade-in-up ${isGuest && index >= 2 ? 'blur-sm' : ''}`}
+                     style={{ animationDelay: `${index * 0.1}s` }}
+                     onClick={() => {
+                       if (!isGuest) {
+                          // Track profile view
+                          (async () => {
+                            try {
+                              await supabase
+                                .from('profile_views')
+                                .insert({
+                                  viewer_id: user?.id || null,
+                                  viewed_profile_id: professional.user_id,
+                                  ip_address: null,
+                                  user_agent: navigator.userAgent
+                                });
+                              console.log('Profile view tracked');
+                            } catch (err) {
+                              console.error('Failed to track profile view:', err);
+                            }
+                          })();
+                       }
+                     }}
+                   >
+                     <ProfessionalCard
+                       professional={professional}
+                       showMentorshipButton={false}  // Hide mentorship button on Find Professionals page
+                       showFavoriteButton={!isGuest}
+                       onRequestSent={() => {
+                         toast({
+                           title: "Added to favorites!",
+                           description: "Professional added to your favorites.",
+                         });
+                       }}
+                     />
+                   </div>
                 ))}
               </div>
               

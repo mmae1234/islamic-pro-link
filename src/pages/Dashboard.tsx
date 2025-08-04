@@ -142,6 +142,16 @@ const Dashboard = () => {
       if (profileData) {
         setAvatarUrl(profileData.avatar_url || avatarUrl);
       }
+
+      // Load profile views count
+      const { data: viewsData, error: viewsError } = await supabase
+        .from('profile_views')
+        .select('id')
+        .eq('viewed_profile_id', user?.id);
+
+      if (!viewsError && viewsData) {
+        setProfileViews(viewsData.length);
+      }
     } catch (error) {
       console.error('Error loading user data:', error);
     } finally {
@@ -631,6 +641,11 @@ const Dashboard = () => {
                         <p className="text-sm text-muted-foreground mt-1">{bio}</p>
                       </div>
                     )}
+
+                    <div>
+                      <Label className="text-sm font-medium">Profile Views</Label>
+                      <p className="text-sm text-muted-foreground mt-1">{profileViews} views</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

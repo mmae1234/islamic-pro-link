@@ -267,6 +267,40 @@ const Mentorship = () => {
     }
   };
 
+  const disconnectFromMentor = async (requestId: string, mentorName: string) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to disconnect from ${mentorName}? This action cannot be undone.`
+    );
+    
+    if (!confirmed) return;
+
+    try {
+      const { error } = await supabase
+        .from('mentorship_requests')
+        .update({ 
+          status: 'disconnected',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', requestId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Disconnected successfully",
+        description: `You have disconnected from ${mentorName}.`,
+      });
+
+      await loadRequests();
+      await loadMentors();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to disconnect from mentor.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleMentorSearch = (filters: any) => {
     let filteredMentors = [...allMentors];
 
@@ -568,10 +602,24 @@ const Mentorship = () => {
                             )}
 
                             {request.status === 'accepted' && (
-                              <Button size="sm" variant="outline">
-                                <Calendar className="w-4 h-4 mr-2" />
-                                Schedule Session
-                              </Button>
+                              <div className="flex gap-2 ml-4">
+                                <Button size="sm" variant="outline">
+                                  <Calendar className="w-4 h-4 mr-2" />
+                                  Schedule Session
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="destructive"
+                                  onClick={() => disconnectFromMentor(
+                                    request.id, 
+                                    request.mentor_id === user?.id 
+                                      ? `${request.profiles.first_name || ''} ${request.profiles.last_name || ''}`.trim() || 'Unknown'
+                                      : `${request.mentor_profile?.profiles.first_name || ''} ${request.mentor_profile?.profiles.last_name || ''}`.trim() || 'Unknown'
+                                  )}
+                                >
+                                  Disconnect
+                                </Button>
+                              </div>
                             )}
                           </div>
                         </CardContent>

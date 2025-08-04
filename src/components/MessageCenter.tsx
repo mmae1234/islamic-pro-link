@@ -106,7 +106,9 @@ const MessageCenter = ({ requestId, recipientId, recipientName }: MessageCenterP
   }, [messages]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
   };
 
   const loadConversations = async () => {
@@ -229,6 +231,11 @@ const MessageCenter = ({ requestId, recipientId, recipientName }: MessageCenterP
       setNewMessage("");
       await loadMessages(selectedConversation);
       await loadConversations();
+      
+      // Auto-scroll to the latest message
+      setTimeout(() => {
+        scrollToBottom();
+      }, 200);
 
       toast({
         title: "Message sent",
