@@ -33,7 +33,8 @@ interface FavoriteProfessional {
     is_mentor: boolean;
     availability: string;
     profiles: {
-      full_name: string;
+      first_name: string;
+      last_name: string;
     };
   };
 }
@@ -55,7 +56,8 @@ interface FavoriteMentor {
     skills: string[];
     availability: string;
     profiles: {
-      full_name: string;
+      first_name: string;
+      last_name: string;
     };
   };
 }
@@ -92,7 +94,7 @@ const Favorites = () => {
           .from('professional_profiles')
           .select(`
             *,
-            profiles!professional_profiles_user_id_fkey(full_name)
+            profiles!professional_profiles_user_id_fkey(first_name, last_name)
           `)
           .in('user_id', professionalIds);
 
@@ -124,7 +126,7 @@ const Favorites = () => {
           .from('professional_profiles')
           .select(`
             *,
-            profiles!professional_profiles_user_id_fkey(full_name)
+            profiles!professional_profiles_user_id_fkey(first_name, last_name)
           `)
           .in('user_id', mentorIds);
 
@@ -244,7 +246,7 @@ const Favorites = () => {
                               />
                             ) : (
                               <span className="text-primary-foreground font-semibold text-lg">
-                                {favorite.professional_profile.profiles.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
+                                {`${favorite.professional_profile.profiles.first_name?.[0] || ''}${favorite.professional_profile.profiles.last_name?.[0] || ''}` || 'U'}
                               </span>
                             )}
                           </div>
@@ -253,7 +255,7 @@ const Favorites = () => {
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <h3 className="text-xl font-semibold text-foreground mb-1">
-                                  {favorite.professional_profile.profiles.full_name}
+                                  {`${favorite.professional_profile.profiles.first_name || ''} ${favorite.professional_profile.profiles.last_name || ''}`.trim() || 'Anonymous User'}
                                 </h3>
                                 <p className="text-lg text-primary font-medium">
                                   {favorite.professional_profile.occupation}
@@ -301,7 +303,7 @@ const Favorites = () => {
                               <Button 
                                 onClick={() => sendMessage(
                                   favorite.professional_profile.user_id, 
-                                  favorite.professional_profile.profiles.full_name
+                                  `${favorite.professional_profile.profiles.first_name || ''} ${favorite.professional_profile.profiles.last_name || ''}`.trim() || 'Anonymous User'
                                 )}
                                 className="flex items-center gap-2"
                               >
@@ -352,7 +354,7 @@ const Favorites = () => {
                               />
                             ) : (
                               <span className="text-primary-foreground font-semibold text-lg">
-                                {request.mentor_profile.profiles.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
+                                {`${request.mentor_profile.profiles.first_name?.[0] || ''}${request.mentor_profile.profiles.last_name?.[0] || ''}` || 'U'}
                               </span>
                             )}
                           </div>
@@ -361,7 +363,7 @@ const Favorites = () => {
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <h3 className="text-xl font-semibold text-foreground mb-1">
-                                  {request.mentor_profile.profiles.full_name}
+                                  {`${request.mentor_profile.profiles.first_name || ''} ${request.mentor_profile.profiles.last_name || ''}`.trim() || 'Anonymous User'}
                                 </h3>
                                 <p className="text-lg text-primary font-medium">
                                   {request.mentor_profile.occupation}
@@ -404,7 +406,7 @@ const Favorites = () => {
                               <Button 
                                 onClick={() => sendMessage(
                                   request.mentor_profile.user_id, 
-                                  request.mentor_profile.profiles.full_name
+                                  `${request.mentor_profile.profiles.first_name || ''} ${request.mentor_profile.profiles.last_name || ''}`.trim() || 'Anonymous User'
                                 )}
                                 className="flex items-center gap-2"
                               >
