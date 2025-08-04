@@ -91,9 +91,9 @@ interface SearchableMultiSelectProps {
 }
 
 export const SearchableMultiSelect = ({ 
-  value, 
+  value = [], 
   onValueChange, 
-  options, 
+  options = [], 
   placeholder = "Select options",
   maxSelections = 10,
   searchPlaceholder = "Search..."
@@ -101,20 +101,24 @@ export const SearchableMultiSelect = ({
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
 
+  // Ensure value is always an array
+  const safeValue = Array.isArray(value) ? value : [];
+  const safeOptions = Array.isArray(options) ? options : [];
+
   const isOptionObject = (option: any): option is { code: string; name: string } => {
     return typeof option === 'object' && 'code' in option && 'name' in option;
   };
 
   const filteredOptions = useMemo(() => {
-    if (!options || !Array.isArray(options)) return [];
+    if (!safeOptions || !Array.isArray(safeOptions)) return [];
     const searchTerm = searchValue.toLowerCase();
-    return options.filter(option => {
+    return safeOptions.filter(option => {
       if (isOptionObject(option)) {
-        return option.name.toLowerCase().includes(searchTerm);
+        return option.name && option.name.toLowerCase().includes(searchTerm);
       }
-      return option.toLowerCase().includes(searchTerm);
+      return option && option.toLowerCase().includes(searchTerm);
     });
-  }, [options, searchValue]);
+  }, [safeOptions, searchValue]);
 
   const displayValue = (option: string | { code: string; name: string }) => {
     return isOptionObject(option) ? option.name : option;
@@ -125,18 +129,18 @@ export const SearchableMultiSelect = ({
   };
 
   const handleSelect = (selectedValue: string) => {
-    if (!selectedValue || !value) return;
+    if (!selectedValue) return;
     
-    if (value.includes(selectedValue)) {
-      onValueChange(value.filter(v => v !== selectedValue));
-    } else if (value.length < maxSelections) {
-      onValueChange([...value, selectedValue]);
+    if (safeValue.includes(selectedValue)) {
+      onValueChange(safeValue.filter(v => v !== selectedValue));
+    } else if (safeValue.length < maxSelections) {
+      onValueChange([...safeValue, selectedValue]);
     }
   };
 
   const removeValue = (valueToRemove: string) => {
-    if (!value || !valueToRemove) return;
-    onValueChange(value.filter(v => v !== valueToRemove));
+    if (!valueToRemove) return;
+    onValueChange(safeValue.filter(v => v !== valueToRemove));
   };
 
   return (
@@ -149,7 +153,7 @@ export const SearchableMultiSelect = ({
             aria-expanded={open}
             className="w-full justify-between"
           >
-            {value && value.length === 0 ? placeholder : `${value ? value.length : 0} selected`}
+            {safeValue.length === 0 ? placeholder : `${safeValue.length} selected`}
             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -164,7 +168,7 @@ export const SearchableMultiSelect = ({
             <CommandGroup className="max-h-64 overflow-auto">
               {filteredOptions && filteredOptions.length > 0 ? filteredOptions.map((option) => {
                 const optValue = optionValue(option);
-                const isSelected = value && value.includes(optValue);
+                const isSelected = safeValue.includes(optValue);
                 return (
                   <CommandItem
                     key={optValue}
@@ -185,9 +189,9 @@ export const SearchableMultiSelect = ({
         </PopoverContent>
       </Popover>
       
-      {value && value.length > 0 && (
+      {safeValue.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {value.map((selectedValue) => (
+          {safeValue.map((selectedValue) => (
             <Badge key={selectedValue} variant="secondary" className="flex items-center gap-1">
               {selectedValue}
               <Button
