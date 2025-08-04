@@ -183,7 +183,6 @@ const MentorshipSearchFilters = ({ onSearch, loading = false }: MentorshipSearch
                 <SelectValue placeholder="All Genders" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Genders</SelectItem>
                 <SelectItem value="Male">Male</SelectItem>
                 <SelectItem value="Female">Female</SelectItem>
               </SelectContent>
