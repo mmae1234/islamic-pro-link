@@ -280,40 +280,49 @@ const Search = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-6 animate-fade-in">
-              {professionals.map((professional, index) => (
-                <div 
-                  key={professional.id}
-                  className={`animate-fade-in-up ${isGuest && index >= 3 ? 'blur-sm' : ''}`}
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <ProfessionalCard
-                    professional={professional}
-                    showMentorshipButton={false}  // Hide mentorship button on Find Professionals page
-                    showFavoriteButton={!isGuest}
-                    onRequestSent={() => {
-                      toast({
-                        title: "Added to favorites!",
-                        description: "Professional added to your favorites.",
-                      });
-                    }}
-                  />
+            <div className="relative">
+              <div className="grid gap-6 animate-fade-in">
+                {professionals.map((professional, index) => (
+                  <div 
+                    key={professional.id}
+                    className={`animate-fade-in-up ${isGuest && index >= 2 ? 'blur-sm' : ''}`}
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    <ProfessionalCard
+                      professional={professional}
+                      showMentorshipButton={false}  // Hide mentorship button on Find Professionals page
+                      showFavoriteButton={!isGuest}
+                      onRequestSent={() => {
+                        toast({
+                          title: "Added to favorites!",
+                          description: "Professional added to your favorites.",
+                        });
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+              
+              {/* Overlay for guests after 2 cards */}
+              {isGuest && professionals.length > 2 && (
+                <div className="absolute inset-x-0 bg-gradient-to-b from-transparent via-background/80 to-background" 
+                     style={{ top: 'calc(2 * (300px + 1.5rem))' }}>
+                  <div className="flex flex-col items-center justify-center min-h-[300px] px-4 py-8 text-center">
+                    <Card className="shadow-xl bg-background/95 border-primary/30 max-w-lg w-full backdrop-blur-sm">
+                      <CardContent className="p-8">
+                        <h3 className="text-xl font-semibold text-foreground mb-3">
+                          Create a free account to unlock full access to professionals and connect with them.
+                        </h3>
+                        <p className="text-muted-foreground mb-6">
+                          Join thousands of Muslim professionals worldwide and expand your network.
+                        </p>
+                        <Button asChild size="lg" className="w-full">
+                          <Link to="/login">Sign Up for Free</Link>
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
-              ))}
-              {isGuest && professionals.length > 3 && (
-                <Card className="shadow-soft bg-primary/5 border-primary/20">
-                  <CardContent className="p-8 text-center">
-                    <h3 className="text-xl font-semibold text-foreground mb-2">
-                      Sign up to see more professionals
-                    </h3>
-                    <p className="text-muted-foreground mb-4">
-                      Join Muslim Professionals to connect with professionals and access all features.
-                    </p>
-                    <Button asChild>
-                      <Link to="/login">Sign Up Today</Link>
-                    </Button>
-                  </CardContent>
-                </Card>
               )}
             </div>
           )}
