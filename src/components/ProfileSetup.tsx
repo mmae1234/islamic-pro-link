@@ -20,7 +20,8 @@ import {
   OccupationSelect, 
   AvailabilitySelect 
 } from '@/components/EnhancedFormDropdowns';
-import { CheckCircle, Plus, X, User, Briefcase, MessageSquare, Calendar, Users } from 'lucide-react';
+import { LanguageSelect } from '@/components/SearchableMultiSelect';
+import { CheckCircle, Plus, X, User, Briefcase, MessageSquare, Calendar, Users, GraduationCap, MapPin, Mail, Languages } from 'lucide-react';
 
 const SKILLS_OPTIONS = [
   'JavaScript', 'Python', 'React', 'Node.js', 'SQL', 'Machine Learning', 'Digital Marketing',
@@ -73,23 +74,39 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
 
   // Profile data state
   const [profileData, setProfileData] = useState({
+    // Personal Information
+    first_name: '',
     full_name: '',
     bio: '',
-    role: 'visitor', // New field for role selection
-    occupation: '',
-    sector: '',
+    role: 'visitor',
+    gender: '',
+    
+    // Education Information
+    education_country: '',
     university: '',
-    city: '',
+    education_level: '',
+    
+    // Work Information  
+    sector: '',
+    occupation: '',
+    employer: '',
+    experience_years: '',
+    
+    // Contact Information
+    languages: [] as string[],
+    
+    // Location Information
     country: '',
     state_province: '',
-    experience_years: '',
+    city: '',
+    
+    // Professional Details
     skills: [] as string[],
     availability: '',
     is_mentor: false,
     is_seeking_mentor: false,
-    wants_mentorship: false, // New field for mentorship program
-    preferred_communication: ['in_app_messaging'] as string[],
-    gender: ''
+    wants_mentorship: false,
+    preferred_communication: ['in_app_messaging'] as string[]
   });
 
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -216,28 +233,37 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
 
   const getTotalSteps = () => {
     if (profileData.role === 'visitor') {
-      return profileData.wants_mentorship ? 4 : 3; // Personal, Mentorship, Skills (if mentorship), Communication
+      return profileData.wants_mentorship ? 6 : 4; // Personal, Education, Work, Location, Skills (if mentorship), Communication
     } else {
-      return 4; // Personal, Professional, Skills & Mentorship, Communication
+      return 7; // Personal, Education, Work, Location, Skills & Mentorship, Communication, Final
     }
   };
 
   const isStepComplete = () => {
     switch (currentStep) {
-      case 1:
-        return profileData.full_name && profileData.bio && profileData.role;
-      case 2:
+      case 1: // Personal Information
+        return profileData.first_name && profileData.full_name && profileData.bio && profileData.role;
+      case 2: // Education Information
         if (profileData.role === 'visitor') {
-          return true; // Mentorship question - always complete
+          return true; // Mentorship question - always complete for visitors
         }
-        return profileData.occupation && profileData.sector;
-      case 3:
+        return profileData.education_level && profileData.university;
+      case 3: // Work Information
         if (profileData.role === 'visitor') {
           return true; // Skills optional for visitors
         }
-        return profileData.skills.length > 0; // Skills required for professionals
-      case 4:
+        return profileData.sector && profileData.occupation;
+      case 4: // Location & Contact
+        return profileData.country && profileData.languages.length > 0;
+      case 5: // Skills & Mentorship
+        if (profileData.role === 'visitor') {
+          return true; // Skills optional for visitors
+        }
+        return profileData.skills.length > 0;
+      case 6: // Communication
         return profileData.preferred_communication.length > 0;
+      case 7: // Final step for professionals
+        return true;
       default:
         return false;
     }

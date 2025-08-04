@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SectorSelect, OccupationSelect } from '@/components/EnhancedFormDropdowns';
+import { UniversitySearchSelect, LanguageSelect } from '@/components/SearchableMultiSelect';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -26,6 +27,8 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
     country: 'all',
     sector: 'all',
     occupation: 'all',
+    universities: [] as string[],
+    languages: [] as string[],
     skills: [] as string[],
     isMentor: false,
     isSeekingMentor: false,
@@ -59,6 +62,8 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
       country: 'all',
       sector: 'all',
       occupation: 'all',
+      universities: [],
+      languages: [],
       skills: [],
       isMentor: false,
       isSeekingMentor: false,
@@ -132,6 +137,29 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
               sector={filters.sector === 'all' ? '' : filters.sector}
               disabled={filters.sector === 'all'}
               placeholder="All Occupations"
+            />
+          </div>
+        </div>
+
+        {/* University and Language Filters */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <Label>Universities</Label>
+            <UniversitySearchSelect
+              value={filters.universities}
+              onValueChange={(value) => setFilters(prev => ({ ...prev, universities: value }))}
+              placeholder="Select universities"
+              maxSelections={3}
+            />
+          </div>
+          
+          <div>
+            <Label>Languages</Label>
+            <LanguageSelect
+              value={filters.languages}
+              onValueChange={(value) => setFilters(prev => ({ ...prev, languages: value }))}
+              placeholder="Select languages"
+              maxSelections={4}
             />
           </div>
         </div>

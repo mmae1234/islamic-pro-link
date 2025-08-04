@@ -126,6 +126,14 @@ const Search = () => {
         query = query.overlaps('skills', filters.skills);
       }
 
+      if (filters.universities && filters.universities.length > 0) {
+        query = query.in('university', filters.universities);
+      }
+
+      if (filters.languages && filters.languages.length > 0) {
+        query = query.overlaps('languages', filters.languages);
+      }
+
       // Exclude current user
       if (user) {
         query = query.neq('user_id', user.id);
