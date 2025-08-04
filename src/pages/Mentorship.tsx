@@ -35,6 +35,9 @@ interface MentorProfile {
   skills: string[];
   availability: string;
   experience_years: number;
+  university?: string;
+  languages?: string[];
+  gender?: string;
 }
 
 interface MentorshipRequest {
@@ -343,10 +346,6 @@ const Mentorship = () => {
       filteredMentors = filteredMentors.filter(mentor => mentor.occupation === filters.occupation);
     }
 
-    if (filters.occupation && filters.occupation !== 'all') {
-      filteredMentors = filteredMentors.filter(mentor => mentor.occupation === filters.occupation);
-    }
-
     if (filters.experienceMin) {
       filteredMentors = filteredMentors.filter(mentor => 
         mentor.experience_years >= parseInt(filters.experienceMin)
@@ -363,6 +362,22 @@ const Mentorship = () => {
       filteredMentors = filteredMentors.filter(mentor =>
         mentor.skills?.some(skill => filters.skills.includes(skill))
       );
+    }
+
+    if (filters.universities && filters.universities.length > 0) {
+      filteredMentors = filteredMentors.filter(mentor =>
+        filters.universities.includes(mentor.university)
+      );
+    }
+
+    if (filters.languages && filters.languages.length > 0) {
+      filteredMentors = filteredMentors.filter(mentor =>
+        mentor.languages?.some(lang => filters.languages.includes(lang))
+      );
+    }
+
+    if (filters.gender && filters.gender !== 'all') {
+      filteredMentors = filteredMentors.filter(mentor => mentor.gender === filters.gender);
     }
 
     setMentors(filteredMentors);

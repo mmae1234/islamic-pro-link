@@ -183,8 +183,8 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
                 <SelectValue placeholder="All Genders" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Male">Male</SelectItem>
-                <SelectItem value="Female">Female</SelectItem>
+                <SelectItem value="male">Male</SelectItem>
+                <SelectItem value="female">Female</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -225,20 +225,20 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
         <div className="grid md:grid-cols-2 gap-4">
           <div className="flex items-center space-x-2">
             <Checkbox
-              id="isMentor"
-              checked={filters.isMentor}
-              onCheckedChange={(checked) => setFilters(prev => ({ ...prev, isMentor: checked as boolean }))}
-            />
-            <Label htmlFor="isMentor">Looking for mentors</Label>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Checkbox
               id="isSeekingMentor"
               checked={filters.isSeekingMentor}
               onCheckedChange={(checked) => setFilters(prev => ({ ...prev, isSeekingMentor: checked as boolean }))}
             />
-            <Label htmlFor="isSeekingMentor">Available mentors</Label>
+            <Label htmlFor="isSeekingMentor">Looking for mentors</Label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="isMentor"
+              checked={filters.isMentor}
+              onCheckedChange={(checked) => setFilters(prev => ({ ...prev, isMentor: checked as boolean }))}
+            />
+            <Label htmlFor="isMentor">Available mentors</Label>
           </div>
         </div>
 

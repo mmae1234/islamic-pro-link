@@ -111,12 +111,12 @@ const Search = () => {
         query = query.eq('occupation', filters.occupation);
       }
 
-      if (filters.isMentor) {
-        query = query.eq('is_mentor', true);
-      }
-
       if (filters.isSeekingMentor) {
         query = query.eq('is_seeking_mentor', true);
+      }
+
+      if (filters.isMentor) {
+        query = query.eq('is_mentor', true);
       }
 
       if (filters.experienceMin) {

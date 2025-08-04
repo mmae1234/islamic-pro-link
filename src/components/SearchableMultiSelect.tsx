@@ -197,8 +197,8 @@ export const SearchableMultiSelect = ({
       
       {safeValue.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {safeValue.map((selectedValue) => (
-            <Badge key={selectedValue} variant="secondary" className="flex items-center gap-1">
+          {safeValue.map((selectedValue, index) => (
+            <Badge key={`${selectedValue}-${index}`} variant="secondary" className="flex items-center gap-1">
               {selectedValue}
               <Button
                 variant="ghost"
