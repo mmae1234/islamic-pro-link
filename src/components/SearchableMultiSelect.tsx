@@ -125,6 +125,8 @@ export const SearchableMultiSelect = ({
   };
 
   const handleSelect = (selectedValue: string) => {
+    if (!selectedValue || !value) return;
+    
     if (value.includes(selectedValue)) {
       onValueChange(value.filter(v => v !== selectedValue));
     } else if (value.length < maxSelections) {
@@ -133,6 +135,7 @@ export const SearchableMultiSelect = ({
   };
 
   const removeValue = (valueToRemove: string) => {
+    if (!value || !valueToRemove) return;
     onValueChange(value.filter(v => v !== valueToRemove));
   };
 
@@ -146,7 +149,7 @@ export const SearchableMultiSelect = ({
             aria-expanded={open}
             className="w-full justify-between"
           >
-            {value.length === 0 ? placeholder : `${value.length} selected`}
+            {value && value.length === 0 ? placeholder : `${value ? value.length : 0} selected`}
             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -159,9 +162,9 @@ export const SearchableMultiSelect = ({
             />
             <CommandEmpty>No options found.</CommandEmpty>
             <CommandGroup className="max-h-64 overflow-auto">
-              {filteredOptions.map((option) => {
+              {filteredOptions && filteredOptions.length > 0 ? filteredOptions.map((option) => {
                 const optValue = optionValue(option);
-                const isSelected = value.includes(optValue);
+                const isSelected = value && value.includes(optValue);
                 return (
                   <CommandItem
                     key={optValue}
@@ -176,13 +179,13 @@ export const SearchableMultiSelect = ({
                     {displayValue(option)}
                   </CommandItem>
                 );
-              })}
+              }) : null}
             </CommandGroup>
           </Command>
         </PopoverContent>
       </Popover>
       
-      {value.length > 0 && (
+      {value && value.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {value.map((selectedValue) => (
             <Badge key={selectedValue} variant="secondary" className="flex items-center gap-1">
