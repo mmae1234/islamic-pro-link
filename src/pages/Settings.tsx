@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { validateBio, validateName, validateSkill } from "@/lib/security";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -85,6 +86,7 @@ const Settings = () => {
   });
 
   const [newSkill, setNewSkill] = useState('');
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (user) {
@@ -148,14 +150,42 @@ const Settings = () => {
   const saveProfile = async () => {
     if (!user) return;
     
+    // Validate all inputs before saving
+    const nameValidation = validateName(formData.full_name);
+    const bioValidation = validateBio(formData.bio);
+    
+    const errors: Record<string, string> = {};
+    if (!nameValidation.isValid) errors.full_name = nameValidation.error!;
+    if (!bioValidation.isValid) errors.bio = bioValidation.error!;
+    
+    // Validate all skills
+    for (const skill of formData.skills) {
+      const skillValidation = validateSkill(skill);
+      if (!skillValidation.isValid) {
+        errors.skills = `Invalid skill: ${skill} - ${skillValidation.error}`;
+        break;
+      }
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      toast({
+        title: "Validation Error",
+        description: "Please fix the errors in your profile before saving.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setValidationErrors({});
     setSaving(true);
     try {
-      // Save basic profile
+      // Save basic profile with sanitized data
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert({
           user_id: user.id,
-          full_name: formData.full_name,
+          full_name: nameValidation.sanitized,
           role: formData.role,
           avatar_url: avatarUrl
         }, {
@@ -170,7 +200,7 @@ const Settings = () => {
           .from('professional_profiles')
           .upsert({
             user_id: user.id,
-            bio: formData.bio,
+            bio: bioValidation.sanitized,
             occupation: formData.occupation,
             sector: formData.sector,
             university: formData.university,
@@ -178,7 +208,7 @@ const Settings = () => {
             country: formData.country,
             state_province: formData.state_province,
             experience_years: formData.experience_years ? parseInt(formData.experience_years) : null,
-            skills: formData.skills,
+            skills: formData.skills.map(skill => validateSkill(skill).sanitized),
             availability: formData.availability,
             is_mentor: formData.is_mentor,
             is_seeking_mentor: formData.is_seeking_mentor,
@@ -207,12 +237,27 @@ const Settings = () => {
   };
 
   const addSkill = (skill: string) => {
-    if (skill && !formData.skills.includes(skill)) {
+    if (!skill) return;
+    
+    const skillValidation = validateSkill(skill);
+    if (!skillValidation.isValid) {
+      setValidationErrors(prev => ({
+        ...prev,
+        newSkill: skillValidation.error!
+      }));
+      return;
+    }
+    
+    if (!formData.skills.includes(skillValidation.sanitized)) {
       setFormData(prev => ({
         ...prev,
-        skills: [...prev.skills, skill]
+        skills: [...prev.skills, skillValidation.sanitized]
       }));
       setNewSkill('');
+      setValidationErrors(prev => {
+        const { newSkill, ...rest } = prev;
+        return rest;
+      });
     }
   };
 
@@ -337,7 +382,11 @@ const Settings = () => {
                       value={formData.full_name}
                       onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
                       placeholder="Enter your full name"
+                      className={validationErrors.full_name ? 'border-destructive' : ''}
                     />
+                    {validationErrors.full_name && (
+                      <p className="text-sm text-destructive mt-1">{validationErrors.full_name}</p>
+                    )}
                   </div>
                   
                   <div>
@@ -360,9 +409,19 @@ const Settings = () => {
                     id="bio"
                     value={formData.bio}
                     onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                    placeholder="Tell us about yourself..."
+                    placeholder="Tell us about yourself... (max 500 characters)"
                     rows={4}
+                    maxLength={500}
+                    className={validationErrors.bio ? 'border-destructive' : ''}
                   />
+                  <div className="flex justify-between items-center mt-1">
+                    <span className="text-sm text-muted-foreground">
+                      {formData.bio.length}/500 characters
+                    </span>
+                    {validationErrors.bio && (
+                      <p className="text-sm text-destructive">{validationErrors.bio}</p>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -604,13 +663,21 @@ const Settings = () => {
                       <Input
                         value={newSkill}
                         onChange={(e) => setNewSkill(e.target.value)}
-                        placeholder="Add a skill..."
+                        placeholder="Add a skill... (max 50 characters)"
                         onKeyPress={(e) => e.key === 'Enter' && addSkill(newSkill)}
+                        maxLength={50}
+                        className={validationErrors.newSkill ? 'border-destructive' : ''}
                       />
                       <Button onClick={() => addSkill(newSkill)} size="sm" variant="outline">
                         Add
                       </Button>
                     </div>
+                    {validationErrors.newSkill && (
+                      <p className="text-sm text-destructive mb-2">{validationErrors.newSkill}</p>
+                    )}
+                    {validationErrors.skills && (
+                      <p className="text-sm text-destructive mb-2">{validationErrors.skills}</p>
+                    )}
                     <div className="flex flex-wrap gap-2 mb-4">
                       {SKILLS_OPTIONS.map(skill => (
                         <Badge

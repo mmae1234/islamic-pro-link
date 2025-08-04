@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { validateEmail, validateName } from "@/lib/security";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,25 +21,56 @@ const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    if (loading) return;
 
+    // Validate inputs
+    const emailValidation = validateEmail(email);
+    const errors: Record<string, string> = {};
+    
+    if (!emailValidation.isValid) {
+      errors.email = emailValidation.error!;
+    }
+    
+    if (mode === 'signup') {
+      const nameValidation = validateName(fullName);
+      if (!nameValidation.isValid) {
+        errors.fullName = nameValidation.error!;
+      }
+      if (password.length < 8) {
+        errors.password = 'Password must be at least 8 characters long';
+      }
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+    
+    setValidationErrors({});
+    setLoading(true);
     try {
       if (mode === 'signup') {
-        await signUp(email, password, fullName);
+        const nameValidation = validateName(fullName);
+        await signUp(emailValidation.sanitized, password, nameValidation.sanitized);
         setSignupSuccess(true);
       } else {
-        await signIn(email, password);
-        // Redirect to dashboard or home after successful login
+        await signIn(emailValidation.sanitized, password);
         navigate('/dashboard');
       }
-    } catch (error) {
-      console.error('Auth error:', error);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -102,10 +135,14 @@ const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
                         placeholder="Enter your full name"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        className="pl-9"
+                        className={`pl-9 ${validationErrors.fullName ? 'border-destructive' : ''}`}
+                        maxLength={50}
                         required
                       />
                     </div>
+                    {validationErrors.fullName && (
+                      <p className="text-sm text-destructive">{validationErrors.fullName}</p>
+                    )}
                   </div>
                 )}
                 
@@ -119,10 +156,13 @@ const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
                       placeholder="Enter your email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-9"
+                      className={`pl-9 ${validationErrors.email ? 'border-destructive' : ''}`}
                       required
                     />
                   </div>
+                  {validationErrors.email && (
+                    <p className="text-sm text-destructive">{validationErrors.email}</p>
+                  )}
                 </div>
                 
                 <div className="space-y-2">
@@ -132,10 +172,10 @@ const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
+                      placeholder={mode === 'signup' ? "Enter your password (min 8 characters)" : "Enter your password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-9 pr-9"
+                      className={`pl-9 pr-9 ${validationErrors.password ? 'border-destructive' : ''}`}
                       required
                     />
                     <Button
@@ -148,6 +188,9 @@ const AuthForm = ({ mode, onToggleMode }: AuthFormProps) => {
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
+                  {validationErrors.password && (
+                    <p className="text-sm text-destructive">{validationErrors.password}</p>
+                  )}
                 </div>
 
                 <Button 

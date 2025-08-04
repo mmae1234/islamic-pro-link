@@ -81,19 +81,19 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           body: { imageUrl: publicUrl }
         });
 
-      if (moderationError) {
-        console.warn('Moderation service unavailable, allowing upload:', moderationError);
-        // If moderation fails, we allow the upload but warn the user
-        toast({
-          title: "Content moderation unavailable",
-          description: "Image uploaded but could not be checked for inappropriate content.",
-          variant: "default",
-        });
-      } else if (!moderationData.approved) {
-        // Delete the uploaded image if it's inappropriate
+      if (moderationError || !moderationData.approved) {
+        // Delete the uploaded image if moderation fails or content is inappropriate
         await supabase.storage.from('avatars').remove([fileName]);
         
-        throw new Error(`Image rejected: Contains inappropriate content (${moderationData.flagged_categories?.join(', ') || 'policy violation'})`);
+        if (moderationError) {
+          console.error('Moderation service error:', moderationError);
+          throw new Error('Content moderation is required but currently unavailable. Please try again later.');
+        } else {
+          const flaggedReason = moderationData.flagged_categories?.length > 0 
+            ? `Contains inappropriate content: ${moderationData.flagged_categories.join(', ')}`
+            : moderationData.reason || 'Image rejected by content filter';
+          throw new Error(`Image rejected: ${flaggedReason}`);
+        }
       }
 
       onImageChange(publicUrl);

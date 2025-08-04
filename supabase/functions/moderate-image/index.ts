@@ -14,7 +14,17 @@ serve(async (req) => {
   try {
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
     if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY is not set')
+      console.error('OPENAI_API_KEY is not configured')
+      return new Response(
+        JSON.stringify({ 
+          error: "Content moderation is not available. OpenAI API key is required.",
+          approved: false
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 503,
+        }
+      )
     }
 
     const body = await req.json()
@@ -51,11 +61,21 @@ serve(async (req) => {
 
     const isInappropriate = moderationResult.results?.[0]?.flagged || false
     const categories = moderationResult.results?.[0]?.categories || {}
+    const flaggedCategories = Object.keys(categories).filter(key => categories[key])
+
+    // Enhanced logging for security monitoring
+    if (isInappropriate) {
+      console.warn(`Image content flagged: ${imageUrl}`, {
+        categories: flaggedCategories,
+        timestamp: new Date().toISOString()
+      })
+    }
 
     return new Response(
       JSON.stringify({
         approved: !isInappropriate,
-        flagged_categories: Object.keys(categories).filter(key => categories[key])
+        flagged_categories: flaggedCategories,
+        moderation_score: moderationResult.results?.[0]?.category_scores || {}
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -64,8 +84,14 @@ serve(async (req) => {
     )
   } catch (error) {
     console.error("Error in moderate-image function:", error)
+    
+    // For security, reject images when moderation fails
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: "Content moderation failed. Image rejected for security.",
+        approved: false,
+        reason: "moderation_service_error"
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,

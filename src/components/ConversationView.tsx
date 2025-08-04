@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { validateMessage } from '@/lib/security';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,6 +38,7 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
   const [sending, setSending] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
+  const [messageError, setMessageError] = useState<string>('');
 
   useEffect(() => {
     if (user && partnerId) {
@@ -166,6 +168,14 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
   const sendMessage = async () => {
     if (!newMessage.trim() || !user) return;
 
+    // Validate message content
+    const messageValidation = validateMessage(newMessage);
+    if (!messageValidation.isValid) {
+      setMessageError(messageValidation.error!);
+      return;
+    }
+
+    setMessageError('');
     setSending(true);
     try {
       const { error } = await supabase
@@ -173,7 +183,7 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
         .insert({
           sender_id: user.id,
           recipient_id: partnerId,
-          content: newMessage.trim()
+          content: messageValidation.sanitized
         });
 
       if (error) throw error;
@@ -386,17 +396,32 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
         </ScrollArea>
 
         <div className="border-t p-4">
-          <div className="flex gap-2">
-            <Input
-              placeholder="Type your message..."
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-              disabled={sending}
-            />
-            <Button onClick={sendMessage} disabled={sending || !newMessage.trim()}>
-              <Send className="w-4 h-4" />
-            </Button>
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Type your message... (max 2000 characters)"
+                value={newMessage}
+                onChange={(e) => {
+                  setNewMessage(e.target.value);
+                  setMessageError('');
+                }}
+                onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+                disabled={sending}
+                maxLength={2000}
+                className={messageError ? 'border-destructive' : ''}
+              />
+              <Button onClick={sendMessage} disabled={sending || !newMessage.trim()}>
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">
+                {newMessage.length}/2000 characters
+              </span>
+              {messageError && (
+                <p className="text-sm text-destructive">{messageError}</p>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>
