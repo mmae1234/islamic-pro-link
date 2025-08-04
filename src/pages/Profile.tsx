@@ -22,6 +22,7 @@ import {
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useProfileViews } from "@/hooks/useProfileViews";
 
 const Profile = () => {
   const { userId } = useParams();
@@ -31,6 +32,9 @@ const Profile = () => {
   const [professionalProfile, setProfessionalProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
+
+  // Track profile view for non-owner visits
+  useProfileViews(userId && user?.id !== userId ? userId : '');
 
   useEffect(() => {
     if (userId) {

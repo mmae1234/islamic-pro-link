@@ -185,8 +185,8 @@ const Dashboard = () => {
 
       if (profileError) throw profileError;
 
-      // Save professional profile if fields are filled
-      if (country && city && sector && occupation) {
+      // Save professional profile if fields are filled or if it exists (to update mentorship settings)
+      if (country && city && sector && occupation || professionalProfile) {
         const { error: professionalError } = await supabase
           .from('professional_profiles')
           .upsert({
@@ -194,17 +194,17 @@ const Dashboard = () => {
             first_name: firstName,
             last_name: lastName,
             gender: gender || null,
-            country,
-            state_province: stateProvince,
-            city,
-            sector,
-            occupation,
-            university,
-            bio,
-            experience_years: experienceYears ? parseInt(experienceYears) : null,
-            skills,
-            languages,
-            availability,
+            country: country || professionalProfile?.country,
+            state_province: stateProvince || professionalProfile?.state_province,
+            city: city || professionalProfile?.city,
+            sector: sector || professionalProfile?.sector,
+            occupation: occupation || professionalProfile?.occupation,
+            university: university || professionalProfile?.university,
+            bio: bio || professionalProfile?.bio,
+            experience_years: experienceYears ? parseInt(experienceYears) : professionalProfile?.experience_years,
+            skills: skills.length > 0 ? skills : professionalProfile?.skills,
+            languages: languages.length > 0 ? languages : professionalProfile?.languages,
+            availability: availability || professionalProfile?.availability,
             is_mentor: isMentor,
             is_seeking_mentor: isSeekingMentor,
             preferred_communication: preferredCommunication,

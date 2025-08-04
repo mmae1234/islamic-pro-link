@@ -147,7 +147,7 @@ const MessageCenter = ({ requestId, recipientId, recipientName }: MessageCenterP
         const conversation = conversationMap.get(partnerId)!;
         
         // Set last message if this is the first (most recent) for this conversation
-        if (!conversation.last_message) {
+        if (!conversation.last_message || new Date(message.created_at) > new Date(conversation.last_message.created_at)) {
           conversation.last_message = message;
         }
 
@@ -174,7 +174,15 @@ const MessageCenter = ({ requestId, recipientId, recipientName }: MessageCenterP
         });
       }
 
-      setConversations(Array.from(conversationMap.values()));
+      // Sort conversations by last message timestamp (most recent first)
+      const sortedConversations = Array.from(conversationMap.values())
+        .sort((a, b) => {
+          if (!a.last_message) return 1;
+          if (!b.last_message) return -1;
+          return new Date(b.last_message.created_at).getTime() - new Date(a.last_message.created_at).getTime();
+        });
+
+      setConversations(sortedConversations);
     } catch (error) {
       console.error('Error loading conversations:', error);
     } finally {
