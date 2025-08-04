@@ -324,7 +324,7 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
       </div>
 
       <CardContent className="flex-1 flex flex-col p-0">
-        <ScrollArea className="flex-1 p-4">
+        <ScrollArea className="flex-1 p-4 max-h-[400px]">
           <div className="space-y-4">
             {messages.length === 0 ? (
               <div className="text-center py-8">
