@@ -38,7 +38,10 @@ const Search = () => {
 
   // Load initial professionals when the component mounts
   useEffect(() => {
-    handleSearch({}, !user);
+    if (!user) {
+      // For guests, load limited results immediately
+      handleSearch({}, true);
+    }
   }, []);
 
   const checkUserProfile = async () => {
@@ -134,6 +137,10 @@ const Search = () => {
 
       if (filters.languages && filters.languages.length > 0) {
         query = query.overlaps('languages', filters.languages);
+      }
+
+      if (filters.gender && filters.gender !== 'all') {
+        query = query.eq('gender', filters.gender);
       }
 
       // Exclude current user

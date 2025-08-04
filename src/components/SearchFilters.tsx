@@ -32,6 +32,7 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
     universities: [] as string[],
     languages: [] as string[],
     skills: [] as string[],
+    gender: 'all',
     isMentor: false,
     isSeekingMentor: false,
     experienceMin: '',
@@ -68,6 +69,7 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
       universities: [],
       languages: [],
       skills: [],
+      gender: 'all',
       isMentor: false,
       isSeekingMentor: false,
       experienceMin: '',
@@ -149,8 +151,8 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
           </div>
         </div>
 
-        {/* University and Language Filters */}
-        <div className="grid md:grid-cols-2 gap-4">
+        {/* University, Language, and Gender Filters */}
+        <div className="grid md:grid-cols-3 gap-4">
           <div>
             <Label>Universities</Label>
             <UniversitySearchSelect
@@ -169,6 +171,23 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
               placeholder="Select languages"
               maxSelections={4}
             />
+          </div>
+
+          <div>
+            <Label>Gender</Label>
+            <Select 
+              value={filters.gender === 'all' ? '' : filters.gender} 
+              onValueChange={(value) => setFilters(prev => ({ ...prev, gender: value || 'all' }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="All Genders" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Genders</SelectItem>
+                <SelectItem value="Male">Male</SelectItem>
+                <SelectItem value="Female">Female</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

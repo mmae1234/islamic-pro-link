@@ -92,7 +92,7 @@ const UNIVERSITIES = [
 
   // African Universities
   'University of Cape Town', 'University of the Witwatersrand', 'Stellenbosch University',
-  'University of KwaZulu-Natal', 'Cairo University', 'American University in Cairo',
+  'University of KwaZulu-Natal', 'American University in Cairo',
   'Al-Azhar University', 'University of Lagos', 'University of Ibadan',
   'Makerere University', 'University of Nairobi', 'University of Ghana',
 
