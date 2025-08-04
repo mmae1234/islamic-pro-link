@@ -19,6 +19,7 @@ import {
   Star,
   Heart
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -172,19 +173,26 @@ const Profile = () => {
           <Card className="shadow-soft mb-8">
             <CardContent className="pt-6">
               <div className="flex flex-col md:flex-row items-start gap-6">
-                <Avatar className="w-24 h-24">
-                  <AvatarImage src={professionalProfile?.avatar_url} />
-                  <AvatarFallback className="text-2xl">
-                    {profile.full_name?.charAt(0) || 'U'}
-                  </AvatarFallback>
-                </Avatar>
+                  <Avatar className="w-24 h-24">
+                   <AvatarImage src={professionalProfile?.avatar_url || profile?.avatar_url} />
+                   <AvatarFallback className="text-2xl">
+                     {`${profile?.first_name || ''}${profile?.last_name || ''}`.charAt(0).toUpperCase() || 'U'}
+                   </AvatarFallback>
+                 </Avatar>
                 
                 <div className="flex-1">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
-                      <h1 className="text-3xl font-bold text-foreground mb-2">
-                        {profile.full_name}
-                      </h1>
+                       <div className="flex items-center gap-4">
+                         <h1 className="text-3xl font-bold text-foreground mb-2">
+                           {`${profile?.first_name || ''} ${profile?.last_name || ''}`.trim()}
+                         </h1>
+                         {isOwnProfile && (
+                           <Button variant="outline" size="sm" asChild>
+                             <Link to="/edit-profile">Edit Profile</Link>
+                           </Button>
+                         )}
+                       </div>
                       {professionalProfile?.occupation && professionalProfile?.sector && (
                         <p className="text-lg text-muted-foreground mb-2">
                           {professionalProfile.occupation} • {professionalProfile.sector}

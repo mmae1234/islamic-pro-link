@@ -27,6 +27,7 @@ import News from "./pages/News";
 import Organizations from "./pages/Organizations";
 import Careers from "./pages/Careers";
 import Scholarships from "./pages/Scholarships";
+import EditProfile from "./pages/EditProfile";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,11 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/profile/:userId" element={<Profile />} />
+            <Route path="/edit-profile" element={
+              <ProtectedRoute>
+                <EditProfile />
+              </ProtectedRoute>
+            } />
             <Route path="/mentorship" element={
               <ProtectedRoute>
                 <Mentorship />

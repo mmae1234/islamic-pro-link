@@ -56,7 +56,7 @@ const About = () => {
                 </blockquote>
                 
                 <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                  Muslim Professionals is my way of applying this Hadith — a platform for Muslims to support, connect with, and uplift each other. We believe that faith and professional success go hand in hand, and our platform provides a space where professionals can build meaningful relationships while staying true to their Islamic values.
+                  Muslim Professionals is my way of applying this Hadith — a platform for Muslims to support, connect with, and uplift each other. I believe that faith and professional success go hand in hand, and this platform aims to provide a space where professionals can build meaningful relationships while staying true to their Islamic values in sha Allah.
                 </p>
                 
                 {!user && (
