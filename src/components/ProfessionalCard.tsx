@@ -14,6 +14,8 @@ import { MapPin, MessageCircle, Calendar, Star, Users, Heart } from 'lucide-reac
 interface Professional {
   id: string;
   user_id: string;
+  first_name: string;
+  last_name: string;
   bio: string;
   occupation: string;
   sector: string;
@@ -27,7 +29,8 @@ interface Professional {
   availability: string;
   avatar_url: string | null;
   profiles?: {
-    full_name: string;
+    first_name: string;
+    last_name: string;
     avatar_url: string | null;
   };
 }
@@ -195,8 +198,15 @@ const ProfessionalCard = ({
     }
   };
 
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  const getInitials = (firstName: string, lastName: string) => {
+    const initials = `${firstName?.[0] || ''}${lastName?.[0] || ''}`;
+    return initials || 'U';
+  };
+
+  const getFullName = () => {
+    const firstName = professional.first_name || professional.profiles?.first_name || '';
+    const lastName = professional.last_name || professional.profiles?.last_name || '';
+    return `${firstName} ${lastName}`.trim() || 'Anonymous User';
   };
 
   const isOwnProfile = user?.id === professional.user_id;
@@ -210,17 +220,20 @@ const ProfessionalCard = ({
             <Avatar className="w-20 h-20 flex-shrink-0 border-2 border-primary/20 shadow-soft">
               <AvatarImage 
                 src={professional.avatar_url || professional.profiles?.avatar_url || undefined} 
-                alt={professional.profiles?.full_name || 'User avatar'} 
+                alt={getFullName()} 
               />
               <AvatarFallback className="text-lg font-semibold bg-gradient-primary text-primary-foreground">
-                {getInitials(professional.profiles?.full_name || 'U')}
+                {getInitials(
+                  professional.first_name || professional.profiles?.first_name || '', 
+                  professional.last_name || professional.profiles?.last_name || ''
+                )}
               </AvatarFallback>
             </Avatar>
             
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-2">
                 <h3 className="text-lg font-semibold text-foreground truncate">
-                  {professional.profiles?.full_name || 'Anonymous User'}
+                  {getFullName()}
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {professional.is_mentor && (

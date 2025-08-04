@@ -90,7 +90,7 @@ const Search = () => {
       if (filters.searchTerm) {
         const term = filters.searchTerm;
         query = query.or(
-          `first_name.ilike.%${term}%,last_name.ilike.%${term}%,profiles.first_name.ilike.%${term}%,profiles.last_name.ilike.%${term}%,occupation.ilike.%${term}%,bio.ilike.%${term}%,sector.ilike.%${term}%`
+          `first_name.ilike.%${term}%,last_name.ilike.%${term}%,occupation.ilike.%${term}%,bio.ilike.%${term}%,sector.ilike.%${term}%`
         );
       }
 
