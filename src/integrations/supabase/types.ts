@@ -204,6 +204,7 @@ export type Database = {
           id: string
           is_mentor: boolean | null
           is_seeking_mentor: boolean | null
+          languages: string[] | null
           occupation: string | null
           preferred_communication: string[] | null
           sector: string | null
@@ -225,6 +226,7 @@ export type Database = {
           id?: string
           is_mentor?: boolean | null
           is_seeking_mentor?: boolean | null
+          languages?: string[] | null
           occupation?: string | null
           preferred_communication?: string[] | null
           sector?: string | null
@@ -246,6 +248,7 @@ export type Database = {
           id?: string
           is_mentor?: boolean | null
           is_seeking_mentor?: boolean | null
+          languages?: string[] | null
           occupation?: string | null
           preferred_communication?: string[] | null
           sector?: string | null
