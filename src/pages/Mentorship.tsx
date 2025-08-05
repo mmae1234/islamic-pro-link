@@ -89,7 +89,27 @@ const Mentorship = () => {
         .eq('is_mentor', true)
         .neq('user_id', user?.id);
 
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error('Error loading mentors:', profilesError);
+        
+        // Handle specific infinite recursion error
+        if (profilesError.code === '42P17') {
+          toast({
+            title: "Mentors temporarily unavailable",
+            description: "We're fixing a technical issue. Please try again in a moment.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Failed to load mentors",
+            description: "Please refresh the page and try again.",
+            variant: "destructive",
+          });
+        }
+        setMentors([]);
+        setAllMentors([]);
+        return;
+      }
 
       // Get existing mentorship requests from current user to filter out already requested mentors
       const { data: existingRequests } = await supabase

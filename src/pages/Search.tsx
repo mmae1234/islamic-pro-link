@@ -170,7 +170,14 @@ const Search = () => {
         console.error('Supabase error:', error);
         setProfessionals([]);
         
-        if (!isGuest) {
+        // Handle specific infinite recursion error
+        if (error.code === '42P17') {
+          toast({
+            title: "Search temporarily unavailable",
+            description: "We're fixing a technical issue. Please try again in a moment.",
+            variant: "destructive",
+          });
+        } else if (!isGuest) {
           toast({
             title: "Unable to load profiles",
             description: "Please try refreshing the page or contact support.",
