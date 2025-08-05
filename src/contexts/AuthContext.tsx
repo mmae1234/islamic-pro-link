@@ -17,7 +17,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    // On mobile or in error conditions, return a safe default instead of throwing
+    console.warn('useAuth used outside of AuthProvider, returning guest defaults');
+    return {
+      user: null,
+      loading: false,
+      signUp: async () => { throw new Error('Auth not available'); },
+      signIn: async () => { throw new Error('Auth not available'); },
+      signOut: async () => { throw new Error('Auth not available'); },
+      resetPassword: async () => { throw new Error('Auth not available'); },
+    };
   }
   return context;
 };
@@ -31,18 +40,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     console.log('AuthContext: Initializing auth...');
     let mounted = true;
     
-    // Set a reasonable timeout to prevent infinite loading
+    // Much shorter timeout for mobile - mobile users need faster loading
     const timeoutId = setTimeout(() => {
       if (mounted && loading) {
         console.log('AuthContext: Auth initialization timeout, proceeding without auth');
         setLoading(false);
         setUser(null);
       }
-    }, 10000); // 10 second timeout
+    }, 3000); // 3 second timeout for mobile compatibility
     
     // Get initial session with better error handling
     const initializeAuth = async () => {
       try {
+        // Add extra mobile compatibility check
+        if (typeof window === 'undefined' || !window.localStorage) {
+          console.log('AuthContext: localStorage not available, proceeding as guest');
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+
         const { data: { session }, error } = await supabase.auth.getSession();
         if (!mounted) return;
         
@@ -58,7 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } catch (error) {
         if (!mounted) return;
         console.error('AuthContext: Critical auth error:', error);
-        // App should still work without auth
+        // App should still work without auth - this is critical for mobile
         setUser(null);
       } finally {
         if (mounted) {

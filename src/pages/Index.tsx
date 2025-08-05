@@ -66,13 +66,14 @@ const Index = () => {
 
   // Safe auth access - don't block rendering if auth fails
   let loading = false;
+  let authContext = null;
   try {
-    const authContext = useAuth();
+    authContext = useAuth();
     loading = authContext?.loading || false;
   } catch (error) {
     console.error('Index: Auth context not available, continuing without auth');
     loading = false;
-    setAuthError(true);
+    if (!authError) setAuthError(true);
   }
 
   // Monitor for critical errors that should trigger fallback
@@ -85,6 +86,8 @@ const Index = () => {
         errorMessage.includes('Maximum call stack size exceeded') ||
         errorMessage.includes('permission') ||
         errorMessage.includes('42P17') ||
+        errorMessage.includes('useAuth must be used within') ||
+        errorMessage.includes('Cannot read properties of undefined') ||
         authError
       ) {
         console.warn('Critical error detected, showing fallback:', errorMessage);
@@ -97,7 +100,9 @@ const Index = () => {
       if (
         reason.includes('permission') ||
         reason.includes('42P17') ||
-        reason.includes('Supabase')
+        reason.includes('Supabase') ||
+        reason.includes('auth') ||
+        reason.includes('localStorage')
       ) {
         console.warn('Supabase error detected, showing fallback:', reason);
         setShowFallback(true);
