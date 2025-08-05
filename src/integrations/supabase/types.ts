@@ -350,6 +350,10 @@ export type Database = {
         Args: { user_id_param: string }
         Returns: boolean
       }
+      get_guest_viewable_profile_ids: {
+        Args: Record<PropertyKey, never>
+        Returns: string[]
+      }
     }
     Enums: {
       [_ in never]: never
