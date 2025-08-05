@@ -1,13 +1,23 @@
 import { createRoot } from 'react-dom/client'
 import './index.css'
 
-// Simple test component to debug mobile loading
+// Ultra-basic mobile test - maximum visibility
 function SimpleApp() {
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial', background: '#f0f0f0', minHeight: '100vh' }}>
-      <h1 style={{ color: '#333' }}>Mobile Test - App is Loading!</h1>
-      <p>If you can see this, React is working on mobile.</p>
-      <p>Time: {new Date().toLocaleTimeString()}</p>
+    <div style={{ 
+      width: '100%', 
+      height: '100vh', 
+      background: 'red', 
+      color: 'white', 
+      fontSize: '24px',
+      fontWeight: 'bold',
+      padding: '10px',
+      boxSizing: 'border-box'
+    }}>
+      <div>MOBILE TEST</div>
+      <div>Screen: {window.innerWidth}x{window.innerHeight}</div>
+      <div>UserAgent: {navigator.userAgent.substring(0, 50)}</div>
+      <div>Time: {new Date().toLocaleTimeString()}</div>
     </div>
   );
 }
