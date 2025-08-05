@@ -1,9 +1,10 @@
-import { Suspense } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
 import Footer from "@/components/Footer";
+import StaticLandingFallback from "@/components/StaticLandingFallback";
 import { Loader2 } from "lucide-react";
 
 // Loading fallback component
@@ -60,6 +61,9 @@ const ErrorFallback = () => {
 };
 
 const Index = () => {
+  const [showFallback, setShowFallback] = useState(false);
+  const [authError, setAuthError] = useState(false);
+
   // Safe auth access - don't block rendering if auth fails
   let loading = false;
   try {
@@ -68,6 +72,50 @@ const Index = () => {
   } catch (error) {
     console.error('Index: Auth context not available, continuing without auth');
     loading = false;
+    setAuthError(true);
+  }
+
+  // Monitor for critical errors that should trigger fallback
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      const errorMessage = event.error?.message || event.message || '';
+      
+      // Check for mobile-specific errors that should trigger fallback
+      if (
+        errorMessage.includes('Maximum call stack size exceeded') ||
+        errorMessage.includes('permission') ||
+        errorMessage.includes('42P17') ||
+        authError
+      ) {
+        console.warn('Critical error detected, showing fallback:', errorMessage);
+        setShowFallback(true);
+      }
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const reason = event.reason?.message || event.reason || '';
+      if (
+        reason.includes('permission') ||
+        reason.includes('42P17') ||
+        reason.includes('Supabase')
+      ) {
+        console.warn('Supabase error detected, showing fallback:', reason);
+        setShowFallback(true);
+      }
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, [authError]);
+
+  // Show fallback if critical errors detected
+  if (showFallback) {
+    return <StaticLandingFallback />;
   }
 
   // Don't wait for auth to load - render the page immediately with error boundary
@@ -86,7 +134,7 @@ const Index = () => {
     );
   } catch (error) {
     console.error('Error rendering landing page:', error);
-    return <ErrorFallback />;
+    return <StaticLandingFallback />;
   }
 };
 
