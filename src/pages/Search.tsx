@@ -31,8 +31,8 @@ const Search = () => {
     if (user) {
       checkUserProfile();
     } else {
-      // Load initial professionals for guests - show only 2 results
-      handleSearch({}, true);
+      // Load initial professionals for guests
+      handleSearch();
     }
   }, [user]);
 
@@ -69,7 +69,17 @@ const Search = () => {
     }
   };
 
-  const handleSearch = async (filters: any, limitForGuests = false) => {
+  const handleSearch = async (filters: any = {}) => {
+    // For guests, only allow initial load without filters
+    if (isGuest && Object.keys(filters).length > 0) {
+      toast({
+        title: "Sign up required",
+        description: "Create a free account to use search filters and see more professionals.",
+        variant: "default",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       let query = supabase
@@ -79,98 +89,103 @@ const Search = () => {
           profiles!professional_profiles_user_id_profiles_fkey(first_name, last_name, avatar_url)
         `);
 
-      // Apply filters
-      if (filters.searchTerm) {
-        const term = filters.searchTerm;
-        query = query.or(
-          `first_name.ilike.%${term}%,last_name.ilike.%${term}%,occupation.ilike.%${term}%,bio.ilike.%${term}%,sector.ilike.%${term}%`
-        );
-      }
+      // Only apply filters for authenticated users
+      if (!isGuest) {
+        if (filters.searchTerm) {
+          const term = filters.searchTerm;
+          query = query.or(
+            `first_name.ilike.%${term}%,last_name.ilike.%${term}%,occupation.ilike.%${term}%,bio.ilike.%${term}%,sector.ilike.%${term}%`
+          );
+        }
 
-      if (filters.country && filters.country !== 'all') {
-        query = query.eq('country', filters.country);
-      }
+        if (filters.country && filters.country !== 'all') {
+          query = query.eq('country', filters.country);
+        }
 
-      if (filters.stateProvince && filters.stateProvince !== 'all') {
-        query = query.eq('state_province', filters.stateProvince);
-      }
+        if (filters.stateProvince && filters.stateProvince !== 'all') {
+          query = query.eq('state_province', filters.stateProvince);
+        }
 
-      if (filters.sector && filters.sector !== 'all') {
-        query = query.eq('sector', filters.sector);
-      }
+        if (filters.sector && filters.sector !== 'all') {
+          query = query.eq('sector', filters.sector);
+        }
 
-      if (filters.occupation && filters.occupation !== 'all') {
-        query = query.eq('occupation', filters.occupation);
-      }
+        if (filters.occupation && filters.occupation !== 'all') {
+          query = query.eq('occupation', filters.occupation);
+        }
 
-      if (filters.isSeekingMentor) {
-        query = query.eq('is_seeking_mentor', true);
-      }
+        if (filters.isSeekingMentor) {
+          query = query.eq('is_seeking_mentor', true);
+        }
 
-      if (filters.isMentor) {
-        query = query.eq('is_mentor', true);
-      }
+        if (filters.isMentor) {
+          query = query.eq('is_mentor', true);
+        }
 
-      if (filters.experienceMin) {
-        query = query.gte('experience_years', parseInt(filters.experienceMin));
-      }
+        if (filters.experienceMin) {
+          query = query.gte('experience_years', parseInt(filters.experienceMin));
+        }
 
-      if (filters.experienceMax) {
-        query = query.lte('experience_years', parseInt(filters.experienceMax));
-      }
+        if (filters.experienceMax) {
+          query = query.lte('experience_years', parseInt(filters.experienceMax));
+        }
 
-      if (filters.skills && filters.skills.length > 0) {
-        query = query.overlaps('skills', filters.skills);
-      }
+        if (filters.skills && filters.skills.length > 0) {
+          query = query.overlaps('skills', filters.skills);
+        }
 
-      if (filters.universities && filters.universities.length > 0) {
-        query = query.in('university', filters.universities);
-      }
+        if (filters.universities && filters.universities.length > 0) {
+          query = query.in('university', filters.universities);
+        }
 
-      if (filters.languages && filters.languages.length > 0) {
-        query = query.overlaps('languages', filters.languages);
-      }
+        if (filters.languages && filters.languages.length > 0) {
+          query = query.overlaps('languages', filters.languages);
+        }
 
-      if (filters.gender && filters.gender !== 'all') {
-        query = query.eq('gender', filters.gender);
-      }
+        if (filters.gender && filters.gender !== 'all') {
+          query = query.eq('gender', filters.gender);
+        }
 
-      // Exclude current user
-      if (user) {
-        query = query.neq('user_id', user.id);
-      }
+        // Exclude current user
+        if (user) {
+          query = query.neq('user_id', user.id);
+        }
 
-      // Apply sorting
-      if (sortBy === 'name') {
-        query = query.order('first_name', { ascending: sortOrder === 'asc' });
+        // Apply sorting
+        if (sortBy === 'name') {
+          query = query.order('first_name', { ascending: sortOrder === 'asc' });
+        } else {
+          query = query.order(sortBy, { ascending: sortOrder === 'asc' });
+        }
+
+        query = query.limit(50);
       } else {
-        query = query.order(sortBy, { ascending: sortOrder === 'asc' });
+        // For guests, just get the first 2 profiles ordered by creation date
+        query = query.order('created_at', { ascending: true }).limit(2);
       }
 
-      const { data, error } = await query.limit(limitForGuests ? 2 : 50);
+      const { data, error } = await query;
 
       if (error) {
         console.error('Supabase error:', error);
-        // Handle permission errors gracefully
-        if (error.message?.includes('permission') || error.code === 'PGRST301') {
-          setProfessionals([]);
+        setProfessionals([]);
+        
+        if (!isGuest) {
           toast({
             title: "Unable to load profiles",
             description: "Please try refreshing the page or contact support.",
             variant: "destructive",
           });
-          return;
         }
-        throw error;
+        return;
       }
 
       setProfessionals(data || []);
     } catch (error: any) {
       console.error('Error searching professionals:', error);
-      setProfessionals([]); // Reset to empty array on error
+      setProfessionals([]);
       
-      // Avoid infinite retry loops by not calling handleSearch again
-      if (!error.message?.includes('permission')) {
+      if (!isGuest) {
         toast({
           title: "Search failed",
           description: "Unable to load professional profiles. Please try again later.",
@@ -225,7 +240,7 @@ const Search = () => {
         )}
 
         {/* Search Filters */}
-        <SearchFilters onSearch={handleSearch} loading={loading} />
+        <SearchFilters onSearch={handleSearch} loading={loading} isGuest={isGuest} />
 
         {/* Results */}
         <div className="mt-8 space-y-6">
@@ -306,12 +321,12 @@ const Search = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="relative">
-              <div className="grid gap-6 animate-fade-in">
-                {professionals.map((professional, index) => (
-                           <div 
+             <div className="space-y-6">
+               <div className="grid gap-6 animate-fade-in">
+                 {professionals.map((professional, index) => (
+                   <div 
                      key={professional.id}
-                     className={`animate-fade-in-up ${isGuest && index >= 2 ? 'blur-sm' : ''}`}
+                     className="animate-fade-in-up"
                      style={{ animationDelay: `${index * 0.1}s` }}
                      onClick={() => {
                        if (!isGuest) {
@@ -347,30 +362,25 @@ const Search = () => {
                      />
                    </div>
                 ))}
-              </div>
-              
-              {/* Overlay for guests after 2 cards */}
-              {isGuest && professionals.length > 2 && (
-                <div className="absolute inset-x-0 bg-gradient-to-b from-transparent via-background/80 to-background" 
-                     style={{ top: 'calc(2 * (300px + 1.5rem))' }}>
-                  <div className="flex flex-col items-center justify-center min-h-[300px] px-4 py-8 text-center">
-                    <Card className="shadow-xl bg-background/95 border-primary/30 max-w-lg w-full backdrop-blur-sm">
-                      <CardContent className="p-8">
-                        <h3 className="text-xl font-semibold text-foreground mb-3">
-                          Create a free account to unlock full access to professionals and connect with them.
-                        </h3>
-                        <p className="text-muted-foreground mb-6">
-                          Join thousands of Muslim professionals worldwide and expand your network.
-                        </p>
-                        <Button asChild size="lg" className="w-full">
-                          <Link to="/login">Sign Up for Free</Link>
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-              )}
-            </div>
+               </div>
+               
+               {/* Call to action for guests */}
+               {isGuest && (
+                 <Card className="shadow-xl bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+                   <CardContent className="p-8 text-center">
+                     <h3 className="text-xl font-semibold text-foreground mb-3">
+                       See thousands more professionals
+                     </h3>
+                     <p className="text-muted-foreground mb-6">
+                       Join the community to access advanced search filters, connect with professionals, and unlock all features.
+                     </p>
+                     <Button asChild size="lg" className="w-full sm:w-auto">
+                       <Link to="/login">Sign Up for Free</Link>
+                     </Button>
+                   </CardContent>
+                 </Card>
+               )}
+             </div>
           )}
         </div>
       </main>
