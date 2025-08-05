@@ -29,13 +29,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     console.log('AuthContext: Initializing auth...');
+    let mounted = true;
+    
     // Get initial session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (!mounted) return;
       console.log('AuthContext: Initial session:', session, 'Error:', error);
       setUser(session?.user ?? null);
       setLoading(false);
     }).catch((error) => {
+      if (!mounted) return;
       console.error('AuthContext: Error getting session:', error);
+      setUser(null);
       setLoading(false);
     });
 
@@ -43,12 +48,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
       console.log('AuthContext: Auth state changed:', _event, session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, firstName: string, lastName: string) => {

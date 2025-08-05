@@ -36,14 +36,6 @@ const Search = () => {
     }
   }, [user]);
 
-  // Load initial professionals when the component mounts
-  useEffect(() => {
-    if (!user) {
-      // For guests, load limited results immediately
-      handleSearch({}, true);
-    }
-  }, []);
-
   const checkUserProfile = async () => {
     if (!user) return;
 
@@ -157,16 +149,34 @@ const Search = () => {
 
       const { data, error } = await query.limit(limitForGuests ? 2 : 50);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        // Handle permission errors gracefully
+        if (error.message?.includes('permission') || error.code === 'PGRST301') {
+          setProfessionals([]);
+          toast({
+            title: "Unable to load profiles",
+            description: "Please try refreshing the page or contact support.",
+            variant: "destructive",
+          });
+          return;
+        }
+        throw error;
+      }
 
       setProfessionals(data || []);
     } catch (error: any) {
       console.error('Error searching professionals:', error);
-      toast({
-        title: "Search failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      setProfessionals([]); // Reset to empty array on error
+      
+      // Avoid infinite retry loops by not calling handleSearch again
+      if (!error.message?.includes('permission')) {
+        toast({
+          title: "Search failed",
+          description: "Unable to load professional profiles. Please try again later.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
