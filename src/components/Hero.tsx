@@ -5,15 +5,17 @@ import { Search, Users, MessageCircle, Award } from "lucide-react";
 import heroImage from "@/assets/diverse-professionals-hero.jpg";
 
 const Hero = () => {
-  // Use try-catch to handle any auth context issues
+  // Use a safe approach to access auth context on mobile
   let user = null;
+  let authError = false;
+  
   try {
     const authContext = useAuth();
     user = authContext?.user || null;
-    console.log('Hero component: user =', user);
   } catch (error) {
-    console.error('Hero: Error accessing auth context:', error);
-    // Continue rendering without user data
+    console.error('Hero: Auth context not available, continuing as guest');
+    authError = true;
+    // Continue rendering as guest user
   }
 
   return (

@@ -8,6 +8,7 @@ import SearchFilters from "@/components/SearchFilters";
 import SearchSorting from "@/components/SearchSorting";
 import ProfessionalCard from "@/components/ProfessionalCard";
 import ProfileSetup from "@/components/ProfileSetup";
+import MobileErrorFallback from "@/components/MobileErrorFallback";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -16,8 +17,21 @@ import { Users, Loader2 } from "lucide-react";
 
 
 const Search = () => {
-  const { user } = useAuth();
-  const { toast } = useToast();
+  // Safe auth access with mobile fallback
+  let user = null;
+  let toast: ((props: any) => void) | null = null;
+  
+  try {
+    const authContext = useAuth();
+    user = authContext?.user || null;
+    const toastContext = useToast();
+    toast = toastContext.toast;
+  } catch (error) {
+    console.error('Search: Auth context not available, continuing as guest');
+    // Continue as guest with fallback toast
+    toast = null;
+  }
+  
   const [professionals, setProfessionals] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
@@ -25,16 +39,28 @@ const Search = () => {
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [isGuest, setIsGuest] = useState(!user);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
+    // Prevent infinite loops with initialization flag
+    if (initialized) return;
+    
     setIsGuest(!user);
+    setInitialized(true);
+    
     if (user) {
       checkUserProfile();
     } else {
-      // Load initial professionals for guests
-      handleSearch();
+      // Load initial professionals for guests with error handling
+      setTimeout(() => {
+        handleSearch().catch(error => {
+          console.error('Failed to load initial data for guest:', error);
+          // Don't show toast errors for guests on mobile - just log
+          setProfessionals([]);
+        });
+      }, 100);
     }
-  }, [user]);
+  }, [user, initialized]);
 
   const checkUserProfile = async () => {
     if (!user) return;
@@ -61,22 +87,27 @@ const Search = () => {
       }
     } catch (error: any) {
       console.error('Error checking profile:', error);
-      toast({
-        title: "Error",
-        description: "Failed to check your profile status.",
-        variant: "destructive",
-      });
+      if (toast) {
+        toast({
+          title: "Error",
+          description: "Failed to check your profile status.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
   const handleSearch = async (filters: any = {}) => {
     // For guests, only allow initial load without filters
     if (isGuest && Object.keys(filters).length > 0) {
-      toast({
-        title: "Sign up required",
-        description: "Create a free account to use search filters and see more professionals.",
-        variant: "default",
-      });
+      // Only show toast if toast function is available
+      if (toast) {
+        toast({
+          title: "Sign up required",
+          description: "Create a free account to use search filters and see more professionals.",
+          variant: "default",
+        });
+      }
       return;
     }
 
@@ -172,12 +203,16 @@ const Search = () => {
         
         // Handle specific infinite recursion error
         if (error.code === '42P17') {
-          toast({
-            title: "Search temporarily unavailable",
-            description: "We're fixing a technical issue. Please try again in a moment.",
-            variant: "destructive",
-          });
-        } else if (!isGuest) {
+          console.error('Infinite recursion detected - showing fallback');
+          // Only show toast if available and not guest
+          if (toast && !isGuest) {
+            toast({
+              title: "Search temporarily unavailable",
+              description: "We're fixing a technical issue. Please try again in a moment.",
+              variant: "destructive",
+            });
+          }
+        } else if (!isGuest && toast) {
           toast({
             title: "Unable to load profiles",
             description: "Please try refreshing the page or contact support.",
@@ -192,7 +227,20 @@ const Search = () => {
       console.error('Error searching professionals:', error);
       setProfessionals([]);
       
-      if (!isGuest) {
+      // Check if this is a critical error that should show fallback UI
+      if (error?.message?.includes('permission') || error?.code === '42P17') {
+        // For critical errors on mobile, show fallback instead of toast
+        if (typeof window !== 'undefined' && window.innerWidth < 768) {
+          return <MobileErrorFallback 
+            error={error} 
+            onRetry={() => handleSearch({})} 
+            title="Unable to Load Professionals"
+            description="We're experiencing technical difficulties. Please try refreshing the page."
+          />;
+        }
+      }
+      
+      if (!isGuest && toast) {
         toast({
           title: "Search failed",
           description: "Unable to load professional profiles. Please try again later.",
@@ -360,12 +408,14 @@ const Search = () => {
                        professional={professional}
                        showMentorshipButton={false}  // Hide mentorship button on Find Professionals page
                        showFavoriteButton={!isGuest}
-                       onRequestSent={() => {
-                         toast({
-                           title: "Added to favorites!",
-                           description: "Professional added to your favorites.",
-                         });
-                       }}
+                        onRequestSent={() => {
+                          if (toast) {
+                            toast({
+                              title: "Added to favorites!",
+                              description: "Professional added to your favorites.",
+                            });
+                          }
+                        }}
                      />
                    </div>
                 ))}

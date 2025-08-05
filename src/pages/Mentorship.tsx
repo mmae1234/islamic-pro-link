@@ -63,8 +63,19 @@ interface MentorshipRequest {
 }
 
 const Mentorship = () => {
-  const { user } = useAuth();
-  const { toast } = useToast();
+  // Safe auth access with mobile fallback
+  let user = null;
+  let toast: ((props: any) => void) | null = null;
+  
+  try {
+    const authContext = useAuth();
+    user = authContext?.user || null;
+    const toastContext = useToast();
+    toast = toastContext.toast;
+  } catch (error) {
+    console.error('Mentorship: Auth context not available, continuing as guest');
+    toast = null;
+  }
   const [mentors, setMentors] = useState<MentorProfile[]>([]);
   const [allMentors, setAllMentors] = useState<MentorProfile[]>([]);
   const [requests, setRequests] = useState<MentorshipRequest[]>([]);
@@ -94,17 +105,21 @@ const Mentorship = () => {
         
         // Handle specific infinite recursion error
         if (profilesError.code === '42P17') {
-          toast({
-            title: "Mentors temporarily unavailable",
-            description: "We're fixing a technical issue. Please try again in a moment.",
-            variant: "destructive",
-          });
+          if (toast) {
+            toast({
+              title: "Mentors temporarily unavailable",
+              description: "We're fixing a technical issue. Please try again in a moment.",
+              variant: "destructive",
+            });
+          }
         } else {
-          toast({
-            title: "Failed to load mentors",
-            description: "Please refresh the page and try again.",
-            variant: "destructive",
-          });
+          if (toast) {
+            toast({
+              title: "Failed to load mentors",
+              description: "Please refresh the page and try again.",
+              variant: "destructive",
+            });
+          }
         }
         setMentors([]);
         setAllMentors([]);
@@ -222,21 +237,25 @@ const Mentorship = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Request sent!",
-        description: "Your mentorship request has been sent successfully.",
-      });
+      if (toast) {
+        toast({
+          title: "Request sent!",
+          description: "Your mentorship request has been sent successfully.",
+        });
+      }
 
       setSelectedMentor(null);
       setRequestMessage("");
       await loadRequests();
       await loadMentors(); // Refresh mentors list to remove requested mentor
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to send request.",
-        variant: "destructive",
-      });
+      if (toast) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to send request.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -249,19 +268,23 @@ const Mentorship = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Request updated",
-        description: `Request ${status} successfully.`,
-      });
+      if (toast) {
+        toast({
+          title: "Request updated",
+          description: `Request ${status} successfully.`,
+        });
+      }
 
       await loadRequests();
       await loadMentors(); // Refresh mentors list to show available mentors again if declined
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update request.",
-        variant: "destructive",
-      });
+      if (toast) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to update request.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -274,19 +297,23 @@ const Mentorship = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Request cancelled",
-        description: "Your mentorship request has been cancelled successfully.",
-      });
+      if (toast) {
+        toast({
+          title: "Request cancelled",
+          description: "Your mentorship request has been cancelled successfully.",
+        });
+      }
 
       await loadRequests();
       await loadMentors(); // Refresh mentors list to show available mentors again
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to cancel request.",
-        variant: "destructive",
-      });
+      if (toast) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to cancel request.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -308,19 +335,23 @@ const Mentorship = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "Disconnected successfully",
-        description: `You have disconnected from ${mentorName}.`,
-      });
+      if (toast) {
+        toast({
+          title: "Disconnected successfully",
+          description: `You have disconnected from ${mentorName}.`,
+        });
+      }
 
       await loadRequests();
       await loadMentors();
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to disconnect from mentor.",
-        variant: "destructive",
-      });
+      if (toast) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to disconnect from mentor.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
