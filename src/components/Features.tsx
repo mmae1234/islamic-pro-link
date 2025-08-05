@@ -52,7 +52,16 @@ const features = [
 ];
 
 const Features = () => {
-  const { user } = useAuth();
+  // Use try-catch to handle any auth context issues
+  let user = null;
+  try {
+    const authContext = useAuth();
+    user = authContext?.user || null;
+  } catch (error) {
+    console.error('Features: Error accessing auth context:', error);
+    // Continue rendering without user data
+  }
+
   return (
     <section className="py-20 bg-muted/30">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">

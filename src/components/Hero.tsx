@@ -5,16 +5,44 @@ import { Search, Users, MessageCircle, Award } from "lucide-react";
 import heroImage from "@/assets/diverse-professionals-hero.jpg";
 
 const Hero = () => {
-  const { user } = useAuth();
-  console.log('Hero component: user =', user);
+  // Use try-catch to handle any auth context issues
+  let user = null;
+  try {
+    const authContext = useAuth();
+    user = authContext?.user || null;
+    console.log('Hero component: user =', user);
+  } catch (error) {
+    console.error('Hero: Error accessing auth context:', error);
+    // Continue rendering without user data
+  }
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary via-primary-glow to-primary">
+      {/* Ensure minimum content visibility even without image */}
+      <style>{`
+        @media (max-width: 768px) {
+          .hero-section {
+            min-height: 100vh;
+            min-height: 100dvh; /* Dynamic viewport height for mobile */
+          }
+        }
+      `}</style>
       {/* Background Image with Overlay */}
       <div className="absolute inset-0">
         <img 
           src={heroImage} 
           alt="Muslim professionals collaborating" 
           className="w-full h-full object-cover"
+          onError={(e) => {
+            // Fallback to a solid background if image fails
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+            const parent = target.parentElement;
+            if (parent) {
+              parent.style.background = 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))';
+            }
+          }}
+          loading="eager"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/70 to-transparent"></div>
       </div>

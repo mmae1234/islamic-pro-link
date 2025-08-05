@@ -31,32 +31,73 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     console.log('AuthContext: Initializing auth...');
     let mounted = true;
     
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (!mounted) return;
-      console.log('AuthContext: Initial session:', session, 'Error:', error);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    }).catch((error) => {
-      if (!mounted) return;
-      console.error('AuthContext: Error getting session:', error);
-      setUser(null);
-      setLoading(false);
-    });
+    // Set a reasonable timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      if (mounted && loading) {
+        console.log('AuthContext: Auth initialization timeout, proceeding without auth');
+        setLoading(false);
+        setUser(null);
+      }
+    }, 10000); // 10 second timeout
+    
+    // Get initial session with better error handling
+    const initializeAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (!mounted) return;
+        
+        console.log('AuthContext: Initial session:', session, 'Error:', error);
+        
+        if (error) {
+          console.error('AuthContext: Session error:', error);
+          // Don't block the app, just proceed without auth
+          setUser(null);
+        } else {
+          setUser(session?.user ?? null);
+        }
+      } catch (error) {
+        if (!mounted) return;
+        console.error('AuthContext: Critical auth error:', error);
+        // App should still work without auth
+        setUser(null);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+          clearTimeout(timeoutId);
+        }
+      }
+    };
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return;
-      console.log('AuthContext: Auth state changed:', _event, session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // Listen for auth changes with error handling
+    let subscription: any;
+    try {
+      const {
+        data: { subscription: sub },
+      } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (!mounted) return;
+        console.log('AuthContext: Auth state changed:', _event, session);
+        setUser(session?.user ?? null);
+        if (loading) setLoading(false);
+      });
+      subscription = sub;
+    } catch (error) {
+      console.error('AuthContext: Error setting up auth listener:', error);
+      // Continue without listener
+    }
+
+    // Initialize auth
+    initializeAuth();
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
+      clearTimeout(timeoutId);
+      if (subscription) {
+        try {
+          subscription.unsubscribe();
+        } catch (error) {
+          console.error('AuthContext: Error unsubscribing:', error);
+        }
+      }
     };
   }, []);
 
