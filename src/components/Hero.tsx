@@ -6,6 +6,7 @@ import heroImage from "@/assets/diverse-professionals-hero.jpg";
 
 const Hero = () => {
   const { user } = useAuth();
+  console.log('Hero component: user =', user);
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image with Overlay */}

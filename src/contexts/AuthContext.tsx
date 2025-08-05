@@ -28,9 +28,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log('AuthContext: Initializing auth...');
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      console.log('AuthContext: Initial session:', session, 'Error:', error);
       setUser(session?.user ?? null);
+      setLoading(false);
+    }).catch((error) => {
+      console.error('AuthContext: Error getting session:', error);
       setLoading(false);
     });
 
@@ -38,6 +43,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('AuthContext: Auth state changed:', _event, session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
