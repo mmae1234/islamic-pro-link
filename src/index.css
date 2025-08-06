@@ -74,22 +74,34 @@
   border-color: hsl(var(--border));
 }
 
+/* Critical mobile fixes */
+html {
+  width: 100%;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   font-family: 'Inter', system-ui, sans-serif;
   color: hsl(var(--foreground));
   background: hsl(var(--background));
+  width: 100%;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
   /* Mobile optimizations */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   /* Prevent zoom on input focus on iOS */
   -webkit-text-size-adjust: 100%;
+  /* Fix iOS Safari height issues */
+  min-height: 100vh;
 }
 
-/* Mobile Safari fixes */
+/* iOS Safari specific fixes */
 @supports (-webkit-touch-callout: none) {
   body {
-    /* Fix for iOS Safari viewport height issues */
     min-height: -webkit-fill-available;
   }
   
@@ -98,10 +110,22 @@ body {
   }
 }
 
-/* Prevent horizontal scroll on mobile */
-html, body {
-  overflow-x: hidden;
+/* Mobile device detection and optimization */
+@media screen and (max-device-width: 768px) {
+  body {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+  
+  input, textarea, select {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+}
+
+/* Root element fixes for mobile */
+#root {
+  min-height: 100vh;
   width: 100%;
+  overflow-x: hidden;
 }
 
 /* Custom gradient backgrounds */
@@ -131,22 +155,22 @@ html, body {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Responsive text improvements for mobile */
+/* Mobile-optimized text sizes */
 @media (max-width: 640px) {
   h1 {
     line-height: 1.1;
   }
   
   .text-4xl {
-    font-size: 2rem;
+    font-size: 2rem !important;
   }
   
   .text-5xl {
-    font-size: 2.5rem;
+    font-size: 2.5rem !important;
   }
   
   .text-6xl {
-    font-size: 3rem;
+    font-size: 3rem !important;
   }
 }
 
@@ -167,17 +191,7 @@ html, body {
   animation: skeleton 2s ease-in-out infinite;
 }
 
-/* Button hover states */
-button:hover {
-  transform: translateY(-1px);
-  transition: transform 0.2s ease-in-out;
-}
-
-button:active {
-  transform: translateY(0);
-}
-
-/* Mobile touch improvements */
+/* Mobile touch improvements - disable hover effects on touch devices */
 @media (hover: none) and (pointer: coarse) {
   button:hover {
     transform: none;
@@ -192,10 +206,16 @@ button:active {
   }
 }
 
-/* Improve tap targets on mobile */
+/* Ensure minimum tap target sizes on mobile */
 @media (max-width: 768px) {
   button, a {
     min-height: 44px;
     min-width: 44px;
   }
+}
+
+/* Prevent horizontal scrolling issues */
+.container {
+  max-width: 100%;
+  overflow-x: hidden;
 }

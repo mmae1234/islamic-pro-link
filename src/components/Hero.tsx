@@ -1,68 +1,28 @@
 
 import { Link } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Search, Users, MessageCircle, Award } from "lucide-react";
-import heroImage from "@/assets/diverse-professionals-hero.jpg";
 
 const Hero = () => {
-  // Mobile-safe auth access
-  let user = null;
-  
-  try {
-    const authContext = useAuth();
-    user = authContext?.user || null;
-  } catch (error) {
-    console.log('Hero: Auth context not available, continuing as guest');
-    // Continue rendering as guest user
-  }
-
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary via-primary-glow to-primary">
       {/* Mobile-optimized viewport styles */}
       <style>{`
-        @supports (-webkit-touch-callout: none) {
-          .hero-section {
-            min-height: 100vh;
-            min-height: -webkit-fill-available;
-          }
-        }
         @media (max-width: 768px) {
-          .hero-section {
+          .hero-container {
             min-height: 100vh;
             min-height: 100dvh;
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
+            padding: 1rem;
           }
         }
       `}</style>
 
-      {/* Background Image with Mobile-Safe Loading */}
-      <div className="absolute inset-0">
-        <img 
-          src={heroImage} 
-          alt="Muslim professionals collaborating" 
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            // Mobile-safe fallback
-            const target = e.target as HTMLImageElement;
-            target.style.display = 'none';
-            const parent = target.parentElement;
-            if (parent) {
-              parent.style.background = 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))';
-            }
-          }}
-          onLoad={() => {
-            console.log('Hero: Background image loaded successfully');
-          }}
-          loading="eager"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/70 to-transparent"></div>
-      </div>
+      {/* Background with fallback */}
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/70 to-transparent"></div>
 
       {/* Content - Mobile Optimized */}
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 hero-section">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-[80vh] lg:min-h-0">
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 hero-container">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Text Content */}
           <div className="text-center lg:text-left">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-4 sm:mb-6 leading-tight">
@@ -86,9 +46,9 @@ const Hero = () => {
                 </Link>
               </Button>
               <Button variant="elegant" size="xl" className="font-semibold hover:shadow-elegant w-full sm:w-auto" asChild>
-                <Link to={user ? "/dashboard" : "/login"}>
+                <Link to="/login">
                   <Users className="w-5 h-5 mr-2" />
-                  {user ? "Go to Dashboard" : "Join Community"}
+                  Join Community
                 </Link>
               </Button>
             </div>
