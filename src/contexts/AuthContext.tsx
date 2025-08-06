@@ -40,66 +40,87 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     console.log('AuthContext: Initializing auth...');
     let mounted = true;
     
-    // Much shorter timeout for mobile - mobile users need faster loading
-    const timeoutId = setTimeout(() => {
+    // Immediate fallback for iOS - set loading to false quickly
+    const immediateTimeout = setTimeout(() => {
       if (mounted && loading) {
-        console.log('AuthContext: Auth initialization timeout, proceeding without auth');
+        console.log('AuthContext: Fast timeout for iOS, proceeding as guest');
         setLoading(false);
         setUser(null);
       }
-    }, 3000); // 3 second timeout for mobile compatibility
+    }, 1000); // 1 second for iOS compatibility
     
-    // Get initial session with better error handling
+    // Get initial session with iOS-specific handling
     const initializeAuth = async () => {
       try {
-        // Add extra mobile compatibility check
-        if (typeof window === 'undefined' || !window.localStorage) {
-          console.log('AuthContext: localStorage not available, proceeding as guest');
+        // iOS WebKit storage checks
+        const hasStorage = (() => {
+          try {
+            if (typeof window === 'undefined') return false;
+            const testKey = '__storage_test__';
+            window.localStorage.setItem(testKey, 'test');
+            window.localStorage.removeItem(testKey);
+            return true;
+          } catch (e) {
+            console.log('AuthContext: localStorage blocked (iOS privacy mode)');
+            return false;
+          }
+        })();
+
+        if (!hasStorage) {
+          console.log('AuthContext: Storage unavailable, proceeding as guest');
           setUser(null);
           setLoading(false);
+          clearTimeout(immediateTimeout);
           return;
         }
 
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Try to get session with quick timeout for iOS
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Session timeout')), 2000)
+        );
+
+        const { data: { session }, error } = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ]) as any;
+
         if (!mounted) return;
         
-        console.log('AuthContext: Initial session:', session, 'Error:', error);
+        console.log('AuthContext: Initial session:', session ? 'found' : 'none', 'Error:', error);
         
         if (error) {
-          console.error('AuthContext: Session error:', error);
-          // Don't block the app, just proceed without auth
+          console.log('AuthContext: Session error, proceeding as guest:', error.message);
           setUser(null);
         } else {
           setUser(session?.user ?? null);
         }
       } catch (error) {
         if (!mounted) return;
-        console.error('AuthContext: Critical auth error:', error);
-        // App should still work without auth - this is critical for mobile
+        console.log('AuthContext: Auth timeout/error, proceeding as guest:', error);
         setUser(null);
       } finally {
         if (mounted) {
           setLoading(false);
-          clearTimeout(timeoutId);
+          clearTimeout(immediateTimeout);
         }
       }
     };
 
-    // Listen for auth changes with error handling
+    // Simplified auth listener for iOS
     let subscription: any;
     try {
       const {
         data: { subscription: sub },
       } = supabase.auth.onAuthStateChange((_event, session) => {
         if (!mounted) return;
-        console.log('AuthContext: Auth state changed:', _event, session);
+        console.log('AuthContext: Auth state changed:', _event);
         setUser(session?.user ?? null);
         if (loading) setLoading(false);
       });
       subscription = sub;
     } catch (error) {
-      console.error('AuthContext: Error setting up auth listener:', error);
-      // Continue without listener
+      console.log('AuthContext: Auth listener failed, continuing without it:', error);
     }
 
     // Initialize auth
@@ -107,12 +128,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return () => {
       mounted = false;
-      clearTimeout(timeoutId);
+      clearTimeout(immediateTimeout);
       if (subscription) {
         try {
           subscription.unsubscribe();
         } catch (error) {
-          console.error('AuthContext: Error unsubscribing:', error);
+          console.log('AuthContext: Error unsubscribing:', error);
         }
       }
     };

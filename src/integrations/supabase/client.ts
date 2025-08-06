@@ -8,10 +8,26 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
+// iOS-compatible storage with fallback
+const getStorage = () => {
+  try {
+    // Test localStorage availability (iOS may block it)
+    const testKey = '__supabase_test__';
+    localStorage.setItem(testKey, 'test');
+    localStorage.removeItem(testKey);
+    return localStorage;
+  } catch (e) {
+    console.log('Supabase: localStorage unavailable, using sessionStorage fallback');
+    return sessionStorage;
+  }
+};
+
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: localStorage,
+    storage: getStorage(),
     persistSession: true,
     autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce'
   }
 });
