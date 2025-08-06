@@ -1,150 +1,201 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+:root {
+  /* Primary Colors */
+  --primary: 210 40% 20%;
+  --primary-foreground: 0 0% 98%;
+  --primary-glow: 210 50% 30%;
 
-@layer base {
-  :root {
-    --background: 48 25% 98%;
-    --foreground: 160 25% 15%;
+  /* Accent Colors */
+  --accent: 45 93% 47%;
+  --accent-foreground: 210 40% 20%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 160 25% 15%;
+  /* Base Colors */
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 3.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 3.9%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 160 25% 15%;
+  /* Muted Colors */
+  --muted: 240 4.8% 95.9%;
+  --muted-foreground: 240 3.8% 46.1%;
 
-    --primary: 158 65% 25%;
-    --primary-foreground: 48 25% 98%;
-    --primary-glow: 158 45% 35%;
+  /* Border Colors */
+  --border: 240 5.9% 90%;
+  --input: 240 5.9% 90%;
+  --ring: 210 40% 20%;
 
-    --secondary: 48 15% 94%;
-    --secondary-foreground: 160 25% 15%;
+  /* Semantic Colors */
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 98%;
+  --success: 142 76% 36%;
+  --success-foreground: 0 0% 98%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 3.9%;
 
-    --muted: 48 15% 96%;
-    --muted-foreground: 160 15% 45%;
+  /* Chart colors */
+  --chart-1: 210 40% 20%;
+  --chart-2: 45 93% 47%;
+  --chart-3: 210 50% 30%;
+  --chart-4: 120 60% 50%;
+  --chart-5: 300 60% 50%;
 
-    --accent: 40 85% 65%;
-    --accent-foreground: 160 25% 15%;
+  --radius: 0.75rem;
+}
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 48 25% 98%;
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 210 40% 80%;
+  --primary-foreground: 240 10% 3.9%;
+  --primary-glow: 210 50% 70%;
+  --accent: 45 93% 60%;
+  --accent-foreground: 240 10% 3.9%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --ring: 210 40% 80%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+}
 
-    --border: 48 15% 88%;
-    --input: 48 15% 92%;
-    --ring: 158 65% 25%;
+* {
+  border-color: hsl(var(--border));
+}
 
-    /* Custom design tokens */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 50%, hsl(var(--accent)) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(var(--card)), hsl(var(--muted)));
-    
-    --shadow-soft: 0 4px 20px -2px hsl(var(--primary) / 0.1);
-    --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.2);
-    --shadow-glow: 0 0 40px hsl(var(--accent) / 0.3);
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
+  /* Mobile optimizations */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* Prevent zoom on input focus on iOS */
+  -webkit-text-size-adjust: 100%;
+}
 
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+/* Mobile Safari fixes */
+@supports (-webkit-touch-callout: none) {
+  body {
+    /* Fix for iOS Safari viewport height issues */
+    min-height: -webkit-fill-available;
   }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+  
+  .min-h-screen {
+    min-height: -webkit-fill-available;
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
+/* Prevent horizontal scroll on mobile */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+}
 
-  body {
-    @apply bg-background text-foreground;
-  }
+/* Custom gradient backgrounds */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+}
 
-  /* Interactive elements */
-  .hover-lift {
-    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-elegant;
+.bg-gradient-card {
+  background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--muted)) 100%);
+}
+
+/* Custom shadows */
+.shadow-soft {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.shadow-elegant {
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.shadow-glow {
+  box-shadow: 0 0 20px rgba(45, 93, 47, 0.3);
+}
+
+/* Smooth transitions */
+.transition-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Responsive text improvements for mobile */
+@media (max-width: 640px) {
+  h1 {
+    line-height: 1.1;
   }
   
-  .hover-glow {
-    @apply transition-all duration-300 hover:shadow-glow;
+  .text-4xl {
+    font-size: 2rem;
   }
   
-  .shimmer-effect {
-    position: relative;
-    overflow: hidden;
+  .text-5xl {
+    font-size: 2.5rem;
   }
   
-  .shimmer-effect::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.4),
-      transparent
-    );
-    transform: translateX(-100%);
-    animation: shimmer 2s ease-in-out infinite;
+  .text-6xl {
+    font-size: 3rem;
+  }
+}
+
+/* Loading skeleton animations */
+@keyframes skeleton {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-skeleton {
+  animation: skeleton 2s ease-in-out infinite;
+}
+
+/* Button hover states */
+button:hover {
+  transform: translateY(-1px);
+  transition: transform 0.2s ease-in-out;
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* Mobile touch improvements */
+@media (hover: none) and (pointer: coarse) {
+  button:hover {
+    transform: none;
+  }
+  
+  .hover\:shadow-glow:hover {
+    box-shadow: none;
+  }
+  
+  .hover\:shadow-elegant:hover {
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Improve tap targets on mobile */
+@media (max-width: 768px) {
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
   }
 }

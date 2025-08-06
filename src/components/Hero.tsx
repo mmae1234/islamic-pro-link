@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -5,38 +6,45 @@ import { Search, Users, MessageCircle, Award } from "lucide-react";
 import heroImage from "@/assets/diverse-professionals-hero.jpg";
 
 const Hero = () => {
-  // Use a safe approach to access auth context on mobile
+  // Mobile-safe auth access
   let user = null;
-  let authError = false;
   
   try {
     const authContext = useAuth();
     user = authContext?.user || null;
   } catch (error) {
-    console.error('Hero: Auth context not available, continuing as guest');
-    authError = true;
+    console.log('Hero: Auth context not available, continuing as guest');
     // Continue rendering as guest user
   }
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary via-primary-glow to-primary">
-      {/* Ensure minimum content visibility even without image */}
+      {/* Mobile-optimized viewport styles */}
       <style>{`
+        @supports (-webkit-touch-callout: none) {
+          .hero-section {
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+          }
+        }
         @media (max-width: 768px) {
           .hero-section {
             min-height: 100vh;
-            min-height: 100dvh; /* Dynamic viewport height for mobile */
+            min-height: 100dvh;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
           }
         }
       `}</style>
-      {/* Background Image with Overlay */}
+
+      {/* Background Image with Mobile-Safe Loading */}
       <div className="absolute inset-0">
         <img 
           src={heroImage} 
           alt="Muslim professionals collaborating" 
           className="w-full h-full object-cover"
           onError={(e) => {
-            // Fallback to a solid background if image fails
+            // Mobile-safe fallback
             const target = e.target as HTMLImageElement;
             target.style.display = 'none';
             const parent = target.parentElement;
@@ -44,17 +52,20 @@ const Hero = () => {
               parent.style.background = 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))';
             }
           }}
+          onLoad={() => {
+            console.log('Hero: Background image loaded successfully');
+          }}
           loading="eager"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/70 to-transparent"></div>
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      {/* Content - Mobile Optimized */}
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 hero-section">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-[80vh] lg:min-h-0">
           {/* Text Content */}
           <div className="text-center lg:text-left">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-4 sm:mb-6 leading-tight">
               Connect with Muslim 
               <span className="block bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent">
                 Professionals
@@ -62,19 +73,19 @@ const Hero = () => {
               Worldwide
             </h1>
             
-            <p className="text-lg md:text-xl text-primary-foreground/90 mb-8 max-w-2xl">
+            <p className="text-base sm:text-lg md:text-xl text-primary-foreground/90 mb-6 sm:mb-8 max-w-2xl mx-auto lg:mx-0">
               Join the largest professional network for the Muslim community. Find mentors, 
               build connections, and advance your career while staying true to your values.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button variant="accent" size="xl" className="font-semibold hover:shadow-glow" asChild>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
+              <Button variant="accent" size="xl" className="font-semibold hover:shadow-glow w-full sm:w-auto" asChild>
                 <Link to="/search">
                   <Search className="w-5 h-5 mr-2" />
                   Find Professionals
                 </Link>
               </Button>
-              <Button variant="elegant" size="xl" className="font-semibold hover:shadow-elegant" asChild>
+              <Button variant="elegant" size="xl" className="font-semibold hover:shadow-elegant w-full sm:w-auto" asChild>
                 <Link to={user ? "/dashboard" : "/login"}>
                   <Users className="w-5 h-5 mr-2" />
                   {user ? "Go to Dashboard" : "Join Community"}
@@ -82,24 +93,24 @@ const Hero = () => {
               </Button>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 mt-12 pt-8 border-t border-primary-foreground/20">
+            {/* Stats - Mobile Optimized */}
+            <div className="grid grid-cols-3 gap-4 mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-primary-foreground/20">
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-accent">10K+</div>
-                <div className="text-sm text-primary-foreground/80">Professionals</div>
+                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-accent">10K+</div>
+                <div className="text-xs sm:text-sm text-primary-foreground/80">Professionals</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-accent">50+</div>
-                <div className="text-sm text-primary-foreground/80">Countries</div>
+                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-accent">50+</div>
+                <div className="text-xs sm:text-sm text-primary-foreground/80">Countries</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-accent">200+</div>
-                <div className="text-sm text-primary-foreground/80">Industries</div>
+                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-accent">200+</div>
+                <div className="text-xs sm:text-sm text-primary-foreground/80">Industries</div>
               </div>
             </div>
           </div>
 
-          {/* Feature Cards */}
+          {/* Feature Cards - Hide on Mobile for Better Performance */}
           <div className="hidden lg:block">
             <div className="grid gap-6">
               <div className="bg-gradient-card backdrop-blur-sm border border-border/50 rounded-xl p-6 shadow-elegant">
