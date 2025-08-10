@@ -29,6 +29,9 @@ import Organizations from "./pages/Organizations";
 import Careers from "./pages/Careers";
 import Scholarships from "./pages/Scholarships";
 import EditProfile from "./pages/EditProfile";
+import Signup from "./pages/Signup";
+import ProfessionalDashboard from "./pages/ProfessionalDashboard";
+import BusinessDashboard from "./pages/BusinessDashboard";
 
 const queryClient = new QueryClient();
 
@@ -45,11 +48,22 @@ const App = () => (
               <Route path="/search" element={<Search />} />
               <Route path="/about" element={<About />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/dashboard" element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard/professional" element={
+                <ProtectedRoute>
+                  <ProfessionalDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard/business" element={
+                <ProtectedRoute>
+                  <BusinessDashboard />
                 </ProtectedRoute>
               } />
               <Route path="/profile/:userId" element={<Profile />} />

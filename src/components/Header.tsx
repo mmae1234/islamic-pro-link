@@ -154,7 +154,7 @@ const Header = () => {
                   <Link to="/login">Login</Link>
                 </Button>
                 <Button variant="hero" size="sm" asChild>
-                  <Link to="/login?mode=signup">Join Now</Link>
+                  <Link to="/signup?src=header">Join Now</Link>
                 </Button>
               </>
             )}
@@ -269,7 +269,7 @@ const Header = () => {
                       <Link to="/login">Login</Link>
                     </Button>
                     <Button variant="hero" size="sm" asChild>
-                      <Link to="/login?mode=signup">Join Now</Link>
+                      <Link to="/signup?src=header">Join Now</Link>
                     </Button>
                   </>
                 )}

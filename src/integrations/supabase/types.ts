@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      business_accounts: {
+        Row: {
+          created_at: string
+          id: string
+          name: string | null
+          owner_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name?: string | null
+          owner_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string | null
+          owner_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -338,6 +365,30 @@ export type Database = {
           role?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      signup_events: {
+        Row: {
+          account_type: string | null
+          created_at: string
+          id: string
+          source: string
+          user_id: string | null
+        }
+        Insert: {
+          account_type?: string | null
+          created_at?: string
+          id?: string
+          source: string
+          user_id?: string | null
+        }
+        Update: {
+          account_type?: string | null
+          created_at?: string
+          id?: string
+          source?: string
+          user_id?: string | null
         }
         Relationships: []
       }
