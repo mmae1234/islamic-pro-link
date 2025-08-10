@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { Chrome, Mail } from "lucide-react";
+import { Chrome, Mail, ArrowLeft } from "lucide-react";
 
 const setSeo = (title: string, description?: string) => {
   document.title = title;
@@ -126,6 +126,11 @@ const Signup = () => {
         <div className="max-w-xl mx-auto bg-card border border-border rounded-2xl p-6 shadow-soft">
           {step === 'auth' && !user && (
             <div className="space-y-6">
+              {role === 'business' && (
+                <Button variant="outline" size="sm" onClick={() => setStep('role')} aria-label="Back to account type selection" className="inline-flex items-center gap-2">
+                  <ArrowLeft className="w-4 h-4" /> Back
+                </Button>
+              )}
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Account type: <span className="font-medium capitalize">{role}</span></span>
                 <Button variant="link" size="sm" onClick={() => setStep('role')} aria-label="Change account type">
