@@ -246,7 +246,7 @@ useEffect(() => {
                               onChange={(e) => update('firstName', e.target.value)}
                               className={`pl-9 ${validationErrors.firstName ? 'border-destructive' : ''}`}
                               maxLength={50}
-                              required={selectedRole !== 'business'}
+                              required
                             />
                           </div>
                           {validationErrors.firstName && (
@@ -266,7 +266,7 @@ useEffect(() => {
                               onChange={(e) => update('lastName', e.target.value)}
                               className={`pl-9 ${validationErrors.lastName ? 'border-destructive' : ''}`}
                               maxLength={50}
-                              required={selectedRole !== 'business'}
+                              required
                             />
                           </div>
                           {validationErrors.lastName && (
