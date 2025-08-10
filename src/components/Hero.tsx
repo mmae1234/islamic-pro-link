@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Search, Users, MessageCircle, Award } from "lucide-react";
+import heroImage from "@/assets/diverse-professionals-hero.jpg";
 
 const Hero = () => {
   return (
@@ -17,7 +18,15 @@ const Hero = () => {
         }
       `}</style>
 
-      {/* Background with fallback */}
+      {/* Background image and overlay */}
+      <img
+        src={heroImage}
+        alt="Diverse Muslim professionals networking at a conference"
+        className="absolute inset-0 w-full h-full object-cover object-center"
+        loading="eager"
+        decoding="async"
+        fetchPriority="high"
+      />
       <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/70 to-transparent"></div>
 
       {/* Content - Mobile Optimized */}
