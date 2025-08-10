@@ -30,9 +30,9 @@ const Signup = () => {
   const stepFromUrl = searchParams.get('step');
 
   const initialStep: 'auth' | 'role' = useMemo(() => {
-    if (user) return 'role';
-    return stepFromUrl === 'role' ? 'role' : 'auth';
-  }, [user, stepFromUrl]);
+    if (stepFromUrl === 'auth') return 'auth';
+    return 'role';
+  }, [stepFromUrl]);
 
   const [step, setStep] = useState<'auth' | 'role'>(initialStep);
 
@@ -69,7 +69,11 @@ const Signup = () => {
   const handleRoleSubmit = async (role: AccountType) => {
     try {
       if (!user) {
-        toast({ title: 'Please sign in first', description: 'Complete step 1 to continue.', variant: 'destructive' });
+        const params = new URLSearchParams(searchParams);
+        params.set('account_type', role);
+        params.set('step', 'auth');
+        setSearchParams(params, { replace: true });
+        toast({ title: 'Continue to sign in', description: 'Create your account to finish setup.', variant: 'default' });
         setStep('auth');
         return;
       }
@@ -100,7 +104,7 @@ const Signup = () => {
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <header className="mb-8 text-center">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground">Create your account</h1>
-          <p className="text-muted-foreground mt-2">Step {step === 'auth' ? '1' : '2'} of 2</p>
+          <p className="text-muted-foreground mt-2">Step {step === 'role' ? '1' : '2'} of 2</p>
         </header>
 
         <div className="max-w-xl mx-auto bg-card border border-border rounded-2xl p-6 shadow-soft">
