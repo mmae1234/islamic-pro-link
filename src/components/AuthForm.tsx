@@ -109,9 +109,13 @@ useEffect(() => {
     setLoading(true);
     try {
       if (mode === 'signup') {
-        const firstNameValidation = validateName(firstName);
-        const lastNameValidation = validateName(lastName);
-        await signUp(emailValidation.sanitized, password, firstNameValidation.sanitized, lastNameValidation.sanitized);
+        if (selectedRole === 'business') {
+          await signUp(emailValidation.sanitized, password, "", "");
+        } else {
+          const firstNameValidation = validateName(firstName);
+          const lastNameValidation = validateName(lastName);
+          await signUp(emailValidation.sanitized, password, firstNameValidation.sanitized, lastNameValidation.sanitized);
+        }
         setSignupSuccess(true);
       } else {
         await signIn(emailValidation.sanitized, password);
