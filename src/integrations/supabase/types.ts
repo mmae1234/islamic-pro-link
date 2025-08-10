@@ -16,30 +16,104 @@ export type Database = {
     Tables: {
       business_accounts: {
         Row: {
+          bio: string | null
+          booking_url: string | null
+          city: string | null
+          country: string | null
+          cover_url: string | null
           created_at: string
+          email: string | null
           id: string
+          languages: string[] | null
+          logo_url: string | null
           name: string | null
+          occupations: string[] | null
           owner_id: string
+          phone: string | null
+          sector: string | null
+          state: string | null
           status: string
           updated_at: string
+          verified: boolean
+          website: string | null
         }
         Insert: {
+          bio?: string | null
+          booking_url?: string | null
+          city?: string | null
+          country?: string | null
+          cover_url?: string | null
           created_at?: string
+          email?: string | null
           id?: string
+          languages?: string[] | null
+          logo_url?: string | null
           name?: string | null
+          occupations?: string[] | null
           owner_id: string
+          phone?: string | null
+          sector?: string | null
+          state?: string | null
           status?: string
           updated_at?: string
+          verified?: boolean
+          website?: string | null
         }
         Update: {
+          bio?: string | null
+          booking_url?: string | null
+          city?: string | null
+          country?: string | null
+          cover_url?: string | null
           created_at?: string
+          email?: string | null
           id?: string
+          languages?: string[] | null
+          logo_url?: string | null
           name?: string | null
+          occupations?: string[] | null
           owner_id?: string
+          phone?: string | null
+          sector?: string | null
+          state?: string | null
           status?: string
           updated_at?: string
+          verified?: boolean
+          website?: string | null
         }
         Relationships: []
+      }
+      business_members: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["business_member_role"]
+          user_id: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["business_member_role"]
+          user_id: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["business_member_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_business_members_business"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       favorites: {
         Row: {
@@ -215,6 +289,41 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      professional_business_links: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          professional_user_id: string
+          role_title: string | null
+          status: Database["public"]["Enums"]["link_status"]
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          professional_user_id: string
+          role_title?: string | null
+          status?: Database["public"]["Enums"]["link_status"]
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          professional_user_id?: string
+          role_title?: string | null
+          status?: Database["public"]["Enums"]["link_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_links_business"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -405,9 +514,26 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string[]
       }
+      has_business_role: {
+        Args: {
+          _user_id: string
+          _business_id: string
+          _roles: Database["public"]["Enums"]["business_member_role"][]
+        }
+        Returns: boolean
+      }
+      is_business_owner: {
+        Args: { _user_id: string; _business_id: string }
+        Returns: boolean
+      }
+      is_business_team_member: {
+        Args: { _user_id: string; _business_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      business_member_role: "admin" | "editor" | "viewer"
+      link_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -534,6 +660,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      business_member_role: ["admin", "editor", "viewer"],
+      link_status: ["pending", "approved", "rejected"],
+    },
   },
 } as const
