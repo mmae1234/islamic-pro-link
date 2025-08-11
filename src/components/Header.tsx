@@ -68,7 +68,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-primary/95 text-primary-foreground backdrop-blur-md border-b border-primary/30 sticky top-0 z-50">
+    <header className="bg-background text-foreground backdrop-blur-md border-b border-border sticky top-0 z-50">
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -76,22 +76,22 @@ const Header = () => {
             <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-lg">MP</span>
             </div>
-            <span className="text-xl font-bold text-primary-foreground">Muslim Professionals</span>
+            <span className="text-xl font-bold text-foreground">Muslim Professionals</span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/search" className="text-primary-foreground hover:text-accent transition-smooth">
+            <Link to="/search" className="text-foreground hover:text-accent transition-smooth">
               Find Professionals
             </Link>
-            <Link to="/businesses" className="text-primary-foreground hover:text-accent transition-smooth">
+            <Link to="/businesses" className="text-foreground hover:text-accent transition-smooth">
               Find Businesses
             </Link>
-            <Link to="/mentorship" className="text-primary-foreground hover:text-accent transition-smooth">
+            <Link to="/mentorship" className="text-foreground hover:text-accent transition-smooth">
               Mentorship
             </Link>
             <DropdownMenu>
-              <DropdownMenuTrigger className="text-primary-foreground hover:text-accent transition-smooth">
+            <DropdownMenuTrigger className="text-foreground hover:text-accent transition-smooth">
                 Resources
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-popover border border-border shadow-elegant z-50">
@@ -107,7 +107,7 @@ const Header = () => {
               </DropdownMenuContent>
             </DropdownMenu>
             <DropdownMenu>
-              <DropdownMenuTrigger className="text-primary-foreground hover:text-accent transition-smooth">
+              <DropdownMenuTrigger className="text-foreground hover:text-accent transition-smooth">
                 About
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-popover border border-border shadow-elegant z-50">
@@ -255,21 +255,21 @@ const Header = () => {
             <div className="flex flex-col space-y-4">
               <Link 
                 to="/search" 
-                className="text-primary-foreground hover:text-accent transition-smooth px-4 py-2"
+                className="text-foreground hover:text-accent transition-smooth px-4 py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Find Professionals
               </Link>
               <Link 
                 to="/businesses" 
-                className="text-primary-foreground hover:text-accent transition-smooth px-4 py-2"
+                className="text-foreground hover:text-accent transition-smooth px-4 py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Find Businesses
               </Link>
               <Link 
                 to="/mentorship" 
-                className="text-primary-foreground hover:text-accent transition-smooth px-4 py-2"
+                className="text-foreground hover:text-accent transition-smooth px-4 py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Mentorship
@@ -278,7 +278,7 @@ const Header = () => {
                 <>
                   <Link 
                     to="/messages" 
-                    className="text-primary-foreground hover:text-accent transition-smooth px-4 py-2"
+                    className="text-foreground hover:text-accent transition-smooth px-4 py-2"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Messages
@@ -286,25 +286,25 @@ const Header = () => {
                 </>
               )}
               <div className="px-4 py-2">
-                <p className="text-sm font-medium text-primary-foreground">Resources</p>
+                <p className="text-sm font-medium text-foreground">Resources</p>
                 <div className="ml-2 mt-2 space-y-2">
                   <Link 
                     to="/careers" 
-                    className="block text-primary-foreground hover:text-accent transition-smooth py-1"
+                    className="block text-foreground hover:text-accent transition-smooth py-1"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Careers
                   </Link>
                   <Link 
                     to="/scholarships" 
-                    className="block text-primary-foreground hover:text-accent transition-smooth py-1"
+                    className="block text-foreground hover:text-accent transition-smooth py-1"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Scholarships
                   </Link>
                   <Link 
                     to="/organizations" 
-                    className="block text-primary-foreground hover:text-accent transition-smooth py-1"
+                    className="block text-foreground hover:text-accent transition-smooth py-1"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Organizations
@@ -312,18 +312,18 @@ const Header = () => {
                 </div>
               </div>
               <div className="px-4 py-2">
-                <p className="text-sm font-medium text-primary-foreground">About</p>
+                <p className="text-sm font-medium text-foreground">About</p>
                 <div className="ml-2 mt-2 space-y-2">
                   <Link 
                     to="/about" 
-                    className="block text-primary-foreground hover:text-accent transition-smooth py-1"
+                    className="block text-foreground hover:text-accent transition-smooth py-1"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     About Us
                   </Link>
                   <Link 
                     to="/donations" 
-                    className="block text-primary-foreground hover:text-accent transition-smooth py-1"
+                    className="block text-foreground hover:text-accent transition-smooth py-1"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Support Our Mission

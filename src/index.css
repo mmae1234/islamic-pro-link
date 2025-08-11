@@ -10,9 +10,13 @@
   --primary-foreground: 0 0% 98%;
   --primary-glow: 155 80% 32%;
 
-  /* Accent Colors */
-  --accent: 51 100% 50%; /* #FFD700 */
-  --accent-foreground: 240 10% 3.9%;
+  /* Accent & Brand Colors */
+  --brand-green: 155 100% 21%; /* #006B3F */
+  --brand-gold: 42 74% 66%; /* #E9C46A */
+  --brand-gold-600: 44 64% 53%; /* #D4AC3B */
+  --brand-gold-700: 39 61% 45%; /* #B8872D */
+  --accent: var(--brand-gold);
+  --accent-foreground: 162 70% 14%; /* #0B3D2E */
 
   /* Base Colors */
   --background: 0 0% 100%;
@@ -153,6 +157,15 @@ body {
 /* Smooth transitions */
 .transition-smooth {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Global link styling using brand accent */
+a {
+  color: hsl(var(--accent));
+  transition: color 0.2s ease;
+}
+a:hover {
+  color: hsl(var(--brand-gold-600));
 }
 
 /* Mobile-optimized text sizes */

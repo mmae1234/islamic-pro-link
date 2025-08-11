@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -62,11 +63,23 @@ interface FavoriteMentor {
   };
 }
 
+interface FavoriteBusiness {
+  id: string;
+  name: string | null;
+  sector: string | null;
+  country: string | null;
+  state: string | null;
+  city: string | null;
+  verified: boolean | null;
+  logo_url: string | null;
+}
+
 const Favorites = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [favoriteProfessionals, setFavoriteProfessionals] = useState<FavoriteProfessional[]>([]);
   const [favoriteMentors, setFavoriteMentors] = useState<FavoriteMentor[]>([]);
+  const [favoriteBusinesses, setFavoriteBusinesses] = useState<FavoriteBusiness[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -79,6 +92,23 @@ const Favorites = () => {
     if (!user) return;
 
     try {
+      // Load favorite businesses from localStorage
+      const raw = localStorage.getItem('favorite_business_ids');
+      const businessIds: string[] = raw ? JSON.parse(raw) : [];
+      if (businessIds.length > 0) {
+        const { data: businesses, error: bizError } = await supabase
+          .from('business_accounts')
+          .select('id, name, sector, country, state, city, verified, logo_url')
+          .in('id', businessIds);
+        if (bizError) throw bizError;
+        const ordered = businessIds
+          .map(id => businesses?.find(b => b.id === id))
+          .filter(Boolean) as FavoriteBusiness[];
+        setFavoriteBusinesses(ordered);
+      } else {
+        setFavoriteBusinesses([]);
+      }
+
       // Load favorite professionals - using simpler query without join
       const { data: favProfs, error: favProfsError } = await supabase
         .from('favorites')
@@ -104,7 +134,7 @@ const Favorites = () => {
         const combinedFavorites = favProfs.map(fav => ({
           ...fav,
           professional_profile: professionals?.find(prof => prof.user_id === fav.professional_id) || null
-        })).filter(fav => fav.professional_profile);
+        })).filter(fav => (fav as any).professional_profile);
 
         setFavoriteProfessionals(combinedFavorites as any);
       } else {
@@ -136,7 +166,7 @@ const Favorites = () => {
         const combinedMentors = mentorRequests.map(req => ({
           ...req,
           mentor_profile: mentorProfiles?.find(prof => prof.user_id === req.mentor_id) || null
-        })).filter(req => req.mentor_profile);
+        })).filter(req => (req as any).mentor_profile);
 
         setFavoriteMentors(combinedMentors as any);
       } else {
@@ -177,11 +207,24 @@ const Favorites = () => {
     }
   };
 
+  const removeFavoriteBusiness = (businessId: string) => {
+    try {
+      const key = 'favorite_business_ids';
+      const raw = localStorage.getItem(key);
+      const arr = raw ? (JSON.parse(raw) as string[]) : [];
+      const updated = arr.filter(id => id !== businessId);
+      localStorage.setItem(key, JSON.stringify(updated));
+      setFavoriteBusinesses(prev => prev.filter(b => b.id !== businessId));
+      toast({ title: 'Removed from favorites', description: 'Business removed from your favorites.' });
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    }
+  };
+
   const sendMessage = async (recipientId: string, recipientName: string) => {
     // Redirect to messages page with pre-selected recipient
     window.location.href = `/messages?recipient=${recipientId}&name=${encodeURIComponent(recipientName)}`;
   };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -209,7 +252,7 @@ const Favorites = () => {
           </div>
 
           <Tabs defaultValue="professionals" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="professionals" className="flex items-center gap-2">
                 <Heart className="w-4 h-4" />
                 Favorite Professionals ({favoriteProfessionals.length})
@@ -217,6 +260,10 @@ const Favorites = () => {
               <TabsTrigger value="mentors" className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
                 Mentorship Connections ({favoriteMentors.length})
+              </TabsTrigger>
+              <TabsTrigger value="businesses" className="flex items-center gap-2">
+                <Briefcase className="w-4 h-4" />
+                Favorite Businesses ({favoriteBusinesses.length})
               </TabsTrigger>
             </TabsList>
 
@@ -315,6 +362,65 @@ const Favorites = () => {
                                 onClick={() => removeFavoriteProfessional(favorite.id)}
                                 className="flex items-center gap-2"
                               >
+                                <Trash2 className="w-4 h-4" />
+                                Remove
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="businesses" className="space-y-6">
+              {favoriteBusinesses.length === 0 ? (
+                <Card>
+                  <CardContent className="p-12 text-center">
+                    <Briefcase className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">No favorite businesses yet</h3>
+                    <p className="text-muted-foreground">
+                      Browse businesses and add them to your favorites from the search page.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-6">
+                  {favoriteBusinesses.map((biz) => (
+                    <Card key={biz.id} className="shadow-soft hover:shadow-lg transition-shadow">
+                      <CardContent className="p-6">
+                        <div className="flex items-start space-x-4">
+                          <div className="w-16 h-16 bg-gradient-primary rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                            {biz.logo_url ? (
+                              <img src={biz.logo_url} alt={`${biz.name || 'Business'} logo`} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-primary-foreground font-semibold text-lg">{biz.name?.[0] || 'B'}</span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <h3 className="text-xl font-semibold text-foreground mb-1">{biz.name || 'Business'}</h3>
+                                {biz.sector && (
+                                  <p className="text-lg text-primary font-medium">{biz.sector}</p>
+                                )}
+                                <div className="flex items-center text-muted-foreground text-sm mb-2">
+                                  { (biz.city || biz.state || biz.country) && (
+                                    <>
+                                      <MapPin className="w-4 h-4 mr-1" />
+                                      <span>{[biz.city, biz.state, biz.country].filter(Boolean).join(', ')}</span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              <Button asChild variant="accent" className="flex items-center gap-2">
+                                <Link to={`/business/${biz.id}`}>View Business</Link>
+                              </Button>
+                              <Button variant="outline" onClick={() => removeFavoriteBusiness(biz.id)} className="flex items-center gap-2">
                                 <Trash2 className="w-4 h-4" />
                                 Remove
                               </Button>
