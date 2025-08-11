@@ -358,7 +358,7 @@ const Profile = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {professionalProfile?.experience_years !== null && (
+                  {professionalProfile && professionalProfile.experience_years != null && (
                     <div>
                       <div className="flex items-center text-muted-foreground mb-1">
                         <Calendar className="w-4 h-4 mr-2" />

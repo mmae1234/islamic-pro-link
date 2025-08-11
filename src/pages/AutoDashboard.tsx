@@ -12,18 +12,23 @@ const AutoDashboard = () => {
     let isMounted = true;
     const route = async () => {
       try {
-        const [{ data: userData }, bizRes, profRes] = await Promise.all([
-          supabase.auth.getUser(),
-          supabase.from('business_accounts').select('id').maybeSingle(),
-          supabase.from('profiles').select('role').maybeSingle(),
+        const { data: userData } = await supabase.auth.getUser();
+        const uid = userData.user?.id;
+        if (!uid) {
+          navigate('/dashboard/professional', { replace: true });
+          return;
+        }
+
+        const [bizRes, profRes] = await Promise.all([
+          supabase.from('business_accounts').select('id').eq('owner_id', uid).maybeSingle(),
+          supabase.from('profiles').select('role').eq('user_id', uid).maybeSingle(),
         ]);
 
         if (!isMounted) return;
 
-        const uid = userData.user?.id;
         const pendingType = localStorage.getItem('pending_account_type');
         const isPendingBusiness = pendingType === 'business';
-        const hasBiz = !!(bizRes as any).data && uid && ((bizRes as any).data.owner_id ? (bizRes as any).data.owner_id === uid : true);
+        const hasBiz = !!(bizRes as any).data;
         const role = (profRes as any).data?.role;
         const userMetaType = (userData.user?.user_metadata as any)?.account_type;
         const isBusiness = isPendingBusiness || hasBiz || role === 'business' || userMetaType === 'business';
