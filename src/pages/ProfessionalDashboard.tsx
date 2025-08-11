@@ -45,8 +45,6 @@ const ProfessionalDashboard = () => {
     return () => { isMounted = false; };
   }, [user, navigate]);
 
-  const editLabel = isBusiness ? 'Edit Business Profile' : 'Edit Professional Profile';
-  const editLink = isBusiness ? '/dashboard/business' : '/dashboard';
 
   return (
     <div className="min-h-screen bg-background">
@@ -63,7 +61,7 @@ const ProfessionalDashboard = () => {
           <CardContent className="space-y-4">
             <p className="text-muted-foreground">Complete your professional profile so others can find and contact you.</p>
             <Button asChild variant="accent">
-              <Link to={editLink}>{editLabel}</Link>
+              <Link to="/dashboard/business">Edit Business Profile</Link>
             </Button>
           </CardContent>
         </Card>
