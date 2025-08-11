@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2 } from "lucide-react";
-import { SectorSelect } from "@/components/EnhancedFormDropdowns";
+import { SectorSelect, CountrySelect, StateProvinceSelect as StateProvinceSelectEF, CitySelect as CitySelectEF } from "@/components/EnhancedFormDropdowns";
 interface BusinessAccount { id: string; name: string | null; status: string; }
 
 const setSeo = (title: string, description?: string) => {
@@ -160,15 +160,29 @@ const updateBusiness = async () => {
                   </div>
                   <div>
                     <Label htmlFor="biz-country">Country</Label>
-                    <Input id="biz-country" value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} />
+                    <CountrySelect
+                      value={form.country}
+                      onValueChange={(value) => setForm({ ...form, country: value, state: "", city: "" })}
+                    />
                   </div>
                   <div>
                     <Label htmlFor="biz-state">State/Province</Label>
-                    <Input id="biz-state" value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} />
+                    <StateProvinceSelectEF
+                      country={form.country}
+                      value={form.state}
+                      onValueChange={(value) => setForm({ ...form, state: value, city: "" })}
+                      placeholder="Select state/province"
+                    />
                   </div>
                   <div>
                     <Label htmlFor="biz-city">City</Label>
-                    <Input id="biz-city" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+                    <CitySelectEF
+                      country={form.country}
+                      stateProvince={form.state}
+                      value={form.city}
+                      onValueChange={(value) => setForm({ ...form, city: value })}
+                      placeholder="Select city"
+                    />
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-3">

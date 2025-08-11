@@ -8,10 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Globe, Mail, MapPin, Building2, ExternalLink, Search } from "lucide-react";
+import { Building2, Search, Heart, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CountrySelect, CitySelect as CitySelectEF, SectorSelect } from "@/components/EnhancedFormDropdowns";
 import { StateProvinceSelect } from "@/components/StateProvinceSelect";
+import { useToast } from "@/hooks/use-toast";
 
 interface BusinessAccount {
   id: string;
@@ -61,6 +62,7 @@ const Businesses = () => {
   const [sectors, setSectors] = useState<string[]>([]);
   const [results, setResults] = useState<BusinessAccount[]>([]);
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   const canonical = useMemo(() => `${window.location.origin}/businesses`, []);
 
@@ -105,6 +107,22 @@ const Businesses = () => {
       setLoading(false);
     }
   };
+const handleFavorite = (id: string, name?: string | null) => {
+  try {
+    const key = 'favorite_business_ids';
+    const raw = localStorage.getItem(key);
+    const arr = raw ? (JSON.parse(raw) as string[]) : [];
+    if (!arr.includes(id)) {
+      arr.push(id);
+      localStorage.setItem(key, JSON.stringify(arr));
+      toast({ title: 'Added to favorites', description: name ? `${name} saved to your favorites.` : 'Business saved.' });
+    } else {
+      toast({ title: 'Already in favorites', description: 'This business is already in your favorites.' });
+    }
+  } catch {
+    toast({ title: 'Could not save favorite', description: 'Please try again later.', variant: 'destructive' });
+  }
+};
 
   const fullLocation = (b: BusinessAccount) => [b.city, b.state, b.country].filter(Boolean).join(', ');
 
@@ -198,18 +216,12 @@ const Businesses = () => {
                   <p className="text-muted-foreground mt-1">{[b.sector, fullLocation(b)].filter(Boolean).join(' • ')}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {b.email && (
-                    <Button variant="outline" asChild>
-                      <a href={`mailto:${b.email}`} aria-label="Email business"><Mail className="w-4 h-4 mr-2" /> Email</a>
-                    </Button>
-                  )}
-                  {b.website && (
-                    <Button variant="accent" asChild>
-                      <a href={b.website} target="_blank" rel="noopener noreferrer" aria-label="Visit website">
-                        <Globe className="w-4 h-4 mr-2" /> Website <ExternalLink className="w-4 h-4 ml-1" />
-                      </a>
-                    </Button>
-                  )}
+                  <Button variant="outline" onClick={() => handleFavorite(b.id, b.name)}>
+                    <Heart className="w-4 h-4 mr-2" /> Favorite
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <Link to="/messages"><MessageCircle className="w-4 h-4 mr-2" /> Message</Link>
+                  </Button>
                   <Button variant="outline" asChild>
                     <Link to={`/business/${b.id}`}>View Profile</Link>
                   </Button>
