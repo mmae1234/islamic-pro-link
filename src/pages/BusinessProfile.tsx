@@ -79,12 +79,15 @@ const BusinessProfile = () => {
     const load = async () => {
       if (!id) return;
       try {
+        const columns: string = user
+          ? 'id, owner_id, name, bio, services, sector, country, state, city, email, phone, website, logo_url, status'
+          : 'id, name, bio, services, sector, country, state, city, website, logo_url, status';
         const { data: biz } = await supabase
           .from('business_accounts')
-          .select('*')
+          .select(columns)
           .eq('id', id)
           .maybeSingle();
-        if (biz) setBusiness(biz as BusinessAccount);
+        if (biz) setBusiness(biz as unknown as BusinessAccount);
 
         // Load approved team links
         const { data: links } = await supabase
@@ -193,14 +196,14 @@ const BusinessProfile = () => {
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              {business.email && (
+              {user && business.email && (
                 <Button variant="outline" asChild>
                   <a href={`mailto:${business.email}`} aria-label="Email this business">
                     <Mail className="w-4 h-4 mr-2" /> Email
                   </a>
                 </Button>
               )}
-              {business.phone && (
+              {user && business.phone && (
                 <Button variant="outline" asChild>
                   <a href={`tel:${business.phone}`} aria-label="Call this business">
                     <Phone className="w-4 h-4 mr-2" /> Call
@@ -218,6 +221,9 @@ const BusinessProfile = () => {
                 <Button variant="accent" asChild>
                   <Link to="/dashboard/business">Edit Business Profile</Link>
                 </Button>
+              )}
+              {!user && (
+                <p className="text-sm text-muted-foreground ml-1">Sign in to view contact information.</p>
               )}
               {user && user.id !== business.owner_id && (
                 <Button variant="hero" onClick={handleRequestLink} disabled={linking || alreadyLinked}>

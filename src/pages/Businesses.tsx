@@ -83,7 +83,7 @@ const Businesses = () => {
   const handleSearch = async () => {
     setLoading(true);
     try {
-      let query = supabase.from('business_accounts').select('*');
+      let query = supabase.from('business_accounts').select('id, name, sector, bio, country, state, city, verified, logo_url');
 
       if (filters.searchTerm) {
         const t = filters.searchTerm;
