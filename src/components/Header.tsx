@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { 
@@ -19,31 +19,44 @@ const Header = () => {
   const navigate = useNavigate();
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [businessName, setBusinessName] = useState<string | null>(null);
-
+  const [isBusiness, setIsBusiness] = useState(false);
   useEffect(() => {
     let isMounted = true;
     if (!user) {
       setBusinessId(null);
       setBusinessName(null);
+      setIsBusiness(false);
       return;
     }
-    supabase
-      .from('business_accounts')
-      .select('id, name')
-      .eq('owner_id', user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!isMounted) return;
-        if (data) {
-          setBusinessId(data.id);
-          setBusinessName(data.name ?? null);
-        } else {
-          setBusinessId(null);
-          setBusinessName(null);
-        }
-      });
+    Promise.all([
+      supabase
+        .from('business_accounts')
+        .select('id, name')
+        .eq('owner_id', user.id)
+        .maybeSingle(),
+      supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', user.id)
+        .maybeSingle()
+    ]).then(([bizRes, profRes]) => {
+      if (!isMounted) return;
+      const biz = (bizRes as any).data;
+      if (biz) {
+        setBusinessId(biz.id);
+        setBusinessName(biz.name ?? null);
+      } else {
+        setBusinessId(null);
+        setBusinessName(null);
+      }
+      setIsBusiness(((profRes as any).data)?.role === 'business' || (user as any)?.user_metadata?.account_type === 'business');
+    });
     return () => { isMounted = false; };
   }, [user]);
+
+  const location = useLocation();
+  const onBusinessContext = location.pathname.startsWith('/dashboard/business') || location.pathname.startsWith('/business/');
+  const showBiz = isBusiness || onBusinessContext;
 
   const handleSignOut = async () => {
     try {
@@ -148,6 +161,21 @@ const Header = () => {
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link to={`/business/${businessId}`} className="flex items-center">
+                            <User className="w-4 h-4 mr-2" />
+                            Business Profile
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    ) : showBiz ? (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link to="/dashboard/business" className="flex items-center">
+                            <User className="w-4 h-4 mr-2" />
+                            Business Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link to="/dashboard/business" className="flex items-center">
                             <User className="w-4 h-4 mr-2" />
                             Business Profile
                           </Link>
@@ -304,7 +332,7 @@ const Header = () => {
                 {user ? (
                   <>
                     <Button variant="outline" size="sm" asChild>
-                      <Link to={businessId ? "/dashboard/business" : "/dashboard"}>Dashboard</Link>
+                      <Link to={(businessId || showBiz) ? "/dashboard/business" : "/dashboard"}>Dashboard</Link>
                     </Button>
                     <Button variant="hero" size="sm" onClick={handleSignOut}>
                       Sign Out

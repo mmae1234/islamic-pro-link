@@ -45,6 +45,14 @@ const Dashboard = () => {
   // Form states
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState("professional");
+
+  // Redirect businesses to their dedicated dashboard
+  useEffect(() => {
+    if (role === 'business') {
+      navigate('/dashboard/business');
+    }
+  }, [role, navigate]);
+
   const [gender, setGender] = useState("");
   const [country, setCountry] = useState("");
   const [countryCode, setCountryCode] = useState("");

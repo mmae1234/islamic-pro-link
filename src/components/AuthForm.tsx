@@ -121,16 +121,22 @@ useEffect(() => {
       } else {
         await signIn(emailValidation.sanitized, password);
         try {
-          // After login, detect if user owns a business and redirect accordingly
           const { data: userData } = await supabase.auth.getUser();
           const uid = userData.user?.id;
           if (uid) {
-            const { data: biz } = await supabase
-              .from('business_accounts')
-              .select('id')
-              .eq('owner_id', uid)
-              .maybeSingle();
-            navigate(biz ? '/dashboard/business' : '/dashboard');
+            const [bizRes, profRes] = await Promise.all([
+              supabase.from('business_accounts').select('id').eq('owner_id', uid).maybeSingle(),
+              supabase.from('profiles').select('role').eq('user_id', uid).maybeSingle()
+            ]);
+            const pendingType = localStorage.getItem('pending_account_type');
+            const isPendingBusiness = pendingType === 'business';
+            const isBusinessRole = (profRes.data as any)?.role === 'business' || (userData.user?.user_metadata as any)?.account_type === 'business';
+            if (isPendingBusiness || isBusinessRole || bizRes.data) {
+              localStorage.removeItem('pending_account_type');
+              navigate('/dashboard/business');
+            } else {
+              navigate('/dashboard');
+            }
           } else {
             navigate('/dashboard');
           }

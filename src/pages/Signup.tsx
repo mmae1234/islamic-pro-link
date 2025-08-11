@@ -75,7 +75,7 @@ const Signup = () => {
     try {
       if (!user) {
         setRole(selected);
-        // Update URL with both legacy and new param names
+        localStorage.setItem('pending_account_type', selected);
         const params = new URLSearchParams(searchParams);
         params.set('account_type', selected);
         params.set('type', selected);

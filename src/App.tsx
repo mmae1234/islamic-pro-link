@@ -33,6 +33,7 @@ import Signup from "./pages/Signup";
 import ProfessionalDashboard from "./pages/ProfessionalDashboard";
 import BusinessDashboard from "./pages/BusinessDashboard";
 import BusinessProfile from "./pages/BusinessProfile";
+import AutoDashboard from "./pages/AutoDashboard";
 
 const queryClient = new QueryClient();
 
@@ -54,7 +55,7 @@ const App = () => (
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/dashboard" element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <AutoDashboard />
                 </ProtectedRoute>
               } />
               <Route path="/dashboard/professional" element={
