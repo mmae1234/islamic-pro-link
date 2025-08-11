@@ -146,17 +146,17 @@ const Header = () => {
                       </div>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 bg-popover border border-border shadow-elegant" align="end">
+                  <DropdownMenuContent className="w-56 bg-popover border border-border shadow-elegant text-foreground" align="end">
                     {businessId ? (
                       <>
                         <DropdownMenuItem asChild>
-                          <Link to="/dashboard/business" className="flex items-center">
+                          <Link to="/dashboard/business" className="flex items-center text-foreground">
                             <User className="w-4 h-4 mr-2" />
                             Business Dashboard
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link to={`/business/${businessId}`} className="flex items-center">
+                          <Link to={`/business/${businessId}`} className="flex items-center text-foreground">
                             <User className="w-4 h-4 mr-2" />
                             Business Profile
                           </Link>
@@ -165,13 +165,13 @@ const Header = () => {
                     ) : showBiz ? (
                       <>
                         <DropdownMenuItem asChild>
-                          <Link to="/dashboard/business" className="flex items-center">
+                          <Link to="/dashboard/business" className="flex items-center text-foreground">
                             <User className="w-4 h-4 mr-2" />
                             Business Dashboard
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link to="/dashboard/business" className="flex items-center">
+                          <Link to="/dashboard/business" className="flex items-center text-foreground">
                             <User className="w-4 h-4 mr-2" />
                             Business Profile
                           </Link>
@@ -180,13 +180,13 @@ const Header = () => {
                     ) : (
                       <>
                         <DropdownMenuItem asChild>
-                          <Link to="/dashboard" className="flex items-center">
+                          <Link to="/dashboard" className="flex items-center text-foreground">
                             <User className="w-4 h-4 mr-2" />
                             Dashboard
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link to={`/profile/${user.id}`} className="flex items-center">
+                          <Link to={`/profile/${user.id}`} className="flex items-center text-foreground">
                             <User className="w-4 h-4 mr-2" />
                             My Profile
                           </Link>
@@ -194,31 +194,25 @@ const Header = () => {
                       </>
                     )}
                     <DropdownMenuItem asChild>
-                      <Link to="/messages" className="flex items-center">
+                      <Link to="/messages" className="flex items-center text-foreground">
                         <MessageCircle className="w-4 h-4 mr-2" />
                         Messages
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/favorites" className="flex items-center">
+                      <Link to="/favorites" className="flex items-center text-foreground">
                         <Heart className="w-4 h-4 mr-2" />
                         Favorites
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/businesses" className="flex items-center">
-                        <Search className="w-4 h-4 mr-2" />
-                        Find Businesses
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/settings" className="flex items-center">
+                      <Link to="/settings" className="flex items-center text-foreground">
                         <Settings className="w-4 h-4 mr-2" />
                         Settings
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleSignOut} className="flex items-center">
+                    <DropdownMenuItem onClick={handleSignOut} className="flex items-center text-foreground">
                       <LogOut className="w-4 h-4 mr-2" />
                       Sign Out
                     </DropdownMenuItem>

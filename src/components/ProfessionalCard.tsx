@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { MapPin, MessageCircle, Calendar, Star, Users, Heart } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface Professional {
   id: string;
@@ -354,7 +355,10 @@ const ProfessionalCard = ({
                 </Button>
               )}
 
-              {showMentorshipButton && professional.is_mentor && (
+              <Button variant="outline" size="sm" asChild className="lg:w-full">
+                <Link to={`/profile/${professional.user_id}`}>View Profile</Link>
+              </Button>
+
                 <Dialog open={isRequestDialogOpen} onOpenChange={setIsRequestDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="accent" size="sm" className="flex items-center gap-2 hover:shadow-glow lg:w-full">
