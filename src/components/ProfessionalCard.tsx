@@ -359,6 +359,7 @@ const ProfessionalCard = ({
                 <Link to={`/profile/${professional.user_id}`}>View Profile</Link>
               </Button>
 
+              {showMentorshipButton && professional.is_mentor && (
                 <Dialog open={isRequestDialogOpen} onOpenChange={setIsRequestDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="accent" size="sm" className="flex items-center gap-2 hover:shadow-glow lg:w-full">
