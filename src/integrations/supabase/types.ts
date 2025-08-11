@@ -31,6 +31,7 @@ export type Database = {
           owner_id: string
           phone: string | null
           sector: string | null
+          services: string | null
           state: string | null
           status: string
           updated_at: string
@@ -53,6 +54,7 @@ export type Database = {
           owner_id: string
           phone?: string | null
           sector?: string | null
+          services?: string | null
           state?: string | null
           status?: string
           updated_at?: string
@@ -75,6 +77,7 @@ export type Database = {
           owner_id?: string
           phone?: string | null
           sector?: string | null
+          services?: string | null
           state?: string | null
           status?: string
           updated_at?: string

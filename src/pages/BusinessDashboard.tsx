@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2 } from "lucide-react";
+import { SectorSelect } from "@/components/EnhancedFormDropdowns";
 interface BusinessAccount { id: string; name: string | null; status: string; }
 
 const setSeo = (title: string, description?: string) => {
@@ -30,6 +31,7 @@ const BusinessDashboard = () => {
   const [form, setForm] = useState({
     name: "",
     bio: "",
+    services: "",
     sector: "",
     email: "",
     phone: "",
@@ -44,6 +46,7 @@ const BusinessDashboard = () => {
       setForm({
         name: account.name || "",
         bio: (account as any).bio || "",
+        services: (account as any).services || "",
         sector: (account as any).sector || "",
         email: (account as any).email || "",
         phone: (account as any).phone || "",
@@ -89,6 +92,7 @@ const updateBusiness = async () => {
     .update({
       name: form.name || null,
       bio: form.bio || null,
+      services: form.services || null,
       sector: form.sector || null,
       email: form.email || null,
       phone: form.phone || null,
@@ -129,11 +133,18 @@ const updateBusiness = async () => {
                   </div>
                   <div>
                     <Label htmlFor="biz-sector">Sector</Label>
-                    <Input id="biz-sector" value={form.sector} onChange={(e) => setForm({ ...form, sector: e.target.value })} placeholder="e.g., Consulting, Retail" />
+                    <SectorSelect
+                      value={form.sector}
+                      onValueChange={(value) => setForm({ ...form, sector: value })}
+                    />
                   </div>
                   <div className="md:col-span-2">
                     <Label htmlFor="biz-bio">About</Label>
                     <Textarea id="biz-bio" value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} placeholder="Describe your business" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="biz-services">Services</Label>
+                    <Textarea id="biz-services" value={form.services} onChange={(e) => setForm({ ...form, services: e.target.value })} placeholder="List the services you provide" />
                   </div>
                   <div>
                     <Label htmlFor="biz-email">Email</Label>

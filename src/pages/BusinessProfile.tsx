@@ -16,6 +16,7 @@ interface BusinessAccount {
   owner_id: string;
   name: string | null;
   bio: string | null;
+  services: string | null;
   sector: string | null;
   occupations: string[] | null;
   country: string | null;
@@ -253,14 +254,10 @@ const BusinessProfile = () => {
                     <Badge variant="secondary">{business.sector}</Badge>
                   </div>
                 )}
-                {(business.occupations && business.occupations.length > 0) && (
+                {business.services && (
                   <div>
                     <p className="text-sm text-muted-foreground mb-2">Services Offered</p>
-                    <div className="flex flex-wrap gap-2">
-                      {business.occupations.map((o) => (
-                        <Badge key={o} variant="outline">{o}</Badge>
-                      ))}
-                    </div>
+                    <p className="text-foreground whitespace-pre-wrap">{business.services}</p>
                   </div>
                 )}
               </CardContent>
