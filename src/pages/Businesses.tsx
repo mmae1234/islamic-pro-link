@@ -10,6 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Globe, Mail, MapPin, Building2, ExternalLink, Search } from "lucide-react";
 import { Link } from "react-router-dom";
+import { CountrySelect, CitySelect as CitySelectEF, SectorSelect } from "@/components/EnhancedFormDropdowns";
+import { StateProvinceSelect } from "@/components/StateProvinceSelect";
 
 interface BusinessAccount {
   id: string;
@@ -128,24 +130,38 @@ const Businesses = () => {
                 </div>
                 <div>
                   <Label htmlFor="country">Country</Label>
-                  <Input id="country" placeholder="e.g., United States" value={filters.country} onChange={(e) => setFilters({ ...filters, country: e.target.value })} />
+                  <CountrySelect
+                    value={filters.country}
+                    onValueChange={(value) => setFilters({ ...filters, country: value, state: "", city: "" })}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="state">State/Province</Label>
-                  <Input id="state" placeholder="e.g., California" value={filters.state} onChange={(e) => setFilters({ ...filters, state: e.target.value })} />
+                  <StateProvinceSelect
+                    value={filters.state}
+                    onValueChange={(value) => setFilters({ ...filters, state: value, city: "" })}
+                    country={filters.country}
+                    disabled={!filters.country}
+                    placeholder="All States"
+                  />
                 </div>
                 <div>
                   <Label htmlFor="city">City</Label>
-                  <Input id="city" placeholder="e.g., San Francisco" value={filters.city} onChange={(e) => setFilters({ ...filters, city: e.target.value })} />
+                  <CitySelectEF
+                    value={filters.city}
+                    onValueChange={(value) => setFilters({ ...filters, city: value })}
+                    country={filters.country}
+                    stateProvince={filters.state}
+                    placeholder="All Cities"
+                  />
                 </div>
                 <div>
                   <Label htmlFor="sector">Sector</Label>
-                  <Input id="sector" list="sector-list" placeholder="Select or type a sector" value={filters.sector} onChange={(e) => setFilters({ ...filters, sector: e.target.value })} />
-                  <datalist id="sector-list">
-                    {sectors.map((s) => (
-                      <option key={s} value={s} />
-                    ))}
-                  </datalist>
+                  <SectorSelect
+                    value={filters.sector}
+                    onValueChange={(value) => setFilters({ ...filters, sector: value })}
+                    placeholder="All Sectors"
+                  />
                 </div>
                 <div className="flex items-end gap-2">
                   <div className="flex items-center gap-2">
