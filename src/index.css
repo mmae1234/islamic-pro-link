@@ -6,13 +6,13 @@
 
 :root {
   /* Primary Colors */
-  --primary: 122 35% 27%;
+  --primary: 155 100% 21%; /* #006B3F */
   --primary-foreground: 0 0% 98%;
-  --primary-glow: 122 45% 40%;
+  --primary-glow: 155 80% 32%;
 
   /* Accent Colors */
-  --accent: 45 93% 47%;
-  --accent-foreground: 210 40% 20%;
+  --accent: 51 100% 50%; /* #FFD700 */
+  --accent-foreground: 240 10% 3.9%;
 
   /* Base Colors */
   --background: 0 0% 100%;
@@ -29,7 +29,7 @@
   /* Border Colors */
   --border: 240 5.9% 90%;
   --input: 240 5.9% 90%;
-  --ring: 122 35% 27%;
+  --ring: 155 100% 21%;
 
   /* Semantic Colors */
   --destructive: 0 84.2% 60.2%;
@@ -56,16 +56,16 @@
   --card-foreground: 0 0% 98%;
   --popover: 240 10% 3.9%;
   --popover-foreground: 0 0% 98%;
-  --primary: 122 40% 65%;
+  --primary: 155 60% 50%;
   --primary-foreground: 240 10% 3.9%;
-  --primary-glow: 122 45% 75%;
-  --accent: 45 93% 60%;
+  --primary-glow: 155 70% 60%;
+  --accent: 51 100% 55%;
   --accent-foreground: 240 10% 3.9%;
   --muted: 240 3.7% 15.9%;
   --muted-foreground: 240 5% 64.9%;
   --border: 240 3.7% 15.9%;
   --input: 240 3.7% 15.9%;
-  --ring: 122 40% 65%;
+  --ring: 155 60% 50%;
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
 }
