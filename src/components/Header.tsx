@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -11,11 +11,39 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Menu, X, User, Search, MessageCircle, LogOut, Settings } from "lucide-react";
 import NotificationCenter from "./NotificationCenter";
+import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [businessId, setBusinessId] = useState<string | null>(null);
+  const [businessName, setBusinessName] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (!user) {
+      setBusinessId(null);
+      setBusinessName(null);
+      return;
+    }
+    supabase
+      .from('business_accounts')
+      .select('id, name')
+      .eq('owner_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!isMounted) return;
+        if (data) {
+          setBusinessId(data.id);
+          setBusinessName(data.name ?? null);
+        } else {
+          setBusinessId(null);
+          setBusinessName(null);
+        }
+      });
+    return () => { isMounted = false; };
+  }, [user]);
 
   const handleSignOut = async () => {
     try {
@@ -110,18 +138,37 @@ const Header = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56 bg-popover border border-border shadow-elegant" align="end">
-                    <DropdownMenuItem asChild>
-                      <Link to="/dashboard" className="flex items-center">
-                        <User className="w-4 h-4 mr-2" />
-                        Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to={`/profile/${user.id}`} className="flex items-center">
-                        <User className="w-4 h-4 mr-2" />
-                        My Profile
-                      </Link>
-                    </DropdownMenuItem>
+                    {businessId ? (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link to="/dashboard/business" className="flex items-center">
+                            <User className="w-4 h-4 mr-2" />
+                            Business Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link to={`/business/${businessId}`} className="flex items-center">
+                            <User className="w-4 h-4 mr-2" />
+                            Business Profile
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    ) : (
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link to="/dashboard" className="flex items-center">
+                            <User className="w-4 h-4 mr-2" />
+                            Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link to={`/profile/${user.id}`} className="flex items-center">
+                            <User className="w-4 h-4 mr-2" />
+                            My Profile
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
                     <DropdownMenuItem asChild>
                       <Link to="/messages" className="flex items-center">
                         <MessageCircle className="w-4 h-4 mr-2" />
@@ -257,7 +304,7 @@ const Header = () => {
                 {user ? (
                   <>
                     <Button variant="outline" size="sm" asChild>
-                      <Link to="/dashboard">Dashboard</Link>
+                      <Link to={businessId ? "/dashboard/business" : "/dashboard"}>Dashboard</Link>
                     </Button>
                     <Button variant="hero" size="sm" onClick={handleSignOut}>
                       Sign Out

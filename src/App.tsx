@@ -32,6 +32,7 @@ import EditProfile from "./pages/EditProfile";
 import Signup from "./pages/Signup";
 import ProfessionalDashboard from "./pages/ProfessionalDashboard";
 import BusinessDashboard from "./pages/BusinessDashboard";
+import BusinessProfile from "./pages/BusinessProfile";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +68,7 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/profile/:userId" element={<Profile />} />
+              <Route path="/business/:id" element={<BusinessProfile />} />
               <Route path="/edit-profile" element={
                 <ProtectedRoute>
                   <EditProfile />

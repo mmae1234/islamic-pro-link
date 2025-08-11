@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, Mail, Lock, User, CheckCircle, Building2, Phone, Globe } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
  
  interface AuthFormProps {
    mode: 'login' | 'signup';
@@ -119,7 +120,23 @@ useEffect(() => {
         setSignupSuccess(true);
       } else {
         await signIn(emailValidation.sanitized, password);
-        navigate('/dashboard');
+        try {
+          // After login, detect if user owns a business and redirect accordingly
+          const { data: userData } = await supabase.auth.getUser();
+          const uid = userData.user?.id;
+          if (uid) {
+            const { data: biz } = await supabase
+              .from('business_accounts')
+              .select('id')
+              .eq('owner_id', uid)
+              .maybeSingle();
+            navigate(biz ? '/dashboard/business' : '/dashboard');
+          } else {
+            navigate('/dashboard');
+          }
+        } catch {
+          navigate('/dashboard');
+        }
       }
     } catch (error: any) {
       toast({
