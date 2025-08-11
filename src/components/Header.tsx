@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, X, User, Search, MessageCircle, LogOut, Settings } from "lucide-react";
+import { Menu, X, User, Search, MessageCircle, LogOut, Settings, Heart } from "lucide-react";
 import NotificationCenter from "./NotificationCenter";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -197,6 +197,12 @@ const Header = () => {
                       <Link to="/messages" className="flex items-center">
                         <MessageCircle className="w-4 h-4 mr-2" />
                         Messages
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/favorites" className="flex items-center">
+                        <Heart className="w-4 h-4 mr-2" />
+                        Favorites
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
