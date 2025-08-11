@@ -33,6 +33,7 @@ import Signup from "./pages/Signup";
 import ProfessionalDashboard from "./pages/ProfessionalDashboard";
 import BusinessDashboard from "./pages/BusinessDashboard";
 import BusinessProfile from "./pages/BusinessProfile";
+import Businesses from "./pages/Businesses";
 import AutoDashboard from "./pages/AutoDashboard";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/search" element={<Search />} />
+              <Route path="/businesses" element={<Businesses />} />
               <Route path="/about" element={<About />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />

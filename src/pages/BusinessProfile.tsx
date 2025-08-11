@@ -213,6 +213,11 @@ const BusinessProfile = () => {
                   </a>
                 </Button>
               )}
+              {user && user.id === business.owner_id && (
+                <Button variant="accent" asChild>
+                  <Link to="/dashboard/business">Edit Business Profile</Link>
+                </Button>
+              )}
               {user && user.id !== business.owner_id && (
                 <Button variant="hero" onClick={handleRequestLink} disabled={linking || alreadyLinked}>
                   {alreadyLinked ? 'Request Sent' : 'Request to link profile'}

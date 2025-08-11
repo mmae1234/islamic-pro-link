@@ -84,16 +84,12 @@ const Header = () => {
             <Link to="/search" className="text-foreground hover:text-primary transition-smooth">
               Find Professionals
             </Link>
+            <Link to="/businesses" className="text-foreground hover:text-primary transition-smooth">
+              Find Businesses
+            </Link>
             <Link to="/mentorship" className="text-foreground hover:text-primary transition-smooth">
               Mentorship
             </Link>
-            {user && (
-              <>
-                <Link to="/favorites" className="text-foreground hover:text-primary transition-smooth">
-                  Favorites
-                </Link>
-              </>
-            )}
             <DropdownMenu>
               <DropdownMenuTrigger className="text-foreground hover:text-primary transition-smooth">
                 Resources
@@ -204,9 +200,9 @@ const Header = () => {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/favorites" className="flex items-center">
-                        <User className="w-4 h-4 mr-2" />
-                        Favorites
+                      <Link to="/businesses" className="flex items-center">
+                        <Search className="w-4 h-4 mr-2" />
+                        Find Businesses
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
@@ -259,6 +255,13 @@ const Header = () => {
                 Find Professionals
               </Link>
               <Link 
+                to="/businesses" 
+                className="text-foreground hover:text-primary transition-smooth px-4 py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Find Businesses
+              </Link>
+              <Link 
                 to="/mentorship" 
                 className="text-foreground hover:text-primary transition-smooth px-4 py-2"
                 onClick={() => setIsMenuOpen(false)}
@@ -273,13 +276,6 @@ const Header = () => {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Messages
-                  </Link>
-                  <Link 
-                    to="/favorites" 
-                    className="text-foreground hover:text-primary transition-smooth px-4 py-2"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Favorites
                   </Link>
                 </>
               )}

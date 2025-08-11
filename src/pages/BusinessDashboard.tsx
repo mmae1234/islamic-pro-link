@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,9 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2 } from "lucide-react";
-
 interface BusinessAccount { id: string; name: string | null; status: string; }
 
 const setSeo = (title: string, description?: string) => {
@@ -23,9 +24,36 @@ const BusinessDashboard = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [name, setName] = useState("");
   const [account, setAccount] = useState<BusinessAccount | null>(null);
+  const [form, setForm] = useState({
+    name: "",
+    bio: "",
+    sector: "",
+    email: "",
+    phone: "",
+    website: "",
+    country: "",
+    state: "",
+    city: ""
+  });
 
+  useEffect(() => {
+    if (account) {
+      setForm({
+        name: account.name || "",
+        bio: (account as any).bio || "",
+        sector: (account as any).sector || "",
+        email: (account as any).email || "",
+        phone: (account as any).phone || "",
+        website: (account as any).website || "",
+        country: (account as any).country || "",
+        state: (account as any).state || "",
+        city: (account as any).city || ""
+      });
+    }
+  }, [account]);
   useEffect(() => setSeo('Business Dashboard – Muslim Pros', 'Create and manage your business profile'), []);
 
   useEffect(() => {
@@ -53,6 +81,28 @@ const BusinessDashboard = () => {
     setCreating(false);
     if (!error && data) setAccount(data as any);
   };
+const updateBusiness = async () => {
+  if (!account) return;
+  setSaving(true);
+  const { data, error } = await supabase
+    .from('business_accounts')
+    .update({
+      name: form.name || null,
+      bio: form.bio || null,
+      sector: form.sector || null,
+      email: form.email || null,
+      phone: form.phone || null,
+      website: form.website || null,
+      country: form.country || null,
+      state: form.state || null,
+      city: form.city || null,
+    })
+    .eq('id', account.id)
+    .select('*')
+    .maybeSingle();
+  setSaving(false);
+  if (!error && data) setAccount(data as any);
+};
 
   return (
     <div className="min-h-screen bg-background">
@@ -71,8 +121,53 @@ const BusinessDashboard = () => {
             {loading ? (
               <p className="text-muted-foreground">Loading...</p>
             ) : account ? (
-              <div className="space-y-2">
-                <p className="text-foreground"><span className="font-medium">Name:</span> {account.name || 'Not set'}</p>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="biz-name">Business Name</Label>
+                    <Input id="biz-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label htmlFor="biz-sector">Sector</Label>
+                    <Input id="biz-sector" value={form.sector} onChange={(e) => setForm({ ...form, sector: e.target.value })} placeholder="e.g., Consulting, Retail" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="biz-bio">About</Label>
+                    <Textarea id="biz-bio" value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} placeholder="Describe your business" />
+                  </div>
+                  <div>
+                    <Label htmlFor="biz-email">Email</Label>
+                    <Input id="biz-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label htmlFor="biz-phone">Phone</Label>
+                    <Input id="biz-phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="biz-website">Website</Label>
+                    <Input id="biz-website" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} placeholder="https://..." />
+                  </div>
+                  <div>
+                    <Label htmlFor="biz-country">Country</Label>
+                    <Input id="biz-country" value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label htmlFor="biz-state">State/Province</Label>
+                    <Input id="biz-state" value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label htmlFor="biz-city">City</Label>
+                    <Input id="biz-city" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Button onClick={updateBusiness} disabled={saving} variant="accent">
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                  <Button asChild variant="outline">
+                    <Link to={`/business/${account.id}`}>View Public Profile</Link>
+                  </Button>
+                </div>
                 <p className="text-muted-foreground">Status: {account.status}</p>
               </div>
             ) : (
