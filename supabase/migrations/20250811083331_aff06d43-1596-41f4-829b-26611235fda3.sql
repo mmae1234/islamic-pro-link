@@ -1,0 +1,15 @@
+-- Seed additional fake businesses for testing
+-- Note: Inserts run with elevated privileges during migration; owner_id uses generated UUIDs
+INSERT INTO public.business_accounts 
+  (owner_id, name, sector, services, bio, email, phone, website, country, state, city, verified, status)
+VALUES
+  (gen_random_uuid(), 'Emerald Consulting', 'Consulting', 'Strategy, Operations, Market Research', 'Boutique consulting firm helping SMEs scale.', 'contact@emerald.consult', '+1-555-0101', 'https://emerald.consult', 'United States', 'California', 'San Francisco', true, 'published'),
+  (gen_random_uuid(), 'Golden Leaf Cafe', 'Hospitality', 'Coffee, Pastries, Catering', 'Cozy halal-friendly cafe with specialty brews and fresh bakes.', 'hello@goldenleaf.cafe', '+1-555-0102', 'https://goldenleaf.cafe', 'United States', 'New York', 'New York', false, 'published'),
+  (gen_random_uuid(), 'Crescent Tech Solutions', 'Technology', 'Web Development, Mobile Apps, Cloud', 'Full-service development studio delivering scalable solutions.', 'info@crescent.tech', '+44-20-5550-0103', 'https://crescent.tech', 'United Kingdom', 'England', 'London', true, 'published'),
+  (gen_random_uuid(), 'Barakah Legal', 'Legal', 'Business Formation, Contracts, Compliance', 'Trusted legal advisory for businesses and professionals.', 'contact@barakahlegal.co', '+971-4-555-0104', 'https://barakahlegal.co', 'United Arab Emirates', 'Dubai', 'Dubai', false, 'published'),
+  (gen_random_uuid(), 'Noor Wellness Clinic', 'Healthcare', 'Family Medicine, Nutrition, Mental Health', 'Holistic, family-centered healthcare services.', 'care@noorwellness.health', '+1-555-0105', 'https://noorwellness.health', 'Canada', 'Ontario', 'Toronto', true, 'published'),
+  (gen_random_uuid(), 'Safar Travel Co.', 'Travel', 'Umrah Packages, Halal Tours, Ticketing', 'Specialized halal travel experiences worldwide.', 'book@safartravel.co', '+61-2-5550-0106', 'https://safartravel.co', 'Australia', 'New South Wales', 'Sydney', false, 'published'),
+  (gen_random_uuid(), 'Amal Design Studio', 'Design', 'Branding, UI/UX, Print', 'Design studio crafting thoughtful brand experiences.', 'hi@amal.design', '+1-555-0107', 'https://amal.design', 'United States', 'Illinois', 'Chicago', true, 'published'),
+  (gen_random_uuid(), 'Zamzam Marketing', 'Marketing', 'Social Media, SEO, Content Strategy', 'Performance marketing for mission-driven brands.', 'team@zamzam.marketing', '+92-21-555-0108', 'https://zamzam.marketing', 'Pakistan', 'Sindh', 'Karachi', false, 'published'),
+  (gen_random_uuid(), 'Hayat Financial', 'Finance', 'Wealth Management, Islamic Finance, Tax', 'Ethical financial planning and advisory services.', 'support@hayat.financial', '+27-11-555-0109', 'https://hayat.financial', 'South Africa', 'Gauteng', 'Johannesburg', false, 'published'),
+  (gen_random_uuid(), 'Tawhid Education Center', 'Education', 'Tutoring, Workshops, E-Learning', 'Empowering learners with personalized education.', 'info@tawhid.education', '+62-21-555-0110', 'https://tawhid.education', 'Indonesia', 'Jakarta', 'Jakarta', false, 'published');
