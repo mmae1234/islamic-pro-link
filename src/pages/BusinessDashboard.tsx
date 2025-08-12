@@ -134,6 +134,14 @@ const updateBusiness = async () => {
       country: form.country || null,
       state: form.state || null,
       city: form.city || null,
+      facebook_url: form.facebook_url || null,
+      instagram_url: form.instagram_url || null,
+      linkedin_url: form.linkedin_url || null,
+      twitter_url: form.twitter_url || null,
+      youtube_url: form.youtube_url || null,
+      tiktok_url: form.tiktok_url || null,
+      whatsapp_number: form.whatsapp_number || null,
+      telegram_url: form.telegram_url || null,
     })
     .eq('id', account.id)
     .select('*')
@@ -217,6 +225,43 @@ const updateBusiness = async () => {
                       onValueChange={(value) => setForm({ ...form, city: value })}
                       placeholder="Select city"
                     />
+                  </div>
+                </div>
+                <div className="border-t pt-4">
+                  <h3 className="text-lg font-semibold mb-2">Social Links</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="biz-facebook">Facebook URL</Label>
+                      <Input id="biz-facebook" value={form.facebook_url} onChange={(e) => setForm({ ...form, facebook_url: e.target.value })} placeholder="https://facebook.com/yourpage" />
+                    </div>
+                    <div>
+                      <Label htmlFor="biz-instagram">Instagram URL</Label>
+                      <Input id="biz-instagram" value={form.instagram_url} onChange={(e) => setForm({ ...form, instagram_url: e.target.value })} placeholder="https://instagram.com/yourhandle" />
+                    </div>
+                    <div>
+                      <Label htmlFor="biz-linkedin">LinkedIn URL</Label>
+                      <Input id="biz-linkedin" value={form.linkedin_url} onChange={(e) => setForm({ ...form, linkedin_url: e.target.value })} placeholder="https://linkedin.com/company/yourcompany" />
+                    </div>
+                    <div>
+                      <Label htmlFor="biz-twitter">X (Twitter) URL</Label>
+                      <Input id="biz-twitter" value={form.twitter_url} onChange={(e) => setForm({ ...form, twitter_url: e.target.value })} placeholder="https://x.com/yourhandle" />
+                    </div>
+                    <div>
+                      <Label htmlFor="biz-youtube">YouTube URL</Label>
+                      <Input id="biz-youtube" value={form.youtube_url} onChange={(e) => setForm({ ...form, youtube_url: e.target.value })} placeholder="https://youtube.com/@yourchannel" />
+                    </div>
+                    <div>
+                      <Label htmlFor="biz-tiktok">TikTok URL</Label>
+                      <Input id="biz-tiktok" value={form.tiktok_url} onChange={(e) => setForm({ ...form, tiktok_url: e.target.value })} placeholder="https://tiktok.com/@yourhandle" />
+                    </div>
+                    <div>
+                      <Label htmlFor="biz-whatsapp">WhatsApp Number</Label>
+                      <Input id="biz-whatsapp" value={form.whatsapp_number} onChange={(e) => setForm({ ...form, whatsapp_number: e.target.value })} placeholder="+1 555 555 5555" />
+                    </div>
+                    <div>
+                      <Label htmlFor="biz-telegram">Telegram URL</Label>
+                      <Input id="biz-telegram" value={form.telegram_url} onChange={(e) => setForm({ ...form, telegram_url: e.target.value })} placeholder="https://t.me/yourhandle" />
+                    </div>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-3">

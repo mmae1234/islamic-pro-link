@@ -361,38 +361,26 @@ const Settings = () => {
           </div>
 
           <div className="space-y-8">
-            {/* Account Type & Business Management */}
-            <Card className="shadow-soft">
-              <CardHeader>
-                <CardTitle>Account Type & Business</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">Current account type: <span className="font-medium text-foreground">{formData.role}</span></p>
-                <div className="grid sm:grid-cols-2 gap-3">
-                  <Button
-                    variant="accent"
-                    onClick={async () => {
-                      if (!user) return;
-                      const { error: metaError } = await supabase.auth.updateUser({ data: { account_type: 'professional' } });
-                      const { error: profError } = await supabase
-                        .from('profiles')
-                        .upsert({ user_id: user.id, role: 'professional' }, { onConflict: 'user_id' });
-                      if (!metaError && !profError) {
-                        setFormData(prev => ({ ...prev, role: 'professional' }));
-                        toast({ title: 'Upgraded to Professional' });
-                      } else {
-                        toast({ title: 'Failed to update role', variant: 'destructive' });
-                      }
-                    }}
-                  >
-                    Upgrade to Professional
-                  </Button>
-                  <Button variant="outline" onClick={() => window.location.assign('/dashboard/business')}>
-                    Create/Manage Business Profile
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            {!user && (
+              <Card className="shadow-soft">
+                <CardHeader>
+                  <CardTitle>Get Started</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Create a professional account to build your profile and get discovered.
+                  </p>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <Button
+                      variant="accent"
+                      onClick={() => window.location.assign('/signup?role=professional')}
+                    >
+                      Upgrade to Professional
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Basic Profile */}
             <Card className="shadow-soft">

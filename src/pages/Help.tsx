@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +7,18 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, MessageCircle, Book, Users, Shield } from "lucide-react";
 
+const setSeo = (title: string, description?: string) => {
+  document.title = title;
+  if (description) {
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta) meta.setAttribute('content', description);
+  }
+};
+
 const Help = () => {
+  useEffect(() => {
+    setSeo('Help Center – Muslim Pros', 'FAQs and help: linking, delinking, business profiles, social links.');
+  }, []);
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -173,7 +185,7 @@ const Help = () => {
                 <AccordionItem value="item-2b">
                   <AccordionTrigger>Who can create a business profile?</AccordionTrigger>
                   <AccordionContent>
-                    Only users with a business account can create or manage a business profile. Professionals and visitors won't see prompts to create one.
+                    Only users with a business account can create or manage a business profile. Professionals and visitors won't see prompts to create one. To create a business profile, sign up for a new business account; the Settings page no longer includes a create/manage button.
                   </AccordionContent>
                 </AccordionItem>
 
@@ -188,6 +200,20 @@ const Help = () => {
                   <AccordionTrigger>How do I link my profile to a business?</AccordionTrigger>
                   <AccordionContent>
                     Visit the business profile and use "Request to link profile" at the bottom. An admin will review and approve your request.
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="item-2e">
+                  <AccordionTrigger>How can a business delink a professional?</AccordionTrigger>
+                  <AccordionContent>
+                    Go to Dashboard → Business Dashboard → Link Requests → Linked Professionals, then click "Delink" next to the professional you want to remove.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-2f">
+                  <AccordionTrigger>How do I add social media links to my profile?</AccordionTrigger>
+                  <AccordionContent>
+                    Businesses: open the Business Dashboard and use the Social Links section to add Facebook, Instagram, LinkedIn, X, YouTube, TikTok, WhatsApp, or Telegram.
+                    Professionals: social links will be available on the Edit Profile page shortly.
                   </AccordionContent>
                 </AccordionItem>
 
