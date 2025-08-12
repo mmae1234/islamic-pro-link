@@ -166,6 +166,7 @@ const EditProfile = () => {
             first_name: firstName,
             last_name: lastName,
             avatar_url: avatarUrl,
+            first_login: false,
           },
           { onConflict: 'user_id' }
         );

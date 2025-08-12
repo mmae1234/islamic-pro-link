@@ -124,24 +124,23 @@ useEffect(() => {
           const { data: userData } = await supabase.auth.getUser();
           const uid = userData.user?.id;
           if (uid) {
-            const [bizRes, profRes] = await Promise.all([
-              supabase.from('business_accounts').select('id').eq('owner_id', uid).maybeSingle(),
-              supabase.from('profiles').select('role').eq('user_id', uid).maybeSingle()
-            ]);
-            const pendingType = localStorage.getItem('pending_account_type');
-            const isPendingBusiness = pendingType === 'business';
-            const isBusinessRole = (profRes.data as any)?.role === 'business' || (userData.user?.user_metadata as any)?.account_type === 'business';
-            if (isPendingBusiness || isBusinessRole || bizRes.data) {
-              localStorage.removeItem('pending_account_type');
-              navigate('/dashboard/business');
+            const { data: profileRes } = await supabase
+              .from('profiles')
+              .select('first_login')
+              .eq('user_id', uid)
+              .maybeSingle();
+
+            const isFirstLogin = (profileRes as any)?.first_login ?? true;
+            if (isFirstLogin) {
+              navigate('/edit-profile', { replace: true });
             } else {
-              navigate('/dashboard');
+              navigate('/', { replace: true });
             }
           } else {
-            navigate('/dashboard');
+            navigate('/', { replace: true });
           }
         } catch {
-          navigate('/dashboard');
+          navigate('/', { replace: true });
         }
       }
     } catch (error: any) {
