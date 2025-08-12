@@ -96,13 +96,13 @@ const Header = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-popover border border-border shadow-elegant z-50">
                 <DropdownMenuItem asChild>
-                  <Link to="/careers">Careers</Link>
+                  <Link to="/careers" className="text-foreground">Careers</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/scholarships">Scholarships</Link>
+                  <Link to="/scholarships" className="text-foreground">Scholarships</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/organizations">Organizations</Link>
+                  <Link to="/organizations" className="text-foreground">Organizations</Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -112,10 +112,10 @@ const Header = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-popover border border-border shadow-elegant z-50">
                 <DropdownMenuItem asChild>
-                  <Link to="/about">About Us</Link>
+                  <Link to="/about" className="text-foreground">About Us</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/donations">Support Our Mission</Link>
+                  <Link to="/donations" className="text-foreground">Support Our Mission</Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
