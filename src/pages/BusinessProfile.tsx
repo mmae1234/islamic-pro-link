@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, Globe, Building2, Users, ExternalLink, ArrowRight } from "lucide-react";
+import { Mail, Phone, Globe, Building2, Users, ExternalLink, ArrowRight, Heart } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -68,6 +68,7 @@ const BusinessProfile = () => {
   const [loading, setLoading] = useState(true);
   const [linking, setLinking] = useState(false);
   const [alreadyLinked, setAlreadyLinked] = useState<boolean>(false);
+  const [favoriteBusinessIds, setFavoriteBusinessIds] = useState<string[]>([]);
 
   const canonical = useMemo(() => `${window.location.origin}/business/${id}`, [id]);
 
@@ -123,6 +124,23 @@ const BusinessProfile = () => {
     };
     load();
   }, [id, user]);
+
+  const isFavorited = business ? favoriteBusinessIds.includes(business.id) : false;
+  const toggleFavorite = () => {
+    if (!business) return;
+    const key = 'favorite_business_ids';
+    const arr = [...favoriteBusinessIds];
+    const idx = arr.indexOf(business.id);
+    if (idx === -1) {
+      arr.push(business.id);
+      toast({ title: 'Added to favorites', description: business.name ? `${business.name} saved to your favorites.` : 'Business saved.' });
+    } else {
+      arr.splice(idx, 1);
+      toast({ title: 'Removed from favorites', description: business.name ? `${business.name} removed from your favorites.` : 'Business removed.' });
+    }
+    localStorage.setItem(key, JSON.stringify(arr));
+    setFavoriteBusinessIds(arr);
+  };
 
   const handleRequestLink = async () => {
     if (!user || !id) {
@@ -217,6 +235,9 @@ const BusinessProfile = () => {
                   </a>
                 </Button>
               )}
+              <Button variant={isFavorited ? "default" : "outline"} onClick={toggleFavorite}>
+                <Heart className={`w-4 h-4 mr-2 ${isFavorited ? 'fill-current' : ''}`} /> {isFavorited ? 'Favorited' : 'Favorite'}
+              </Button>
               {user && user.id === business.owner_id && (
                 <Button variant="accent" asChild>
                   <Link to="/dashboard/business">Edit Business Profile</Link>
@@ -224,11 +245,6 @@ const BusinessProfile = () => {
               )}
               {!user && (
                 <p className="text-sm text-muted-foreground ml-1">Sign in to view contact information.</p>
-              )}
-              {user && user.id !== business.owner_id && (
-                <Button variant="hero" onClick={handleRequestLink} disabled={linking || alreadyLinked}>
-                  {alreadyLinked ? 'Request Sent' : 'Request to link profile'}
-                </Button>
               )}
             </div>
           </header>
@@ -300,6 +316,19 @@ const BusinessProfile = () => {
               </CardContent>
             </Card>
           </section>
+
+          {/* Link Request - bottom */}
+          {user && business && user.id !== business.owner_id && (
+            <section>
+              <Card className="shadow-soft">
+                <CardContent className="pt-6 flex justify-end">
+                  <Button variant="hero" onClick={handleRequestLink} disabled={linking || alreadyLinked}>
+                    {alreadyLinked ? 'Request Sent' : 'Request to link profile'}
+                  </Button>
+                </CardContent>
+              </Card>
+            </section>
+          )}
         </article>
       </main>
       <Footer />

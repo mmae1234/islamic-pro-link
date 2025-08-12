@@ -83,8 +83,8 @@ const Help = () => {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-2">Finding Professionals</h3>
-                  <p className="text-muted-foreground">Use our search feature to discover professionals in your area of interest. Filter by location, skills, and experience level.</p>
+                  <h3 className="font-semibold mb-2">Finding Professionals & Businesses</h3>
+                  <p className="text-muted-foreground">Use our Find Professionals and Find Businesses pages to discover people and companies. Filter by location and more, favorite businesses to save them, and message owners directly.</p>
                 </div>
               </div>
             </CardContent>
@@ -167,6 +167,27 @@ const Help = () => {
                   <AccordionContent>
                     Use the "Find Professionals" page to search by location, skills, industry, or expertise. 
                     You can filter results by experience level, rating, and availability.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-2b">
+                  <AccordionTrigger>Who can create a business profile?</AccordionTrigger>
+                  <AccordionContent>
+                    Only users with a business account can create or manage a business profile. Professionals and visitors won't see prompts to create one.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-2c">
+                  <AccordionTrigger>Can I favorite businesses?</AccordionTrigger>
+                  <AccordionContent>
+                    Yes. On business listings and profiles, use the "Favorite" button to save businesses. Your favorites appear in your Favorites page.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-2d">
+                  <AccordionTrigger>How do I link my profile to a business?</AccordionTrigger>
+                  <AccordionContent>
+                    Visit the business profile and use "Request to link profile" at the bottom. An admin will review and approve your request.
                   </AccordionContent>
                 </AccordionItem>
 

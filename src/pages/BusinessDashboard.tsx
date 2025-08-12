@@ -28,6 +28,7 @@ const BusinessDashboard = () => {
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState("");
   const [account, setAccount] = useState<BusinessAccount | null>(null);
+  const [isBusinessUser, setIsBusinessUser] = useState(false);
   const [form, setForm] = useState({
     name: "",
     bio: "",
@@ -62,12 +63,22 @@ const BusinessDashboard = () => {
   useEffect(() => {
     const load = async () => {
       if (!user) return;
-      const { data } = await supabase
-        .from('business_accounts')
-        .select('*')
-        .eq('owner_id', user.id)
-        .maybeSingle();
-      if (data) setAccount(data as any);
+      const [bizRes, profRes] = await Promise.all([
+        supabase
+          .from('business_accounts')
+          .select('*')
+          .eq('owner_id', user.id)
+          .maybeSingle(),
+        supabase
+          .from('profiles')
+          .select('role')
+          .eq('user_id', user.id)
+          .maybeSingle()
+      ]);
+      if ((bizRes as any).data) setAccount((bizRes as any).data as any);
+      const metaType = (user as any)?.user_metadata?.account_type;
+      const role = (profRes as any).data?.role;
+      setIsBusinessUser(role === 'business' || metaType === 'business');
       setLoading(false);
     };
     load();
@@ -196,15 +207,24 @@ const updateBusiness = async () => {
                 <p className="text-muted-foreground">Status: {account.status}</p>
               </div>
             ) : (
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="business-name">Business Name</Label>
-                  <Input id="business-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Crescent Consulting" />
+              {isBusinessUser ? (
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="business-name">Business Name</Label>
+                    <Input id="business-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Crescent Consulting" />
+                  </div>
+                  <Button onClick={createBusiness} disabled={creating} variant="accent" className="w-full">
+                    {creating ? 'Creating...' : 'Create Business Profile'}
+                  </Button>
                 </div>
-                <Button onClick={createBusiness} disabled={creating} variant="accent" className="w-full">
-                  {creating ? 'Creating...' : 'Create Business Profile'}
-                </Button>
-              </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-muted-foreground">Only business accounts can create a business profile.</p>
+                  <Button asChild variant="outline">
+                    <Link to="/dashboard/professional">Go to Professional Dashboard</Link>
+                  </Button>
+                </div>
+              )}
             )}
           </CardContent>
         </Card>
