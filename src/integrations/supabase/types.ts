@@ -566,12 +566,65 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      business_directory: {
+        Row: {
+          bio: string | null
+          city: string | null
+          country: string | null
+          cover_url: string | null
+          created_at: string | null
+          facebook_url: string | null
+          id: string | null
+          instagram_url: string | null
+          linkedin_url: string | null
+          logo_url: string | null
+          name: string | null
+          sector: string | null
+          services: string | null
+          state: string | null
+          status: string | null
+          telegram_url: string | null
+          tiktok_url: string | null
+          twitter_url: string | null
+          verified: boolean | null
+          website: string | null
+          whatsapp_number: string | null
+          youtube_url: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       delete_user_account: {
         Args: { user_id_param: string }
         Returns: boolean
+      }
+      get_business_directory: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          name: string
+          sector: string
+          bio: string
+          services: string
+          country: string
+          state: string
+          city: string
+          website: string
+          logo_url: string
+          cover_url: string
+          verified: boolean
+          status: string
+          facebook_url: string
+          instagram_url: string
+          linkedin_url: string
+          twitter_url: string
+          youtube_url: string
+          tiktok_url: string
+          whatsapp_number: string
+          telegram_url: string
+          created_at: string
+        }[]
       }
       get_guest_viewable_profile_ids: {
         Args: Record<PropertyKey, never>

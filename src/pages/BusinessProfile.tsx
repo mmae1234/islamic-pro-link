@@ -92,14 +92,24 @@ const [favoriteBusinessIds, setFavoriteBusinessIds] = useState<string[]>([]);
     const load = async () => {
       if (!id) return;
       try {
-const columns: string = user
-  ? 'id, owner_id, name, bio, services, sector, country, state, city, email, phone, website, logo_url, status, address_line1, address_line2, postal_code, facebook_url, instagram_url, linkedin_url, twitter_url, youtube_url, tiktok_url, whatsapp_number, telegram_url'
-  : 'id, name, bio, services, sector, country, state, city, website, logo_url, status, address_line1, address_line2, postal_code, facebook_url, instagram_url, linkedin_url, twitter_url, youtube_url, tiktok_url, whatsapp_number, telegram_url';
-        const { data: biz } = await supabase
-          .from('business_accounts')
-          .select(columns)
-          .eq('id', id)
-          .maybeSingle();
+const columnsAuth: string = 'id, owner_id, name, bio, services, sector, country, state, city, email, phone, website, logo_url, status, address_line1, address_line2, postal_code, facebook_url, instagram_url, linkedin_url, twitter_url, youtube_url, tiktok_url, whatsapp_number, telegram_url';
+const columnsPublic: string = 'id, name, bio, services, sector, country, state, city, website, logo_url, status, cover_url, verified, facebook_url, instagram_url, linkedin_url, twitter_url, youtube_url, tiktok_url, whatsapp_number, telegram_url';
+let biz: any = null;
+if (user) {
+  const { data } = await supabase
+    .from('business_accounts')
+    .select(columnsAuth)
+    .eq('id', id)
+    .maybeSingle();
+  biz = data;
+} else {
+  const { data } = await supabase
+    .from('business_directory')
+    .select(columnsPublic)
+    .eq('id', id)
+    .maybeSingle();
+  biz = data;
+}
         if (biz) setBusiness(biz as unknown as BusinessAccount);
 
         // Load approved team links

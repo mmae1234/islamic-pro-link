@@ -97,7 +97,7 @@ const Favorites = () => {
       const businessIds: string[] = raw ? JSON.parse(raw) : [];
       if (businessIds.length > 0) {
         const { data: businesses, error: bizError } = await supabase
-          .from('business_accounts')
+          .from('business_directory')
           .select('id, name, sector, country, state, city, verified, logo_url')
           .in('id', businessIds);
         if (bizError) throw bizError;

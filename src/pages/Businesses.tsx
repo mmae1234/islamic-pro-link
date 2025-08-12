@@ -81,7 +81,7 @@ const Businesses = () => {
 
   useEffect(() => {
     const loadSectors = async () => {
-      const { data } = await supabase.from('business_accounts').select('sector');
+      const { data } = await supabase.from('business_directory').select('sector');
       const unique = Array.from(new Set((data || []).map((d: any) => d.sector).filter(Boolean)));
       setSectors(unique as string[]);
     };
@@ -102,7 +102,7 @@ const Businesses = () => {
   const handleSearch = async () => {
     setLoading(true);
     try {
-      let query = supabase.from('business_accounts').select('id, name, sector, bio, country, state, city, verified, logo_url');
+      let query = supabase.from('business_directory').select('id, name, sector, bio, country, state, city, verified, logo_url');
 
       if (filters.searchTerm) {
         const t = filters.searchTerm;
