@@ -113,6 +113,20 @@ const Search = () => {
 
     setLoading(true);
     try {
+      if (isGuest) {
+        const { data, error } = await supabase.rpc('get_professional_directory', { limit_count: 2 });
+        if (error) {
+          console.error('Supabase RPC error:', error);
+          setProfessionals([]);
+          return;
+        }
+        const mapped = (data || []).map((p: any) => ({
+          ...p,
+          profiles: { first_name: p.first_name, last_name: p.last_name, avatar_url: p.avatar_url },
+        }));
+        setProfessionals(mapped);
+        return;
+      }
       let query = supabase
         .from('professional_profiles')
         .select(`

@@ -58,16 +58,27 @@ const Profile = () => {
       setProfile(profileData);
 
       // Load professional profile
-      const { data: professionalData, error: professionalError } = await supabase
-        .from('professional_profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
+      if (user) {
+        const { data: professionalData, error: professionalError } = await supabase
+          .from('professional_profiles')
+          .select('*')
+          .eq('user_id', userId)
+          .maybeSingle();
 
-      if (professionalError && professionalError.code !== 'PGRST116') {
-        console.error('Error loading professional profile:', professionalError);
-      } else if (professionalData) {
-        setProfessionalProfile(professionalData);
+        if (professionalError && professionalError.code !== 'PGRST116') {
+          console.error('Error loading professional profile:', professionalError);
+        } else if (professionalData) {
+          setProfessionalProfile(professionalData);
+        }
+      } else {
+        const { data: publicData, error: publicError } = await supabase
+          .rpc('get_professional_profile_public', { _user_id: userId });
+
+        if (publicError) {
+          console.error('Error loading public professional profile:', publicError);
+        } else if (publicData && publicData.length > 0) {
+          setProfessionalProfile(publicData[0]);
+        }
       }
     } catch (error) {
       console.error('Error loading profile:', error);

@@ -630,6 +630,50 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string[]
       }
+      get_professional_directory: {
+        Args: { limit_count?: number }
+        Returns: {
+          id: string
+          user_id: string
+          first_name: string
+          last_name: string
+          bio: string
+          occupation: string
+          sector: string
+          city: string
+          state_province: string
+          country: string
+          experience_years: number
+          skills: string[]
+          is_mentor: boolean
+          is_seeking_mentor: boolean
+          availability: string
+          avatar_url: string
+          created_at: string
+        }[]
+      }
+      get_professional_profile_public: {
+        Args: { _user_id: string }
+        Returns: {
+          id: string
+          user_id: string
+          first_name: string
+          last_name: string
+          bio: string
+          occupation: string
+          sector: string
+          city: string
+          state_province: string
+          country: string
+          experience_years: number
+          skills: string[]
+          is_mentor: boolean
+          is_seeking_mentor: boolean
+          availability: string
+          avatar_url: string
+          created_at: string
+        }[]
+      }
       has_business_role: {
         Args: {
           _user_id: string
