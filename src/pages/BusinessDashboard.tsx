@@ -206,25 +206,23 @@ const updateBusiness = async () => {
                 </div>
                 <p className="text-muted-foreground">Status: {account.status}</p>
               </div>
+            ) : isBusinessUser ? (
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="business-name">Business Name</Label>
+                  <Input id="business-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Crescent Consulting" />
+                </div>
+                <Button onClick={createBusiness} disabled={creating} variant="accent" className="w-full">
+                  {creating ? 'Creating...' : 'Create Business Profile'}
+                </Button>
+              </div>
             ) : (
-              {isBusinessUser ? (
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="business-name">Business Name</Label>
-                    <Input id="business-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Crescent Consulting" />
-                  </div>
-                  <Button onClick={createBusiness} disabled={creating} variant="accent" className="w-full">
-                    {creating ? 'Creating...' : 'Create Business Profile'}
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-muted-foreground">Only business accounts can create a business profile.</p>
-                  <Button asChild variant="outline">
-                    <Link to="/dashboard/professional">Go to Professional Dashboard</Link>
-                  </Button>
-                </div>
-              )}
+              <div className="space-y-4">
+                <p className="text-muted-foreground">Only business accounts can create a business profile.</p>
+                <Button asChild variant="outline">
+                  <Link to="/dashboard/professional">Go to Professional Dashboard</Link>
+                </Button>
+              </div>
             )}
           </CardContent>
         </Card>
