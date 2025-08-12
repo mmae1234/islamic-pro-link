@@ -1,0 +1,63 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
+
+## [Unreleased]
+### Added
+- Admin Release Notes page that renders this changelog for internal visibility.
+
+### Changed
+- N/A
+
+### Fixed
+- N/A
+
+### Removed
+- N/A
+
+## [1.4.1] - 2025-08-12
+### Fixed
+- Minor UI adjustments and copy updates following security hardening.
+
+## [1.4.0] - 2025-08-12
+### Added
+- Social links on Business Dashboard and Professional Edit Profile.
+- Help/FAQ updates and Settings page cleanup for clearer roles.
+
+### Changed
+- Businesses listing and guest Business Profile now source from a restricted `business_directory` view exposing only non-sensitive fields.
+
+### Fixed
+- Security: Restricted public access to `business_accounts` sensitive data; dropped broad public SELECT, added auth-only policy, and introduced `SECURITY DEFINER` view function limited to safe columns.
+
+## [1.3.0] - 2025-07-20
+### Added
+- Mobile-focused fixes and improvements to iOS auth fallback.
+
+### Changed
+- Color/theme token refinements in design system for better contrast.
+
+## [1.2.0] - 2025-06-25
+### Added
+- Businesses directory and Business Profile pages with favorites support.
+
+### Changed
+- Search experience and filters for improved discovery.
+
+## [1.1.0] - 2025-06-05
+### Added
+- Mentorship pages, requests, and search filters.
+
+## [1.0.0] - 2025-05-15
+### Added
+- Initial public release: Landing, Auth, Profiles, Search, and core UI components.
+
+[Unreleased]: https://github.com/REPO_OWNER/REPO_NAME/compare/v1.4.1...HEAD
+[1.4.1]: https://github.com/REPO_OWNER/REPO_NAME/releases/tag/v1.4.1
+[1.4.0]: https://github.com/REPO_OWNER/REPO_NAME/releases/tag/v1.4.0
+[1.3.0]: https://github.com/REPO_OWNER/REPO_NAME/releases/tag/v1.3.0
+[1.2.0]: https://github.com/REPO_OWNER/REPO_NAME/releases/tag/v1.2.0
+[1.1.0]: https://github.com/REPO_OWNER/REPO_NAME/releases/tag/v1.1.0
+[1.0.0]: https://github.com/REPO_OWNER/REPO_NAME/releases/tag/v1.0.0

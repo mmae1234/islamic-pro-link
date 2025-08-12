@@ -35,6 +35,7 @@ import BusinessDashboard from "./pages/BusinessDashboard";
 import BusinessProfile from "./pages/BusinessProfile";
 import Businesses from "./pages/Businesses";
 import AutoDashboard from "./pages/AutoDashboard";
+import AdminReleaseNotes from "./pages/AdminReleaseNotes";
 
 const queryClient = new QueryClient();
 
@@ -106,6 +107,11 @@ const App = () => (
               <Route path="/organizations" element={<Organizations />} />
               <Route path="/careers" element={<Careers />} />
               <Route path="/scholarships" element={<Scholarships />} />
+              <Route path="/admin/release-notes" element={
+                <ProtectedRoute>
+                  <AdminReleaseNotes />
+                </ProtectedRoute>
+              } />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
