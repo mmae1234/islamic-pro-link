@@ -29,33 +29,55 @@ const BusinessDashboard = () => {
   const [name, setName] = useState("");
   const [account, setAccount] = useState<BusinessAccount | null>(null);
   const [isBusinessUser, setIsBusinessUser] = useState(false);
-  const [form, setForm] = useState({
-    name: "",
-    bio: "",
-    services: "",
-    sector: "",
-    email: "",
-    phone: "",
-    website: "",
-    country: "",
-    state: "",
-    city: ""
-  });
+const [form, setForm] = useState({
+  name: "",
+  bio: "",
+  services: "",
+  sector: "",
+  email: "",
+  phone: "",
+  website: "",
+  country: "",
+  state: "",
+  city: "",
+  address_line1: "",
+  address_line2: "",
+  postal_code: "",
+  facebook_url: "",
+  instagram_url: "",
+  linkedin_url: "",
+  twitter_url: "",
+  youtube_url: "",
+  tiktok_url: "",
+  whatsapp_number: "",
+  telegram_url: "",
+});
 
   useEffect(() => {
     if (account) {
-      setForm({
-        name: account.name || "",
-        bio: (account as any).bio || "",
-        services: (account as any).services || "",
-        sector: (account as any).sector || "",
-        email: (account as any).email || "",
-        phone: (account as any).phone || "",
-        website: (account as any).website || "",
-        country: (account as any).country || "",
-        state: (account as any).state || "",
-        city: (account as any).city || ""
-      });
+setForm({
+  name: account.name || "",
+  bio: (account as any).bio || "",
+  services: (account as any).services || "",
+  sector: (account as any).sector || "",
+  email: (account as any).email || "",
+  phone: (account as any).phone || "",
+  website: (account as any).website || "",
+  country: (account as any).country || "",
+  state: (account as any).state || "",
+  city: (account as any).city || "",
+  address_line1: (account as any).address_line1 || "",
+  address_line2: (account as any).address_line2 || "",
+  postal_code: (account as any).postal_code || "",
+  facebook_url: (account as any).facebook_url || "",
+  instagram_url: (account as any).instagram_url || "",
+  linkedin_url: (account as any).linkedin_url || "",
+  twitter_url: (account as any).twitter_url || "",
+  youtube_url: (account as any).youtube_url || "",
+  tiktok_url: (account as any).tiktok_url || "",
+  whatsapp_number: (account as any).whatsapp_number || "",
+  telegram_url: (account as any).telegram_url || "",
+});
     }
   }, [account]);
   useEffect(() => setSeo('Business Dashboard – Muslim Pros', 'Create and manage your business profile'), []);

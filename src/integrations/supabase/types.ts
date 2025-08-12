@@ -16,6 +16,8 @@ export type Database = {
     Tables: {
       business_accounts: {
         Row: {
+          address_line1: string | null
+          address_line2: string | null
           bio: string | null
           booking_url: string | null
           city: string | null
@@ -23,22 +25,33 @@ export type Database = {
           cover_url: string | null
           created_at: string
           email: string | null
+          facebook_url: string | null
           id: string
+          instagram_url: string | null
           languages: string[] | null
+          linkedin_url: string | null
           logo_url: string | null
           name: string | null
           occupations: string[] | null
           owner_id: string
           phone: string | null
+          postal_code: string | null
           sector: string | null
           services: string | null
           state: string | null
           status: string
+          telegram_url: string | null
+          tiktok_url: string | null
+          twitter_url: string | null
           updated_at: string
           verified: boolean
           website: string | null
+          whatsapp_number: string | null
+          youtube_url: string | null
         }
         Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
           bio?: string | null
           booking_url?: string | null
           city?: string | null
@@ -46,22 +59,33 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           email?: string | null
+          facebook_url?: string | null
           id?: string
+          instagram_url?: string | null
           languages?: string[] | null
+          linkedin_url?: string | null
           logo_url?: string | null
           name?: string | null
           occupations?: string[] | null
           owner_id: string
           phone?: string | null
+          postal_code?: string | null
           sector?: string | null
           services?: string | null
           state?: string | null
           status?: string
+          telegram_url?: string | null
+          tiktok_url?: string | null
+          twitter_url?: string | null
           updated_at?: string
           verified?: boolean
           website?: string | null
+          whatsapp_number?: string | null
+          youtube_url?: string | null
         }
         Update: {
+          address_line1?: string | null
+          address_line2?: string | null
           bio?: string | null
           booking_url?: string | null
           city?: string | null
@@ -69,20 +93,29 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           email?: string | null
+          facebook_url?: string | null
           id?: string
+          instagram_url?: string | null
           languages?: string[] | null
+          linkedin_url?: string | null
           logo_url?: string | null
           name?: string | null
           occupations?: string[] | null
           owner_id?: string
           phone?: string | null
+          postal_code?: string | null
           sector?: string | null
           services?: string | null
           state?: string | null
           status?: string
+          telegram_url?: string | null
+          tiktok_url?: string | null
+          twitter_url?: string | null
           updated_at?: string
           verified?: boolean
           website?: string | null
+          whatsapp_number?: string | null
+          youtube_url?: string | null
         }
         Relationships: []
       }

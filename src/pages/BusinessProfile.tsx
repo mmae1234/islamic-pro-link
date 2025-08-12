@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, Globe, Building2, Users, ExternalLink, ArrowRight, Heart } from "lucide-react";
+import { Mail, Phone, Globe, Building2, Users, ExternalLink, ArrowRight, Heart, MessageCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -27,6 +27,17 @@ interface BusinessAccount {
   website: string | null;
   logo_url: string | null;
   status: string;
+  address_line1?: string | null;
+  address_line2?: string | null;
+  postal_code?: string | null;
+  facebook_url?: string | null;
+  instagram_url?: string | null;
+  linkedin_url?: string | null;
+  twitter_url?: string | null;
+  youtube_url?: string | null;
+  tiktok_url?: string | null;
+  whatsapp_number?: string | null;
+  telegram_url?: string | null;
 }
 
 interface TeamMemberProfile {
@@ -63,12 +74,13 @@ const BusinessProfile = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const [business, setBusiness] = useState<BusinessAccount | null>(null);
-  const [team, setTeam] = useState<TeamMemberProfile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [linking, setLinking] = useState(false);
-  const [alreadyLinked, setAlreadyLinked] = useState<boolean>(false);
-  const [favoriteBusinessIds, setFavoriteBusinessIds] = useState<string[]>([]);
+const [business, setBusiness] = useState<BusinessAccount | null>(null);
+const [team, setTeam] = useState<TeamMemberProfile[]>([]);
+const [loading, setLoading] = useState(true);
+const [linking, setLinking] = useState(false);
+const [alreadyLinked, setAlreadyLinked] = useState<boolean>(false);
+const [linkBlocked, setLinkBlocked] = useState<boolean>(false);
+const [favoriteBusinessIds, setFavoriteBusinessIds] = useState<string[]>([]);
 
   const canonical = useMemo(() => `${window.location.origin}/business/${id}`, [id]);
 
@@ -80,9 +92,9 @@ const BusinessProfile = () => {
     const load = async () => {
       if (!id) return;
       try {
-        const columns: string = user
-          ? 'id, owner_id, name, bio, services, sector, country, state, city, email, phone, website, logo_url, status'
-          : 'id, name, bio, services, sector, country, state, city, website, logo_url, status';
+const columns: string = user
+  ? 'id, owner_id, name, bio, services, sector, country, state, city, email, phone, website, logo_url, status, address_line1, address_line2, postal_code, facebook_url, instagram_url, linkedin_url, twitter_url, youtube_url, tiktok_url, whatsapp_number, telegram_url'
+  : 'id, name, bio, services, sector, country, state, city, website, logo_url, status, address_line1, address_line2, postal_code, facebook_url, instagram_url, linkedin_url, twitter_url, youtube_url, tiktok_url, whatsapp_number, telegram_url';
         const { data: biz } = await supabase
           .from('business_accounts')
           .select(columns)
@@ -108,16 +120,24 @@ const BusinessProfile = () => {
           setTeam([]);
         }
 
-        // Check if current user already linked/pending
-        if (user) {
-          const { data: existing } = await supabase
-            .from('professional_business_links')
-            .select('id, status')
-            .eq('business_id', id)
-            .eq('professional_user_id', user.id)
-            .maybeSingle();
-          setAlreadyLinked(!!existing);
-        }
+// Check existing link status and rejection count
+if (user) {
+  const { data: existingActive } = await supabase
+    .from('professional_business_links')
+    .select('id, status')
+    .eq('business_id', id)
+    .eq('professional_user_id', user.id)
+    .in('status', ['pending','approved']);
+  setAlreadyLinked((existingActive?.length ?? 0) > 0);
+
+  const { data: rejectedRows } = await supabase
+    .from('professional_business_links')
+    .select('id')
+    .eq('business_id', id)
+    .eq('professional_user_id', user.id)
+    .eq('status', 'rejected');
+  setLinkBlocked((rejectedRows?.length ?? 0) >= 2);
+}
       } finally {
         setLoading(false);
       }
@@ -142,25 +162,29 @@ const BusinessProfile = () => {
     setFavoriteBusinessIds(arr);
   };
 
-  const handleRequestLink = async () => {
-    if (!user || !id) {
-      toast({ title: 'Please sign in', description: 'You must be logged in to request linking.', variant: 'destructive' });
-      return;
-    }
-    try {
-      setLinking(true);
-      const { error } = await supabase
-        .from('professional_business_links')
-        .insert({ business_id: id, professional_user_id: user.id, status: 'pending' });
-      if (error) throw error;
-      toast({ title: 'Request sent', description: 'Your link request is pending approval.' });
-      setAlreadyLinked(true);
-    } catch (e: any) {
-      toast({ title: 'Could not send request', description: e.message || 'Try again later.', variant: 'destructive' });
-    } finally {
-      setLinking(false);
-    }
-  };
+const handleRequestLink = async () => {
+  if (!user || !id) {
+    toast({ title: 'Please sign in', description: 'You must be logged in to request linking.', variant: 'destructive' });
+    return;
+  }
+  if (linkBlocked) {
+    toast({ title: 'Linking disabled', description: 'This business has declined twice. Please contact an admin for manual approval.', variant: 'destructive' });
+    return;
+  }
+  try {
+    setLinking(true);
+    const { error } = await supabase
+      .from('professional_business_links')
+      .insert({ business_id: id, professional_user_id: user.id, status: 'pending' });
+    if (error) throw error;
+    toast({ title: 'Request sent', description: 'Your link request is pending approval.' });
+    setAlreadyLinked(true);
+  } catch (e: any) {
+    toast({ title: 'Could not send request', description: e.message || 'Try again later.', variant: 'destructive' });
+  } finally {
+    setLinking(false);
+  }
+};
 
   if (loading) {
     return (
@@ -213,40 +237,33 @@ const BusinessProfile = () => {
                 )}
               </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {user && business.email && (
-                <Button variant="outline" asChild>
-                  <a href={`mailto:${business.email}`} aria-label="Email this business">
-                    <Mail className="w-4 h-4 mr-2" /> Email
-                  </a>
-                </Button>
-              )}
-              {user && business.phone && (
-                <Button variant="outline" asChild>
-                  <a href={`tel:${business.phone}`} aria-label="Call this business">
-                    <Phone className="w-4 h-4 mr-2" /> Call
-                  </a>
-                </Button>
-              )}
-              {business.website && (
-                <Button variant="accent" asChild>
-                  <a href={business.website} target="_blank" rel="noopener noreferrer" aria-label="Visit website">
-                    <Globe className="w-4 h-4 mr-2" /> Website <ExternalLink className="w-4 h-4 ml-1" />
-                  </a>
-                </Button>
-              )}
-              <Button variant={isFavorited ? "default" : "outline"} onClick={toggleFavorite}>
-                <Heart className={`w-4 h-4 mr-2 ${isFavorited ? 'fill-current' : ''}`} /> {isFavorited ? 'Favorited' : 'Favorite'}
-              </Button>
-              {user && user.id === business.owner_id && (
-                <Button variant="accent" asChild>
-                  <Link to="/dashboard/business">Edit Business Profile</Link>
-                </Button>
-              )}
-              {!user && (
-                <p className="text-sm text-muted-foreground ml-1">Sign in to view contact information.</p>
-              )}
-            </div>
+<div className="flex flex-wrap gap-2">
+  {user && (
+    <Button variant="accent" asChild>
+      <Link to="/messages" aria-label="Message this business">
+        <MessageCircle className="w-4 h-4 mr-2" /> Message
+      </Link>
+    </Button>
+  )}
+  {business.website && (
+    <Button variant="accent" asChild>
+      <a href={business.website} target="_blank" rel="noopener noreferrer" aria-label="Visit website">
+        <Globe className="w-4 h-4 mr-2" /> Website <ExternalLink className="w-4 h-4 ml-1" />
+      </a>
+    </Button>
+  )}
+  <Button variant={isFavorited ? "default" : "outline"} onClick={toggleFavorite}>
+    <Heart className={`w-4 h-4 mr-2 ${isFavorited ? 'fill-current' : ''}`} /> {isFavorited ? 'Favorited' : 'Favorite'}
+  </Button>
+  {user && user.id === business.owner_id && (
+    <Button variant="accent" asChild>
+      <Link to="/dashboard/business">Edit Business Profile</Link>
+    </Button>
+  )}
+  {!user && (
+    <p className="text-sm text-muted-foreground ml-1">Sign in to message this business.</p>
+  )}
+</div>
           </header>
 
           {/* About / Description */}
@@ -286,6 +303,63 @@ const BusinessProfile = () => {
             </Card>
           </section>
 
+          {/* Contact Information */}
+          {(business.email || business.phone || business.website || business.address_line1 || business.facebook_url || business.instagram_url || business.linkedin_url || business.twitter_url || business.youtube_url || business.tiktok_url || business.whatsapp_number || business.telegram_url) && (
+            <section>
+              <Card className="shadow-soft">
+                <CardHeader>
+                  <CardTitle>Contact Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {business.address_line1 && (
+                    <p className="text-foreground">{business.address_line1}{business.address_line2 ? `, ${business.address_line2}` : ''}{business.postal_code ? `, ${business.postal_code}` : ''}</p>
+                  )}
+                  {business.email && (
+                    <p>
+                      <a href={`mailto:${business.email}`} className="text-primary hover:underline inline-flex items-center gap-2"><Mail className="w-4 h-4" /> {business.email}</a>
+                    </p>
+                  )}
+                  {business.phone && (
+                    <p>
+                      <a href={`tel:${business.phone}`} className="text-primary hover:underline inline-flex items-center gap-2"><Phone className="w-4 h-4" /> {business.phone}</a>
+                    </p>
+                  )}
+                  {business.website && (
+                    <p>
+                      <a href={business.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-2"><Globe className="w-4 h-4" /> {business.website}</a>
+                    </p>
+                  )}
+                  <div className="flex flex-wrap items-center gap-3 pt-2">
+                    {business.facebook_url && (
+                      <a href={business.facebook_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Facebook</a>
+                    )}
+                    {business.instagram_url && (
+                      <a href={business.instagram_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Instagram</a>
+                    )}
+                    {business.linkedin_url && (
+                      <a href={business.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">LinkedIn</a>
+                    )}
+                    {business.twitter_url && (
+                      <a href={business.twitter_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Twitter/X</a>
+                    )}
+                    {business.youtube_url && (
+                      <a href={business.youtube_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">YouTube</a>
+                    )}
+                    {business.tiktok_url && (
+                      <a href={business.tiktok_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">TikTok</a>
+                    )}
+                    {business.telegram_url && (
+                      <a href={business.telegram_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Telegram</a>
+                    )}
+                    {business.whatsapp_number && (
+                      <a href={`https://wa.me/${business.whatsapp_number}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">WhatsApp</a>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+          )}
+
           {/* Team Members */}
           <section>
             <Card className="shadow-soft">
@@ -322,9 +396,9 @@ const BusinessProfile = () => {
             <section>
               <Card className="shadow-soft">
                 <CardContent className="pt-6 flex justify-end">
-                  <Button variant="hero" onClick={handleRequestLink} disabled={linking || alreadyLinked}>
-                    {alreadyLinked ? 'Request Sent' : 'Request to link profile'}
-                  </Button>
+<Button variant="hero" onClick={handleRequestLink} disabled={linking || alreadyLinked || linkBlocked}>
+  {alreadyLinked ? 'Request Sent' : linkBlocked ? 'Linking disabled' : 'Request to link profile'}
+</Button>
                 </CardContent>
               </Card>
             </section>
