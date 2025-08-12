@@ -270,7 +270,7 @@ const Businesses = () => {
 
           {results.map((b) => (
             <Card key={b.id} className="shadow-soft">
-              <CardContent className="p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <CardContent className="p-6">
                 <div>
                   <div className="flex items-center gap-3">
                     <Building2 className="w-5 h-5 text-primary" />
@@ -280,24 +280,24 @@ const Businesses = () => {
                     {b.verified && <Badge variant="secondary">Verified</Badge>}
                   </div>
                   <p className="text-muted-foreground mt-1">{[b.sector, fullLocation(b)].filter(Boolean).join(' • ')}</p>
-                </div>
+
                   {(() => {
                     const isFav = favoriteBusinessIds.includes(b.id);
                     return (
-                      <>
-                        <Button variant={isFav ? "default" : "outline"} onClick={() => handleFavorite(b.id, b.name)}>
+                      <div className="actions flex flex-wrap items-center justify-start gap-3 mt-2">
+                        <Button variant={isFav ? "default" : "outline"} onClick={() => handleFavorite(b.id, b.name)} aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}>
                           <Heart className={`w-4 h-4 mr-2 ${isFav ? 'fill-current' : ''}`} /> {isFav ? 'Favorited' : 'Favorite'}
                         </Button>
-                        <Button variant="outline" onClick={() => openMessageDialog(b)}>
+                        <Button variant="outline" onClick={() => openMessageDialog(b)} aria-label="Message business">
                           <MessageCircle className="w-4 h-4 mr-2" /> Message
                         </Button>
-                        <Button variant="outline" asChild>
+                        <Button variant="outline" asChild aria-label="View profile">
                           <Link to={`/business/${b.id}`}>View Profile</Link>
                         </Button>
-                      </>
+                      </div>
                     );
                   })()}
-
+                </div>
               </CardContent>
             </Card>
           ))}

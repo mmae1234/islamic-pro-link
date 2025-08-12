@@ -231,26 +231,127 @@ const ProfessionalCard = ({
               </AvatarFallback>
             </Avatar>
             
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-2">
-                <h3 className="text-lg font-semibold text-foreground truncate">
-                  {getFullName()}
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {professional.is_mentor && (
-                    <Badge className="text-xs bg-green-100 text-green-800 border-green-200 hover:bg-green-200">
-                      <Users className="w-3 h-3 mr-1" />
-                      Mentor Available
-                    </Badge>
-                  )}
-                  {professional.is_seeking_mentor && (
-                    <Badge className="text-xs bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200">
-                      <Star className="w-3 h-3 mr-1" />
-                      Seeking Mentor
-                    </Badge>
-                  )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="text-lg font-semibold text-foreground truncate">
+                    {getFullName()}
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {professional.is_mentor && (
+                      <Badge className="text-xs bg-green-100 text-green-800 border-green-200 hover:bg-green-200">
+                        <Users className="w-3 h-3 mr-1" />
+                        Mentor Available
+                      </Badge>
+                    )}
+                    {professional.is_seeking_mentor && (
+                      <Badge className="text-xs bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200">
+                        <Star className="w-3 h-3 mr-1" />
+                        Seeking Mentor
+                      </Badge>
+                    )}
+                  </div>
                 </div>
-              </div>
+
+                {/* Inline actions under the name */}
+                {!isOwnProfile && (
+                  <div className="actions flex flex-wrap items-center justify-start gap-3 mt-2">
+                    {showFavoriteButton && (
+                      <Button 
+                        variant={isFavorited ? "default" : "outline"} 
+                        size="sm" 
+                        onClick={toggleFavorite}
+                        disabled={loading}
+                        className="flex items-center gap-2"
+                        aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+                      >
+                        <Heart className={`w-4 h-4 ${isFavorited ? 'fill-current' : ''}`} />
+                        {isFavorited ? 'Favorited' : 'Favorite'}
+                      </Button>
+                    )}
+
+                    <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="flex items-center gap-2" aria-label="Send message">
+                          <MessageCircle className="w-4 h-4" />
+                          Message
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Send Message</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="message">Message</Label>
+                            <Textarea
+                              id="message"
+                              value={messageContent}
+                              onChange={(e) => setMessageContent(e.target.value)}
+                              placeholder="Write your message..."
+                              rows={4}
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <Button 
+                              onClick={sendMessage} 
+                              disabled={!messageContent.trim() || loading}
+                              className="flex-1"
+                            >
+                              {loading ? 'Sending...' : 'Send Message'}
+                            </Button>
+                            <Button variant="outline" onClick={() => setIsMessageDialogOpen(false)}>
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+
+                    <Button variant="outline" size="sm" asChild aria-label="View profile">
+                      <Link to={`/profile/${professional.user_id}`}>View Profile</Link>
+                    </Button>
+
+                    {showMentorshipButton && professional.is_mentor && (
+                      <Dialog open={isRequestDialogOpen} onOpenChange={setIsRequestDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="accent" size="sm" className="flex items-center gap-2 hover:shadow-glow" aria-label="Request mentorship">
+                            <Calendar className="w-4 h-4" />
+                            Request Mentorship
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Request Mentorship</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div>
+                              <Label htmlFor="request-message">Why would you like this person as a mentor?</Label>
+                              <Textarea
+                                id="request-message"
+                                value={requestMessage}
+                                onChange={(e) => setRequestMessage(e.target.value)}
+                                placeholder="Explain why you're interested in this mentorship and what you hope to achieve..."
+                                rows={4}
+                              />
+                            </div>
+                            <div className="flex gap-2">
+                              <Button 
+                                onClick={sendMentorshipRequest} 
+                                disabled={!requestMessage.trim() || loading}
+                                className="flex-1"
+                              >
+                                {loading ? 'Sending...' : 'Send Request'}
+                              </Button>
+                              <Button variant="outline" onClick={() => setIsRequestDialogOpen(false)}>
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    )}
+                  </div>
+                )}
               
               <p className="text-primary font-medium text-lg mb-1">{professional.occupation}</p>
               <p className="text-muted-foreground text-sm mb-3">{professional.sector}</p>
@@ -302,7 +403,7 @@ const ProfessionalCard = ({
           </div>
 
           {/* Action Buttons */}
-          {!isOwnProfile && (
+          {false && !isOwnProfile && (
             <div className="flex flex-col sm:flex-row lg:flex-col gap-3 lg:min-w-fit lg:w-40">
               <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
                 <DialogTrigger asChild>
