@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2 } from "lucide-react";
 import { SectorSelect, CountrySelect, StateProvinceSelect as StateProvinceSelectEF, CitySelect as CitySelectEF } from "@/components/EnhancedFormDropdowns";
+import BusinessLinkRequests from "@/components/BusinessLinkRequests";
 interface BusinessAccount { id: string; name: string | null; status: string; }
 
 const setSeo = (title: string, description?: string) => {
@@ -248,6 +249,12 @@ const updateBusiness = async () => {
             )}
           </CardContent>
         </Card>
+
+        {account && (
+          <div className="mt-8">
+            <BusinessLinkRequests businessId={account.id} />
+          </div>
+        )}
       </main>
       <Footer />
     </div>
