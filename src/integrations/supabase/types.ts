@@ -372,21 +372,30 @@ export type Database = {
           country: string | null
           created_at: string
           experience_years: number | null
+          facebook_url: string | null
           first_name: string | null
           gender: string | null
           id: string
+          instagram_url: string | null
           is_mentor: boolean | null
           is_seeking_mentor: boolean | null
           languages: string[] | null
           last_name: string | null
+          linkedin_url: string | null
           occupation: string | null
           preferred_communication: string[] | null
           sector: string | null
           skills: string[] | null
           state_province: string | null
+          telegram_url: string | null
+          tiktok_url: string | null
+          twitter_url: string | null
           university: string | null
           updated_at: string
           user_id: string
+          website: string | null
+          whatsapp_number: string | null
+          youtube_url: string | null
         }
         Insert: {
           availability?: string | null
@@ -396,21 +405,30 @@ export type Database = {
           country?: string | null
           created_at?: string
           experience_years?: number | null
+          facebook_url?: string | null
           first_name?: string | null
           gender?: string | null
           id?: string
+          instagram_url?: string | null
           is_mentor?: boolean | null
           is_seeking_mentor?: boolean | null
           languages?: string[] | null
           last_name?: string | null
+          linkedin_url?: string | null
           occupation?: string | null
           preferred_communication?: string[] | null
           sector?: string | null
           skills?: string[] | null
           state_province?: string | null
+          telegram_url?: string | null
+          tiktok_url?: string | null
+          twitter_url?: string | null
           university?: string | null
           updated_at?: string
           user_id: string
+          website?: string | null
+          whatsapp_number?: string | null
+          youtube_url?: string | null
         }
         Update: {
           availability?: string | null
@@ -420,21 +438,30 @@ export type Database = {
           country?: string | null
           created_at?: string
           experience_years?: number | null
+          facebook_url?: string | null
           first_name?: string | null
           gender?: string | null
           id?: string
+          instagram_url?: string | null
           is_mentor?: boolean | null
           is_seeking_mentor?: boolean | null
           languages?: string[] | null
           last_name?: string | null
+          linkedin_url?: string | null
           occupation?: string | null
           preferred_communication?: string[] | null
           sector?: string | null
           skills?: string[] | null
           state_province?: string | null
+          telegram_url?: string | null
+          tiktok_url?: string | null
+          twitter_url?: string | null
           university?: string | null
           updated_at?: string
           user_id?: string
+          website?: string | null
+          whatsapp_number?: string | null
+          youtube_url?: string | null
         }
         Relationships: [
           {

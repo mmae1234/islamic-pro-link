@@ -69,7 +69,15 @@ const EditProfile = () => {
   const [isMentor, setIsMentor] = useState(false);
   const [isSeekingMentor, setIsSeekingMentor] = useState(false);
   const [preferredCommunication, setPreferredCommunication] = useState<string[]>(['in_app_messaging']);
-
+  const [website, setWebsite] = useState('');
+  const [facebookUrl, setFacebookUrl] = useState('');
+  const [instagramUrl, setInstagramUrl] = useState('');
+  const [linkedinUrl, setLinkedinUrl] = useState('');
+  const [twitterUrl, setTwitterUrl] = useState('');
+  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [tiktokUrl, setTiktokUrl] = useState('');
+  const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [telegramUrl, setTelegramUrl] = useState('');
   useEffect(() => {
     if (user) {
       loadProfile();
@@ -122,6 +130,15 @@ const EditProfile = () => {
         setIsMentor(professionalData.is_mentor || false);
         setIsSeekingMentor(professionalData.is_seeking_mentor || false);
         setPreferredCommunication(professionalData.preferred_communication || ['in_app_messaging']);
+        setWebsite(professionalData.website || '');
+        setFacebookUrl(professionalData.facebook_url || '');
+        setInstagramUrl(professionalData.instagram_url || '');
+        setLinkedinUrl(professionalData.linkedin_url || '');
+        setTwitterUrl(professionalData.twitter_url || '');
+        setYoutubeUrl(professionalData.youtube_url || '');
+        setTiktokUrl(professionalData.tiktok_url || '');
+        setWhatsappNumber(professionalData.whatsapp_number || '');
+        setTelegramUrl(professionalData.telegram_url || '');
       }
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -176,6 +193,15 @@ const EditProfile = () => {
             is_mentor: isMentor,
             is_seeking_mentor: isSeekingMentor,
             preferred_communication: preferredCommunication,
+            website,
+            facebook_url: facebookUrl || null,
+            instagram_url: instagramUrl || null,
+            linkedin_url: linkedinUrl || null,
+            twitter_url: twitterUrl || null,
+            youtube_url: youtubeUrl || null,
+            tiktok_url: tiktokUrl || null,
+            whatsapp_number: whatsappNumber || null,
+            telegram_url: telegramUrl || null,
           },
           { onConflict: 'user_id' }
         );
@@ -408,6 +434,48 @@ const EditProfile = () => {
                   onValueChange={setLanguages}
                   placeholder="Select languages you speak"
                 />
+              </div>
+              {/* Social Links */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Social Links</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="website">Website</Label>
+                    <Input id="website" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://..." />
+                  </div>
+                  <div>
+                    <Label htmlFor="facebook">Facebook URL</Label>
+                    <Input id="facebook" value={facebookUrl} onChange={(e) => setFacebookUrl(e.target.value)} placeholder="https://facebook.com/yourpage" />
+                  </div>
+                  <div>
+                    <Label htmlFor="instagram">Instagram URL</Label>
+                    <Input id="instagram" value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} placeholder="https://instagram.com/yourhandle" />
+                  </div>
+                  <div>
+                    <Label htmlFor="linkedin">LinkedIn URL</Label>
+                    <Input id="linkedin" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/yourprofile" />
+                  </div>
+                  <div>
+                    <Label htmlFor="twitter">X (Twitter) URL</Label>
+                    <Input id="twitter" value={twitterUrl} onChange={(e) => setTwitterUrl(e.target.value)} placeholder="https://x.com/yourhandle" />
+                  </div>
+                  <div>
+                    <Label htmlFor="youtube">YouTube URL</Label>
+                    <Input id="youtube" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} placeholder="https://youtube.com/@yourchannel" />
+                  </div>
+                  <div>
+                    <Label htmlFor="tiktok">TikTok URL</Label>
+                    <Input id="tiktok" value={tiktokUrl} onChange={(e) => setTiktokUrl(e.target.value)} placeholder="https://tiktok.com/@yourhandle" />
+                  </div>
+                  <div>
+                    <Label htmlFor="whatsapp">WhatsApp Number</Label>
+                    <Input id="whatsapp" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} placeholder="+1 555 555 5555" />
+                  </div>
+                  <div>
+                    <Label htmlFor="telegram">Telegram URL</Label>
+                    <Input id="telegram" value={telegramUrl} onChange={(e) => setTelegramUrl(e.target.value)} placeholder="https://t.me/yourhandle" />
+                  </div>
+                </div>
               </div>
 
               {/* Mentorship */}
