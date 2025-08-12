@@ -143,39 +143,42 @@ const EditProfile = () => {
       // Update basic profile
       const { error: profileError } = await supabase
         .from('profiles')
-        .upsert({
-          user_id: user.id,
-          first_name: firstName,
-          last_name: lastName,
-          avatar_url: avatarUrl
-        });
+        .upsert(
+          {
+            user_id: user.id,
+            first_name: firstName,
+            last_name: lastName,
+            avatar_url: avatarUrl,
+          },
+          { onConflict: 'user_id' }
+        );
 
       if (profileError) throw profileError;
 
       // Update professional profile
       const { error: professionalError } = await supabase
         .from('professional_profiles')
-        .upsert({
-          user_id: user.id,
-          first_name: firstName,
-          last_name: lastName,
-          bio,
-          gender,
-          country,
-          state_province: stateProvince,
-          city,
-          sector,
-          occupation,
-          university,
-          experience_years: experienceYears ? parseInt(experienceYears) : null,
-          skills,
-          languages,
-          availability,
-          is_mentor: isMentor,
-          is_seeking_mentor: isSeekingMentor,
-          preferred_communication: preferredCommunication,
-          avatar_url: avatarUrl
-        });
+        .upsert(
+          {
+            user_id: user.id,
+            bio,
+            gender,
+            country,
+            state_province: stateProvince,
+            city,
+            sector,
+            occupation,
+            university,
+            experience_years: experienceYears ? parseInt(experienceYears) : null,
+            skills,
+            languages,
+            availability,
+            is_mentor: isMentor,
+            is_seeking_mentor: isSeekingMentor,
+            preferred_communication: preferredCommunication,
+          },
+          { onConflict: 'user_id' }
+        );
 
       if (professionalError) throw professionalError;
 

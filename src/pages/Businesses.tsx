@@ -284,7 +284,7 @@ const Businesses = () => {
                   {(() => {
                     const isFav = favoriteBusinessIds.includes(b.id);
                     return (
-                      <div className="actions flex flex-wrap items-center justify-start gap-3 mt-2">
+                      <div className="actions flex flex-wrap items-center justify-end gap-3 md:gap-4 mt-2">
                         <Button variant={isFav ? "default" : "outline"} onClick={() => handleFavorite(b.id, b.name)} aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}>
                           <Heart className={`w-4 h-4 mr-2 ${isFav ? 'fill-current' : ''}`} /> {isFav ? 'Favorited' : 'Favorite'}
                         </Button>
