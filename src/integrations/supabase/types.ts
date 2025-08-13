@@ -774,31 +774,6 @@ export type Database = {
         Args: { user_id_param: string }
         Returns: boolean
       }
-      get_business_contact_info: {
-        Args: { _business_id: string }
-        Returns: {
-          id: string
-          name: string
-          bio: string
-          services: string
-          sector: string
-          country: string
-          state: string
-          city: string
-          website: string
-          logo_url: string
-          cover_url: string
-          verified: boolean
-          facebook_url: string
-          instagram_url: string
-          linkedin_url: string
-          twitter_url: string
-          youtube_url: string
-          tiktok_url: string
-          whatsapp_number: string
-          telegram_url: string
-        }[]
-      }
       has_business_role: {
         Args: {
           _user_id: string
