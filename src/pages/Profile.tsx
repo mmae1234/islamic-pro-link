@@ -72,12 +72,15 @@ const Profile = () => {
         }
       } else {
         const { data: publicData, error: publicError } = await supabase
-          .rpc('get_professional_profile_public', { _user_id: userId });
+          .from('professional_directory')
+          .select('*')
+          .eq('user_id', userId)
+          .single();
 
         if (publicError) {
           console.error('Error loading public professional profile:', publicError);
-        } else if (publicData && publicData.length > 0) {
-          setProfessionalProfile(publicData[0]);
+        } else if (publicData) {
+          setProfessionalProfile(publicData);
         }
       }
     } catch (error) {

@@ -114,9 +114,12 @@ const Search = () => {
     setLoading(true);
     try {
       if (isGuest) {
-        const { data, error } = await supabase.rpc('get_professional_directory', { limit_count: 2 });
+        const { data, error } = await supabase
+          .from('professional_directory')
+          .select('*')
+          .limit(2);
         if (error) {
-          console.error('Supabase RPC error:', error);
+          console.error('Supabase query error:', error);
           setProfessionals([]);
           return;
         }
