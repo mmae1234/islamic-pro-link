@@ -684,15 +684,6 @@ export type Database = {
         }
         Relationships: []
       }
-      guest_viewable_profiles: {
-        Row: {
-          avatar_url: string | null
-          first_name: string | null
-          id: string | null
-          last_name: string | null
-        }
-        Relationships: []
-      }
       public_guest_profiles: {
         Row: {
           avatar_url: string | null
@@ -734,10 +725,6 @@ export type Database = {
           telegram_url: string
           created_at: string
         }[]
-      }
-      get_guest_viewable_profile_ids: {
-        Args: Record<PropertyKey, never>
-        Returns: string[]
       }
       get_professional_directory: {
         Args: { limit_count?: number }
