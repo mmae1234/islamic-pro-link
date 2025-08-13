@@ -629,6 +629,15 @@ export type Database = {
           created_at: string
         }[]
       }
+      get_guest_profiles: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          first_name: string
+          last_name: string
+          avatar_url: string
+        }[]
+      }
       get_guest_viewable_profile_ids: {
         Args: Record<PropertyKey, never>
         Returns: string[]
