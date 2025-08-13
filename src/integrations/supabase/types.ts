@@ -596,6 +596,15 @@ export type Database = {
         }
         Relationships: []
       }
+      guest_viewable_profiles: {
+        Row: {
+          avatar_url: string | null
+          first_name: string | null
+          id: string | null
+          last_name: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       delete_user_account: {
@@ -627,15 +636,6 @@ export type Database = {
           whatsapp_number: string
           telegram_url: string
           created_at: string
-        }[]
-      }
-      get_guest_profiles: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          id: string
-          first_name: string
-          last_name: string
-          avatar_url: string
         }[]
       }
       get_guest_viewable_profile_ids: {
