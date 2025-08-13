@@ -684,6 +684,81 @@ export type Database = {
         }
         Relationships: []
       }
+      professional_directory: {
+        Row: {
+          availability: string | null
+          avatar_url: string | null
+          bio: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          experience_years: number | null
+          first_name: string | null
+          id: string | null
+          is_mentor: boolean | null
+          is_seeking_mentor: boolean | null
+          last_name: string | null
+          occupation: string | null
+          sector: string | null
+          skills: string[] | null
+          state_province: string | null
+          user_id: string | null
+        }
+        Insert: {
+          availability?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          experience_years?: number | null
+          first_name?: string | null
+          id?: string | null
+          is_mentor?: boolean | null
+          is_seeking_mentor?: boolean | null
+          last_name?: string | null
+          occupation?: string | null
+          sector?: string | null
+          skills?: string[] | null
+          state_province?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          availability?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          experience_years?: number | null
+          first_name?: string | null
+          id?: string | null
+          is_mentor?: boolean | null
+          is_seeking_mentor?: boolean | null
+          last_name?: string | null
+          occupation?: string | null
+          sector?: string | null
+          skills?: string[] | null
+          state_province?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "professional_profiles_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       public_guest_profiles: {
         Row: {
           avatar_url: string | null
@@ -722,77 +797,6 @@ export type Database = {
           tiktok_url: string
           whatsapp_number: string
           telegram_url: string
-        }[]
-      }
-      get_business_directory: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          id: string
-          name: string
-          sector: string
-          bio: string
-          services: string
-          country: string
-          state: string
-          city: string
-          website: string
-          logo_url: string
-          cover_url: string
-          verified: boolean
-          status: string
-          facebook_url: string
-          instagram_url: string
-          linkedin_url: string
-          twitter_url: string
-          youtube_url: string
-          tiktok_url: string
-          whatsapp_number: string
-          telegram_url: string
-          created_at: string
-        }[]
-      }
-      get_professional_directory: {
-        Args: { limit_count?: number }
-        Returns: {
-          id: string
-          user_id: string
-          first_name: string
-          last_name: string
-          bio: string
-          occupation: string
-          sector: string
-          city: string
-          state_province: string
-          country: string
-          experience_years: number
-          skills: string[]
-          is_mentor: boolean
-          is_seeking_mentor: boolean
-          availability: string
-          avatar_url: string
-          created_at: string
-        }[]
-      }
-      get_professional_profile_public: {
-        Args: { _user_id: string }
-        Returns: {
-          id: string
-          user_id: string
-          first_name: string
-          last_name: string
-          bio: string
-          occupation: string
-          sector: string
-          city: string
-          state_province: string
-          country: string
-          experience_years: number
-          skills: string[]
-          is_mentor: boolean
-          is_seeking_mentor: boolean
-          availability: string
-          avatar_url: string
-          created_at: string
         }[]
       }
       has_business_role: {
