@@ -179,6 +179,32 @@ export type Database = {
         }
         Relationships: []
       }
+      guest_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_profiles_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       mentorship_requests: {
         Row: {
           created_at: string
@@ -659,6 +685,15 @@ export type Database = {
         Relationships: []
       }
       guest_viewable_profiles: {
+        Row: {
+          avatar_url: string | null
+          first_name: string | null
+          id: string | null
+          last_name: string | null
+        }
+        Relationships: []
+      }
+      public_guest_profiles: {
         Row: {
           avatar_url: string | null
           first_name: string | null
