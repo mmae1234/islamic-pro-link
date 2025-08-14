@@ -51,14 +51,12 @@ const Search = () => {
     if (user) {
       checkUserProfile();
     } else {
-      // Load initial professionals for guests with error handling
-      setTimeout(() => {
-        handleSearch().catch(error => {
-          console.error('Failed to load initial data for guest:', error);
-          // Don't show toast errors for guests on mobile - just log
-          setProfessionals([]);
-        });
-      }, 100);
+      // Load initial professionals for guests with error handling - no setTimeout
+      handleSearch({}).catch(error => {
+        console.error('Failed to load initial data for guest:', error);
+        // Don't show toast errors for guests on mobile - just log
+        setProfessionals([]);
+      });
     }
   }, [user, initialized]);
 

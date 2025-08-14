@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
 import Footer from "@/components/Footer";
+import SafeModeIndex from "@/components/SafeModeIndex";
 import { Loader2 } from "lucide-react";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
@@ -54,28 +55,53 @@ const IOSFallback = () => (
 );
 
 const Index = () => {
-  const [showFallback, setShowFallback] = useState(false);
+  const [showSafeMode, setShowSafeMode] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    // Detect iOS and show fallback if page doesn't load properly
+    // Immediate safe mode for iOS to prevent blank screens
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     if (isIOS) {
+      // Much shorter timeout - show safe mode quickly
       const timer = setTimeout(() => {
-        setShowFallback(true);
-      }, 3000);
+        setShowSafeMode(true);
+      }, 1000);
       
       return () => clearTimeout(timer);
     }
   }, []);
 
-  if (showFallback) {
-    return <IOSFallback />;
+  // Global error catcher
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      console.error('Index: Global error caught:', event.error);
+      setError(event.error);
+      setShowSafeMode(true);
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.error('Index: Unhandled promise rejection:', event.reason);
+      setError(new Error(event.reason));
+      setShowSafeMode(true);
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
+  if (showSafeMode) {
+    return <SafeModeIndex errorInfo={{ error, source: 'Index component' }} />;
   }
 
   return (
     <div className="min-h-screen bg-background">
       <ErrorBoundary fallback={({ error, resetError }) => (
-        <IOSFallback />
+        <SafeModeIndex errorInfo={{ error, source: 'ErrorBoundary' }} />
       )}>
         <Suspense fallback={<LoadingFallback />}>
           <Header />

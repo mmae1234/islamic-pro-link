@@ -80,21 +80,29 @@ const Businesses = () => {
   }, [canonical]);
 
   useEffect(() => {
-  const loadSectors = async () => {
-      // Use contact-protected directory if authenticated, public if not
-      const table = user ? 'business_directory_internal' : 'business_directory';
-      const { data } = await supabase.from(table).select('sector');
-      const unique = Array.from(new Set((data || []).map((d: any) => d.sector).filter(Boolean)));
-      setSectors(unique as string[]);
+    const loadSectors = async () => {
+      try {
+        const table = user ? 'business_directory_internal' : 'business_directory';
+        const { data } = await supabase.from(table).select('sector');
+        const unique = Array.from(new Set((data || []).map((d: any) => d.sector).filter(Boolean)));
+        setSectors(unique as string[]);
+      } catch (error) {
+        console.error('Failed to load sectors:', error);
+        setSectors([]);
+      }
     };
-    loadSectors();
-    handleSearch();
-  }, []);
-
-  useEffect(() => {
-    const raw = localStorage.getItem('favorite_business_ids');
-    setFavoriteBusinessIds(raw ? JSON.parse(raw) : []);
-  }, []);
+    
+    const performInitialLoad = async () => {
+      await loadSectors();
+      try {
+        await handleSearch();
+      } catch (error) {
+        console.error('Failed initial search:', error);
+      }
+    };
+    
+    performInitialLoad();
+  }, [user]); // Add user dependency to re-run when auth changes
 
   useEffect(() => {
     const raw = localStorage.getItem('favorite_business_ids');
