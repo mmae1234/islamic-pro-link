@@ -105,10 +105,10 @@ const [favoriteBusinessIds, setFavoriteBusinessIds] = useState<string[]>([]);
           if (fullData) {
             biz = fullData;
           } else {
-            // Fallback to internal business directory if no permission (authenticated users)
+            // Fallback to contact-protected directory for authenticated users
             const { data: publicData } = await supabase
-              .from('business_directory_internal')
-              .select('id, name, bio, services, sector, country, state, city, website, logo_url, status, cover_url, verified, facebook_url, instagram_url, linkedin_url, twitter_url, youtube_url, tiktok_url, whatsapp_number, telegram_url')
+              .from('business_directory_with_contact')
+              .select('*')
               .eq('id', id)
               .maybeSingle();
             biz = publicData;

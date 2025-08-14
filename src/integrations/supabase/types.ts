@@ -163,6 +163,13 @@ export type Database = {
             referencedRelation: "business_directory_internal"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_business_members_business"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_directory_with_contact"
+            referencedColumns: ["id"]
+          },
         ]
       }
       favorites: {
@@ -413,6 +420,13 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "business_directory_internal"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_links_business"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_directory_with_contact"
             referencedColumns: ["id"]
           },
         ]
@@ -739,6 +753,87 @@ export type Database = {
           verified?: boolean | null
           website?: string | null
           whatsapp_number?: string | null
+          youtube_url?: string | null
+        }
+        Relationships: []
+      }
+      business_directory_with_contact: {
+        Row: {
+          bio: string | null
+          city: string | null
+          country: string | null
+          cover_url: string | null
+          created_at: string | null
+          email: string | null
+          facebook_url: string | null
+          id: string | null
+          instagram_url: string | null
+          linkedin_url: string | null
+          logo_url: string | null
+          name: string | null
+          phone: string | null
+          sector: string | null
+          services: string | null
+          state: string | null
+          status: string | null
+          telegram_url: string | null
+          tiktok_url: string | null
+          twitter_url: string | null
+          verified: boolean | null
+          website: string | null
+          whatsapp_number: string | null
+          youtube_url: string | null
+        }
+        Insert: {
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          cover_url?: string | null
+          created_at?: string | null
+          email?: never
+          facebook_url?: string | null
+          id?: string | null
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          logo_url?: string | null
+          name?: string | null
+          phone?: never
+          sector?: string | null
+          services?: string | null
+          state?: string | null
+          status?: string | null
+          telegram_url?: never
+          tiktok_url?: string | null
+          twitter_url?: string | null
+          verified?: boolean | null
+          website?: string | null
+          whatsapp_number?: never
+          youtube_url?: string | null
+        }
+        Update: {
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          cover_url?: string | null
+          created_at?: string | null
+          email?: never
+          facebook_url?: string | null
+          id?: string | null
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          logo_url?: string | null
+          name?: string | null
+          phone?: never
+          sector?: string | null
+          services?: string | null
+          state?: string | null
+          status?: string | null
+          telegram_url?: never
+          tiktok_url?: string | null
+          twitter_url?: string | null
+          verified?: boolean | null
+          website?: string | null
+          whatsapp_number?: never
           youtube_url?: string | null
         }
         Relationships: []
