@@ -5,6 +5,7 @@ import Hero from "@/components/Hero";
 import Features from "@/components/Features";
 import Footer from "@/components/Footer";
 import { Loader2 } from "lucide-react";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Simple loading component
 const LoadingFallback = () => (
@@ -73,14 +74,18 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Suspense fallback={<LoadingFallback />}>
-        <Header />
-        <main>
-          <Hero />
-          <Features />
-        </main>
-        <Footer />
-      </Suspense>
+      <ErrorBoundary fallback={({ error, resetError }) => (
+        <IOSFallback />
+      )}>
+        <Suspense fallback={<LoadingFallback />}>
+          <Header />
+          <main>
+            <Hero />
+            <Features />
+          </main>
+          <Footer />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 };

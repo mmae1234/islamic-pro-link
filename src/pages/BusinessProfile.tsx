@@ -107,7 +107,7 @@ const [favoriteBusinessIds, setFavoriteBusinessIds] = useState<string[]>([]);
           } else {
             // Fallback to contact-protected directory for authenticated users
             const { data: publicData } = await supabase
-              .from('business_directory_with_contact')
+              .from('business_directory_internal')
               .select('*')
               .eq('id', id)
               .maybeSingle();

@@ -98,7 +98,7 @@ const Favorites = () => {
       if (businessIds.length > 0) {
         // Use contact-protected directory since favorites require authentication
         const { data: businesses, error: bizError } = await supabase
-          .from('business_directory_with_contact')
+          .from('business_directory_internal')
           .select('id, name, sector, country, state, city, verified, logo_url')
           .in('id', businessIds);
         if (bizError) throw bizError;

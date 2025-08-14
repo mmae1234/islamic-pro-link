@@ -4,7 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import ErrorBoundary from "@/components/ErrorBoundary";
+import GlobalErrorBoundary from "@/components/GlobalErrorBoundary";
+import IOSSafeguard from "@/components/IOSSafeguard";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Search from "./pages/Search";
@@ -37,16 +38,31 @@ import Businesses from "./pages/Businesses";
 import AutoDashboard from "./pages/AutoDashboard";
 import AdminReleaseNotes from "./pages/AdminReleaseNotes";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error) => {
+        // Don't retry on iOS auth errors
+        if (error?.message?.includes('permission') || error?.message?.includes('unauthorized')) {
+          return false;
+        }
+        return failureCount < 2;
+      },
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 10, // 10 minutes
+    },
+  },
+});
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <ErrorBoundary>
-          <AuthProvider>
+  <GlobalErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <IOSSafeguard>
+            <AuthProvider>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/search" element={<Search />} />
@@ -116,10 +132,11 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
-        </ErrorBoundary>
+        </IOSSafeguard>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
+  </GlobalErrorBoundary>
 );
 
 export default App;

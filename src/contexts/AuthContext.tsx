@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setLoading(false);
         setUser(null);
       }
-    }, 1000); // 1 second for iOS compatibility
+    }, 800); // Faster timeout for iOS compatibility
     
     // Get initial session with iOS-specific handling
     const initializeAuth = async () => {
