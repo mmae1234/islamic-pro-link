@@ -41,7 +41,7 @@ const Hero = () => {
         className="absolute inset-0 w-full h-full object-cover object-center"
         loading="eager"
         decoding="async"
-        fetchPriority="high"
+        {...({ fetchpriority: "high" } as any)}
       />
       <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/70 to-transparent"></div>
 

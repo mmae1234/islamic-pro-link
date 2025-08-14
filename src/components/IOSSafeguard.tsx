@@ -13,41 +13,15 @@ const IOSSafeguard = ({ children }: IOSSafeguardProps) => {
 
   useEffect(() => {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isWebKit = /WebKit/.test(navigator.userAgent) && !/(Chrome|CriOS)/.test(navigator.userAgent);
     
-    // Check for iOS-specific issues
-    const hasStorageIssues = (() => {
-      try {
-        const testKey = '__ios_storage_test__';
-        localStorage.setItem(testKey, 'test');
-        localStorage.removeItem(testKey);
-        return false;
-      } catch (e) {
-        return true;
-      }
-    })();
-
-    // Show warning for problematic iOS conditions
-    if (isIOS && (hasStorageIssues || isWebKit)) {
-      console.log('IOSSafeguard: Detected iOS with potential issues', {
-        isIOS,
-        isWebKit,
-        hasStorageIssues,
-        userAgent: navigator.userAgent
-      });
-      
-      setShowIOSWarning(true);
-      
-      // Auto-dismiss warning after 10 seconds
-      const timer = setTimeout(() => {
-        setShowIOSWarning(false);
-        setIsReady(true);
-      }, 10000);
-      
-      return () => clearTimeout(timer);
-    } else {
-      setIsReady(true);
-    }
+    // Log device info for debugging
+    console.log('IOSSafeguard: Device detection', {
+      isIOS,
+      userAgent: navigator.userAgent
+    });
+    
+    // Always proceed to ready state - let the app handle issues gracefully
+    setIsReady(true);
   }, []);
 
   const dismissWarning = () => {
