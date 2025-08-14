@@ -7,13 +7,29 @@ import heroImage from "@/assets/diverse-professionals-hero.jpg";
 const Hero = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary via-primary-glow to-primary">
-      {/* Mobile-optimized viewport styles */}
+      {/* iOS-specific viewport fixes */}
       <style>{`
-        @media (max-width: 768px) {
+        @supports (-webkit-touch-callout: none) {
+          .hero-container {
+            min-height: -webkit-fill-available;
+          }
+        }
+        
+        @media (max-width: 480px) {
           .hero-container {
             min-height: 100vh;
             min-height: 100dvh;
-            padding: 1rem;
+            padding: 0.75rem;
+          }
+          
+          .hero-text {
+            font-size: 1.75rem;
+            line-height: 1.2;
+          }
+          
+          .hero-subtitle {
+            font-size: 0.875rem;
+            line-height: 1.4;
           }
         }
       `}</style>
@@ -29,57 +45,57 @@ const Hero = () => {
       />
       <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/70 to-transparent"></div>
 
-      {/* Content - Mobile Optimized */}
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 hero-container">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+      {/* Content - Mobile First */}
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 hero-container">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-center">
           {/* Text Content */}
-          <div className="text-center lg:text-left">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-4 sm:mb-6 leading-tight">
+          <div className="text-center lg:text-left space-y-4 sm:space-y-6">
+            <h1 className="hero-text text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-primary-foreground leading-tight">
               Connect with Muslim 
-              <span className="block bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-accent to-accent/80 bg-clip-text text-transparent mt-1">
                 Professionals
               </span>
               Worldwide
             </h1>
             
-            <p className="text-base sm:text-lg md:text-xl text-primary-foreground/90 mb-6 sm:mb-8 max-w-2xl mx-auto lg:mx-0">
+            <p className="hero-subtitle text-sm sm:text-base md:text-lg lg:text-xl text-primary-foreground/90 max-w-xl mx-auto lg:mx-0">
               Join the largest professional network for the Muslim community. Find mentors, 
               build connections, and advance your career while staying true to your values.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
-              <Button variant="accent" size="xl" className="font-semibold hover:shadow-glow w-full sm:w-auto" asChild>
+            <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 justify-center lg:justify-start pt-2">
+              <Button variant="accent" size="lg" className="font-semibold hover:shadow-glow w-full sm:w-auto text-sm sm:text-base" asChild>
                 <Link to="/search">
-                  <Search className="w-5 h-5 mr-2" />
+                  <Search className="w-4 h-4 mr-2" />
                   Find Professionals
                 </Link>
               </Button>
-              <Button variant="elegant" size="xl" className="font-semibold hover:shadow-elegant w-full sm:w-auto" asChild>
+              <Button variant="elegant" size="lg" className="font-semibold hover:shadow-elegant w-full sm:w-auto text-sm sm:text-base" asChild>
                 <Link to="/login">
-                  <Users className="w-5 h-5 mr-2" />
+                  <Users className="w-4 h-4 mr-2" />
                   Join Community
                 </Link>
               </Button>
             </div>
 
-            {/* Stats - Mobile Optimized */}
-            <div className="grid grid-cols-3 gap-4 mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-primary-foreground/20">
+            {/* Stats - Responsive Grid */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-primary-foreground/20">
               <div className="text-center">
-                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-accent">10K+</div>
+                <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-accent">10K+</div>
                 <div className="text-xs sm:text-sm text-primary-foreground/80">Professionals</div>
               </div>
               <div className="text-center">
-                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-accent">50+</div>
+                <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-accent">50+</div>
                 <div className="text-xs sm:text-sm text-primary-foreground/80">Countries</div>
               </div>
               <div className="text-center">
-                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-accent">200+</div>
+                <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-accent">200+</div>
                 <div className="text-xs sm:text-sm text-primary-foreground/80">Industries</div>
               </div>
             </div>
           </div>
 
-          {/* Feature Cards - Hide on Mobile for Better Performance */}
+          {/* Feature Cards - Hidden on mobile for better performance */}
           <div className="hidden lg:block">
             <div className="grid gap-6">
               <div className="bg-gradient-card backdrop-blur-sm border border-border/50 rounded-xl p-6 shadow-elegant">
@@ -123,7 +139,7 @@ const Hero = () => {
       </div>
 
       {/* Decorative Elements */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent"></div>
+      <div className="absolute bottom-0 left-0 right-0 h-16 sm:h-32 bg-gradient-to-t from-background to-transparent"></div>
     </section>
   );
 };

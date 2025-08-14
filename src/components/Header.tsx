@@ -20,6 +20,7 @@ const Header = () => {
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [businessName, setBusinessName] = useState<string | null>(null);
   const [isBusiness, setIsBusiness] = useState(false);
+
   useEffect(() => {
     let isMounted = true;
     if (!user) {
@@ -68,69 +69,72 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-background text-foreground backdrop-blur-md border-b border-border sticky top-0 z-50">
-      <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">MP</span>
+    <header className="bg-background/95 backdrop-blur-md text-foreground border-b border-border sticky top-0 z-50 supports-[backdrop-filter]:bg-background/60">
+      <nav className="container mx-auto px-3 sm:px-4 lg:px-8">
+        <div className="flex justify-between items-center h-14 sm:h-16">
+          {/* Logo - Responsive */}
+          <Link to="/" className="flex items-center space-x-2 min-w-0 flex-shrink-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm sm:text-lg">MP</span>
             </div>
-            <span className="text-xl font-bold text-foreground">Muslim Professionals</span>
+            <span className="text-lg sm:text-xl font-bold text-foreground truncate hidden xs:block">
+              Muslim Professionals
+            </span>
+            <span className="text-lg font-bold text-foreground xs:hidden">MP</span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link to="/search" className="text-foreground hover:text-accent transition-smooth">
+          {/* Desktop Navigation - Hidden on mobile */}
+          <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
+            <Link to="/search" className="text-foreground hover:text-accent transition-smooth text-sm">
               Find Professionals
             </Link>
-            <Link to="/businesses" className="text-foreground hover:text-accent transition-smooth">
+            <Link to="/businesses" className="text-foreground hover:text-accent transition-smooth text-sm">
               Find Businesses
             </Link>
-            <Link to="/mentorship" className="text-foreground hover:text-accent transition-smooth">
+            <Link to="/mentorship" className="text-foreground hover:text-accent transition-smooth text-sm">
               Mentorship
             </Link>
             <DropdownMenu>
-            <DropdownMenuTrigger className="text-foreground hover:text-accent transition-smooth">
+              <DropdownMenuTrigger className="text-foreground hover:text-accent transition-smooth text-sm">
                 Resources
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-popover border border-border shadow-elegant z-50">
                 <DropdownMenuItem asChild>
-                  <Link to="/careers" className="text-foreground">Careers</Link>
+                  <Link to="/careers" className="text-foreground text-sm">Careers</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/scholarships" className="text-foreground">Scholarships</Link>
+                  <Link to="/scholarships" className="text-foreground text-sm">Scholarships</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/organizations" className="text-foreground">Organizations</Link>
+                  <Link to="/organizations" className="text-foreground text-sm">Organizations</Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <DropdownMenu>
-              <DropdownMenuTrigger className="text-foreground hover:text-accent transition-smooth">
+              <DropdownMenuTrigger className="text-foreground hover:text-accent transition-smooth text-sm">
                 About
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-popover border border-border shadow-elegant z-50">
                 <DropdownMenuItem asChild>
-                  <Link to="/about" className="text-foreground">About Us</Link>
+                  <Link to="/about" className="text-foreground text-sm">About Us</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/donations" className="text-foreground">Support Our Mission</Link>
+                  <Link to="/donations" className="text-foreground text-sm">Support Our Mission</Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
 
           {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-2 lg:space-x-4">
             {user ? (
               <>
-                <Button variant="ghost" size="sm" asChild>
+                <Button variant="ghost" size="sm" asChild className="h-9 w-9 p-0">
                   <Link to="/search">
                     <Search className="w-4 h-4" />
                   </Link>
                 </Button>
-                <Button variant="ghost" size="sm" asChild>
+                <Button variant="ghost" size="sm" asChild className="h-9 w-9 p-0">
                   <Link to="/messages">
                     <MessageCircle className="w-4 h-4" />
                   </Link>
@@ -138,15 +142,15 @@ const Header = () => {
                 <NotificationCenter />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="relative">
-                      <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
+                    <Button variant="ghost" size="sm" className="relative h-9 w-9 p-0">
+                      <div className="w-7 h-7 bg-gradient-primary rounded-full flex items-center justify-center">
                         <span className="text-primary-foreground text-xs font-semibold">
                           {user.email?.charAt(0).toUpperCase()}
                         </span>
                       </div>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 bg-popover border border-border shadow-elegant text-foreground" align="end">
+                  <DropdownMenuContent className="w-48 bg-popover border border-border shadow-elegant text-foreground" align="end">
                     {businessId ? (
                       <>
                         <DropdownMenuItem asChild>
@@ -221,10 +225,10 @@ const Header = () => {
               </>
             ) : (
               <>
-                <Button variant="outline" size="sm" asChild>
+                <Button variant="outline" size="sm" asChild className="text-xs sm:text-sm px-3">
                   <Link to="/login">Login</Link>
                 </Button>
-                <Button variant="hero" size="sm" asChild>
+                <Button variant="hero" size="sm" asChild className="text-xs sm:text-sm px-3">
                   <Link to="/signup?src=header">Join Now</Link>
                 </Button>
               </>
@@ -237,33 +241,34 @@ const Header = () => {
               variant="ghost"
               size="icon"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="h-9 w-9"
             >
-              {isMenuOpen ? <X /> : <Menu />}
+              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation - Improved responsive design */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border">
-            <div className="flex flex-col space-y-4">
+          <div className="md:hidden py-4 border-t border-border animate-fade-in">
+            <div className="flex flex-col space-y-1">
               <Link 
                 to="/search" 
-                className="text-foreground hover:text-accent transition-smooth px-4 py-2"
+                className="text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-4 py-3 rounded-lg text-sm font-medium"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Find Professionals
               </Link>
               <Link 
                 to="/businesses" 
-                className="text-foreground hover:text-accent transition-smooth px-4 py-2"
+                className="text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-4 py-3 rounded-lg text-sm font-medium"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Find Businesses
               </Link>
               <Link 
                 to="/mentorship" 
-                className="text-foreground hover:text-accent transition-smooth px-4 py-2"
+                className="text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-4 py-3 rounded-lg text-sm font-medium"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Mentorship
@@ -272,65 +277,82 @@ const Header = () => {
                 <>
                   <Link 
                     to="/messages" 
-                    className="text-foreground hover:text-accent transition-smooth px-4 py-2"
+                    className="text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-4 py-3 rounded-lg text-sm font-medium"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Messages
                   </Link>
+                  <Link 
+                    to="/favorites" 
+                    className="text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-4 py-3 rounded-lg text-sm font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Favorites
+                  </Link>
                 </>
               )}
-              <div className="px-4 py-2">
-                <p className="text-sm font-medium text-foreground">Resources</p>
-                <div className="ml-2 mt-2 space-y-2">
+              
+              {/* Resources Section */}
+              <div className="px-4 py-2 border-t border-border/50 mt-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Resources</p>
+                <div className="space-y-1">
                   <Link 
                     to="/careers" 
-                    className="block text-foreground hover:text-accent transition-smooth py-1"
+                    className="block text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-3 py-2 rounded-lg text-sm"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Careers
                   </Link>
                   <Link 
                     to="/scholarships" 
-                    className="block text-foreground hover:text-accent transition-smooth py-1"
+                    className="block text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-3 py-2 rounded-lg text-sm"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Scholarships
                   </Link>
                   <Link 
                     to="/organizations" 
-                    className="block text-foreground hover:text-accent transition-smooth py-1"
+                    className="block text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-3 py-2 rounded-lg text-sm"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Organizations
                   </Link>
                 </div>
               </div>
+              
+              {/* About Section */}
               <div className="px-4 py-2">
-                <p className="text-sm font-medium text-foreground">About</p>
-                <div className="ml-2 mt-2 space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">About</p>
+                <div className="space-y-1">
                   <Link 
                     to="/about" 
-                    className="block text-foreground hover:text-accent transition-smooth py-1"
+                    className="block text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-3 py-2 rounded-lg text-sm"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     About Us
                   </Link>
                   <Link 
                     to="/donations" 
-                    className="block text-foreground hover:text-accent transition-smooth py-1"
+                    className="block text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-3 py-2 rounded-lg text-sm"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Support Our Mission
                   </Link>
                 </div>
               </div>
-              <div className="flex flex-col space-y-2 px-4 pt-4 border-t border-border">
+              
+              {/* Auth Section */}
+              <div className="flex flex-col space-y-3 px-4 pt-4 border-t border-border/50">
                 {user ? (
                   <>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to={(businessId || showBiz) ? "/dashboard/business" : "/dashboard"}>Dashboard</Link>
+                    <Button variant="outline" size="sm" asChild className="justify-start">
+                      <Link to={(businessId || showBiz) ? "/dashboard/business" : "/dashboard"}>
+                        <User className="w-4 h-4 mr-2" />
+                        Dashboard
+                      </Link>
                     </Button>
-                    <Button variant="hero" size="sm" onClick={handleSignOut}>
+                    <Button variant="outline" size="sm" onClick={handleSignOut} className="justify-start">
+                      <LogOut className="w-4 h-4 mr-2" />
                       Sign Out
                     </Button>
                   </>
