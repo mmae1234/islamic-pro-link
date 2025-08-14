@@ -38,6 +38,7 @@ import Businesses from "./pages/Businesses";
 import AutoDashboard from "./pages/AutoDashboard";
 import AdminReleaseNotes from "./pages/AdminReleaseNotes";
 import Diag from "./pages/Diag";
+import AuthGate from "./pages/AuthGate";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -66,11 +67,7 @@ const App = () => (
             <AuthProvider>
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/search" element={
-                <ProtectedRoute>
-                  <Search />
-                </ProtectedRoute>
-              } />
+              <Route path="/search" element={<Search />} />
               <Route path="/businesses" element={<Businesses />} />
               <Route path="/about" element={<About />} />
               <Route path="/login" element={<Login />} />
@@ -99,11 +96,7 @@ const App = () => (
                   <EditProfile />
                 </ProtectedRoute>
               } />
-              <Route path="/mentorship" element={
-                <ProtectedRoute>
-                  <Mentorship />
-                </ProtectedRoute>
-              } />
+              <Route path="/mentorship" element={<Mentorship />} />
               <Route path="/messages" element={
                 <ProtectedRoute>
                   <Messages />
@@ -133,6 +126,7 @@ const App = () => (
                   <AdminReleaseNotes />
                 </ProtectedRoute>
               } />
+              <Route path="/auth-gate" element={<AuthGate />} />
               <Route path="/diag" element={<Diag />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

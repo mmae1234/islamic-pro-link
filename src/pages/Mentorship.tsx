@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,15 +65,23 @@ interface MentorshipRequest {
 }
 
 const Mentorship = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [mentors, setMentors] = useState<MentorProfile[]>([]);
   const [allMentors, setAllMentors] = useState<MentorProfile[]>([]);
   const [requests, setRequests] = useState<MentorshipRequest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMentor, setSelectedMentor] = useState<MentorProfile | null>(null);
   const [requestMessage, setRequestMessage] = useState("");
+
+  // Redirect to auth gate if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth-gate?redirect=/mentorship', { replace: true });
+    }
+  }, [user, authLoading, navigate]);
 
   useEffect(() => {
     if (user) {
@@ -171,7 +180,7 @@ const Mentorship = () => {
 
       if (!requestsData || requestsData.length === 0) {
         setRequests([]);
-        setLoading(false);
+        setIsLoading(false);
         return;
       }
 
@@ -208,7 +217,7 @@ const Mentorship = () => {
     } catch (error) {
       console.error('Error loading requests:', error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -442,7 +451,7 @@ const Mentorship = () => {
     }
   };
 
-  if (loading) {
+  if (authLoading || isLoading || !user) {
     return (
       <div className="min-h-screen bg-background">
         <Header />

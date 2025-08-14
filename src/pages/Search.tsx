@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -14,11 +15,12 @@ import { Users, Loader2 } from "lucide-react";
 
 
 const Search = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   
   const [professionals, setProfessionals] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
   const [showProfileSetup, setShowProfileSetup] = useState(false);
   const [sortBy, setSortBy] = useState('created_at');
@@ -66,7 +68,7 @@ const Search = () => {
   };
 
   const handleSearch = async (filters: any = {}) => {
-    setLoading(true);
+    setIsLoading(true);
     try {
       let query = supabase
         .from('professional_profiles')
@@ -177,7 +179,7 @@ const Search = () => {
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -224,7 +226,7 @@ const Search = () => {
         )}
 
         {/* Search Filters */}
-        <SearchFilters onSearch={handleSearch} loading={loading} />
+        <SearchFilters onSearch={handleSearch} loading={isLoading} />
 
         {/* Results */}
         <div className="mt-8 space-y-6">
@@ -266,7 +268,7 @@ const Search = () => {
             )}
           </div>
 
-          {loading ? (
+          {isLoading ? (
             <div className="grid gap-6">
               {Array.from({ length: 3 }).map((_, index) => (
                 <div key={index} className="animate-fade-in">

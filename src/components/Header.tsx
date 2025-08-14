@@ -97,7 +97,19 @@ const Header = () => {
                   Mentorship
                 </Link>
               </>
-            ) : null}
+            ) : (
+              <>
+                <Link to="/auth-gate?redirect=/search" className="text-foreground hover:text-accent transition-smooth text-sm">
+                  Find Professionals
+                </Link>
+                <Link to="/businesses" className="text-foreground hover:text-accent transition-smooth text-sm">
+                  Find Businesses
+                </Link>
+                <Link to="/auth-gate?redirect=/mentorship" className="text-foreground hover:text-accent transition-smooth text-sm">
+                  Mentorship
+                </Link>
+              </>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger className="text-foreground hover:text-accent transition-smooth text-sm">
                 Resources
@@ -280,7 +292,31 @@ const Header = () => {
                     Mentorship
                   </Link>
                 </>
-              ) : null}
+              ) : (
+                <>
+                  <Link 
+                    to="/auth-gate?redirect=/search" 
+                    className="text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-4 py-3 rounded-lg text-sm font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Find Professionals
+                  </Link>
+                  <Link 
+                    to="/businesses" 
+                    className="text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-4 py-3 rounded-lg text-sm font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Find Businesses
+                  </Link>
+                  <Link 
+                    to="/auth-gate?redirect=/mentorship" 
+                    className="text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-4 py-3 rounded-lg text-sm font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Mentorship
+                  </Link>
+                </>
+              )}
               {user && (
                 <>
                   <Link 

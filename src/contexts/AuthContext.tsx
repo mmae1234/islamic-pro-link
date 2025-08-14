@@ -141,11 +141,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
     try {
+      // Get redirect URL from current URL params if we're on auth-gate
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirect = urlParams.get('redirect') || '/dashboard';
+      const redirectUrl = `${window.location.origin}${redirect}`;
+      
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: redirectUrl,
           data: {
             first_name: firstName,
             last_name: lastName,
