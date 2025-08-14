@@ -20,10 +20,9 @@ const SKILLS_OPTIONS = [
 interface SearchFiltersProps {
   onSearch: (filters: any) => void;
   loading?: boolean;
-  isGuest?: boolean;
 }
 
-const SearchFilters = ({ onSearch, loading = false, isGuest = false }: SearchFiltersProps) => {
+const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
   const [filters, setFilters] = useState({
     searchTerm: '',
     country: 'all',
@@ -78,41 +77,6 @@ const SearchFilters = ({ onSearch, loading = false, isGuest = false }: SearchFil
     });
   };
 
-  if (isGuest) {
-    return (
-      <Card className="shadow-soft opacity-50 pointer-events-none">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-foreground">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Filter className="w-5 h-5 text-primary" />
-            </div>
-            Search Filters
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="relative">
-          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10 rounded">
-            <div className="text-center p-4">
-              <p className="text-sm font-medium text-foreground mb-2">
-                Sign up to use search filters
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Create a free account to search and filter professionals
-              </p>
-            </div>
-          </div>
-          <div className="space-y-6 blur-sm">
-            <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <Input placeholder="Search professionals..." disabled />
-              <Input placeholder="Country" disabled />
-              <Input placeholder="State" disabled />
-              <Input placeholder="Sector" disabled />
-              <Input placeholder="Occupation" disabled />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <Card className="shadow-soft hover-lift transition-all duration-300">

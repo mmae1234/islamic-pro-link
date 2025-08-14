@@ -64,19 +64,8 @@ interface MentorshipRequest {
 }
 
 const Mentorship = () => {
-  // Safe auth access with mobile fallback
-  let user = null;
-  let toast: ((props: any) => void) | null = null;
-  
-  try {
-    const authContext = useAuth();
-    user = authContext?.user || null;
-    const toastContext = useToast();
-    toast = toastContext.toast;
-  } catch (error) {
-    console.error('Mentorship: Auth context not available, continuing as guest');
-    toast = null;
-  }
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [mentors, setMentors] = useState<MentorProfile[]>([]);
   const [allMentors, setAllMentors] = useState<MentorProfile[]>([]);
   const [requests, setRequests] = useState<MentorshipRequest[]>([]);

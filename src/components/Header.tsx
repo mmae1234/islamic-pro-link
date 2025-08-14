@@ -85,15 +85,19 @@ const Header = () => {
 
           {/* Desktop Navigation - Hidden on mobile */}
           <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
-            <Link to="/search" className="text-foreground hover:text-accent transition-smooth text-sm">
-              Find Professionals
-            </Link>
-            <Link to="/businesses" className="text-foreground hover:text-accent transition-smooth text-sm">
-              Find Businesses
-            </Link>
-            <Link to="/mentorship" className="text-foreground hover:text-accent transition-smooth text-sm">
-              Mentorship
-            </Link>
+            {user ? (
+              <>
+                <Link to="/search" className="text-foreground hover:text-accent transition-smooth text-sm">
+                  Find Professionals
+                </Link>
+                <Link to="/businesses" className="text-foreground hover:text-accent transition-smooth text-sm">
+                  Find Businesses
+                </Link>
+                <Link to="/mentorship" className="text-foreground hover:text-accent transition-smooth text-sm">
+                  Mentorship
+                </Link>
+              </>
+            ) : null}
             <DropdownMenu>
               <DropdownMenuTrigger className="text-foreground hover:text-accent transition-smooth text-sm">
                 Resources
@@ -252,27 +256,31 @@ const Header = () => {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-border animate-fade-in">
             <div className="flex flex-col space-y-1">
-              <Link 
-                to="/search" 
-                className="text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-4 py-3 rounded-lg text-sm font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Find Professionals
-              </Link>
-              <Link 
-                to="/businesses" 
-                className="text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-4 py-3 rounded-lg text-sm font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Find Businesses
-              </Link>
-              <Link 
-                to="/mentorship" 
-                className="text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-4 py-3 rounded-lg text-sm font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Mentorship
-              </Link>
+              {user ? (
+                <>
+                  <Link 
+                    to="/search" 
+                    className="text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-4 py-3 rounded-lg text-sm font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Find Professionals
+                  </Link>
+                  <Link 
+                    to="/businesses" 
+                    className="text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-4 py-3 rounded-lg text-sm font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Find Businesses
+                  </Link>
+                  <Link 
+                    to="/mentorship" 
+                    className="text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-4 py-3 rounded-lg text-sm font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Mentorship
+                  </Link>
+                </>
+              ) : null}
               {user && (
                 <>
                   <Link 
