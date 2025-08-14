@@ -156,6 +156,13 @@ export type Database = {
             referencedRelation: "business_directory"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_business_members_business"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_directory_internal"
+            referencedColumns: ["id"]
+          },
         ]
       }
       favorites: {
@@ -401,6 +408,13 @@ export type Database = {
             referencedRelation: "business_directory"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_links_business"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_directory_internal"
+            referencedColumns: ["id"]
+          },
         ]
       }
       professional_profiles: {
@@ -610,6 +624,51 @@ export type Database = {
     }
     Views: {
       business_directory: {
+        Row: {
+          bio: string | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          id: string | null
+          logo_url: string | null
+          name: string | null
+          sector: string | null
+          services: string | null
+          state: string | null
+          verified: boolean | null
+          website: string | null
+        }
+        Insert: {
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          id?: string | null
+          logo_url?: string | null
+          name?: string | null
+          sector?: string | null
+          services?: string | null
+          state?: string | null
+          verified?: boolean | null
+          website?: string | null
+        }
+        Update: {
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          id?: string | null
+          logo_url?: string | null
+          name?: string | null
+          sector?: string | null
+          services?: string | null
+          state?: string | null
+          verified?: boolean | null
+          website?: string | null
+        }
+        Relationships: []
+      }
+      business_directory_internal: {
         Row: {
           bio: string | null
           city: string | null

@@ -80,8 +80,10 @@ const Businesses = () => {
   }, [canonical]);
 
   useEffect(() => {
-    const loadSectors = async () => {
-      const { data } = await supabase.from('business_directory').select('sector');
+  const loadSectors = async () => {
+      // Use internal directory if authenticated, public if not
+      const table = user ? 'business_directory_internal' : 'business_directory';
+      const { data } = await supabase.from(table).select('sector');
       const unique = Array.from(new Set((data || []).map((d: any) => d.sector).filter(Boolean)));
       setSectors(unique as string[]);
     };
@@ -102,7 +104,9 @@ const Businesses = () => {
   const handleSearch = async () => {
     setLoading(true);
     try {
-      let query = supabase.from('business_directory').select('id, name, sector, bio, country, state, city, verified, logo_url');
+      // Use internal directory if authenticated, public if not
+      const table = user ? 'business_directory_internal' : 'business_directory';
+      let query = supabase.from(table).select('id, name, sector, bio, country, state, city, verified, logo_url');
 
       if (filters.searchTerm) {
         const t = filters.searchTerm;

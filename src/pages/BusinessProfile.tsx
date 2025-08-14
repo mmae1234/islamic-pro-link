@@ -105,19 +105,19 @@ const [favoriteBusinessIds, setFavoriteBusinessIds] = useState<string[]>([]);
           if (fullData) {
             biz = fullData;
           } else {
-            // Fallback to public business directory if no permission
+            // Fallback to internal business directory if no permission (authenticated users)
             const { data: publicData } = await supabase
-              .from('business_directory')
+              .from('business_directory_internal')
               .select('id, name, bio, services, sector, country, state, city, website, logo_url, status, cover_url, verified, facebook_url, instagram_url, linkedin_url, twitter_url, youtube_url, tiktok_url, whatsapp_number, telegram_url')
               .eq('id', id)
               .maybeSingle();
             biz = publicData;
           }
         } else {
-          // Guest users can only see public directory data
+          // Guest users can only see public directory data (verified businesses only)
           const { data } = await supabase
             .from('business_directory')
-            .select('id, name, bio, services, sector, country, state, city, website, logo_url, status, cover_url, verified, facebook_url, instagram_url, linkedin_url, twitter_url, youtube_url, tiktok_url, whatsapp_number, telegram_url')
+            .select('id, name, bio, services, sector, country, state, city, website, logo_url, verified')
             .eq('id', id)
             .maybeSingle();
           biz = data;

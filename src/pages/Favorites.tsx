@@ -96,8 +96,9 @@ const Favorites = () => {
       const raw = localStorage.getItem('favorite_business_ids');
       const businessIds: string[] = raw ? JSON.parse(raw) : [];
       if (businessIds.length > 0) {
+        // Use internal directory since favorites require authentication
         const { data: businesses, error: bizError } = await supabase
-          .from('business_directory')
+          .from('business_directory_internal')
           .select('id, name, sector, country, state, city, verified, logo_url')
           .in('id', businessIds);
         if (bizError) throw bizError;
