@@ -330,7 +330,7 @@ const Messages = () => {
           </div>
 
           <Tabs defaultValue="inbox" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="inbox" className="flex items-center gap-2">
                 <Inbox className="w-4 h-4" />
                 Inbox
@@ -342,6 +342,10 @@ const Messages = () => {
               <TabsTrigger value="sent" className="flex items-center gap-2">
                 <SendIcon className="w-4 h-4" />
                 Sent
+              </TabsTrigger>
+              <TabsTrigger value="archived" className="flex items-center gap-2">
+                <SendIcon className="w-4 h-4" />
+                Archived
               </TabsTrigger>
               <TabsTrigger value="compose" className="flex items-center gap-2">
                 <Plus className="w-4 h-4" />
@@ -480,6 +484,23 @@ const Messages = () => {
                       ))}
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="archived" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Archived Messages</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-12">
+                    <SendIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-foreground mb-2">No archived messages</h3>
+                    <p className="text-muted-foreground">
+                      Deleted, declined, and archived messages will appear here.
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>

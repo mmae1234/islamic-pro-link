@@ -233,9 +233,9 @@ const ProfessionalCard = ({
             
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="text-lg font-semibold text-foreground truncate">
+                  <Link to={`/profile/${professional.user_id}`} className="text-lg font-semibold text-foreground truncate hover:text-primary transition-colors">
                     {getFullName()}
-                  </h3>
+                  </Link>
                   <div className="flex flex-wrap gap-2">
                     {professional.is_mentor && (
                       <Badge className="text-xs bg-green-100 text-green-800 border-green-200 hover:bg-green-200">
