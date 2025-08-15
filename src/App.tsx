@@ -1,3 +1,4 @@
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -5,7 +6,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import GlobalErrorBoundary from "@/components/GlobalErrorBoundary";
-import IOSSafeguard from "@/components/IOSSafeguard";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Search from "./pages/Search";
@@ -56,14 +56,19 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
-  <GlobalErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <IOSSafeguard>
+const App = () => {
+  // Add data attribute for iOS render verification
+  React.useEffect(() => {
+    document.body.setAttribute('data-app-ready', 'true');
+  }, []);
+
+  return (
+    <GlobalErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
             <AuthProvider>
             <Routes>
               <Route path="/" element={<Index />} />
@@ -132,11 +137,11 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
-        </IOSSafeguard>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-  </GlobalErrorBoundary>
-);
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+    </GlobalErrorBoundary>
+  );
+};
 
 export default App;

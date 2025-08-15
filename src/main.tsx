@@ -5,9 +5,18 @@ import './index.css'
 
 console.log("Starting app initialization...");
 
-// Enhanced error handling for mobile browsers with iOS detection
+// iOS WebKit detection and immediate handling
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-const isWebKit = /WebKit/.test(navigator.userAgent) && !/(Chrome|CriOS)/.test(navigator.userAgent);
+const isWebKit = /WebKit/.test(navigator.userAgent);
+const isIOSPrivate = isIOS && (() => {
+  try {
+    localStorage.setItem('__ios_test__', 'test');
+    localStorage.removeItem('__ios_test__');
+    return false;
+  } catch { return true; }
+})();
+
+console.log('Device info:', { isIOS, isWebKit, isIOSPrivate });
 
 const createIOSFallback = () => `
   <div style="padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; text-align: center; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #f7fafc;">
@@ -36,32 +45,39 @@ if (!root) {
 } else {
   console.log("Root element found, rendering app...");
   
-  // iOS-specific timeout for app rendering
-  const renderTimeout = isIOS ? 2000 : 5000;
-  
   const renderApp = () => {
     try {
+      console.log("Rendering React app...");
       const reactRoot = createRoot(root);
-      reactRoot.render(<App />);
-      console.log("App rendered successfully");
+      
+      // For iOS, render with error handling
+      if (isIOS) {
+        console.log("iOS detected: rendering with enhanced error handling");
+        
+        // Immediate render - no delays for iOS
+        reactRoot.render(<App />);
+        
+        // Verify render success after short delay
+        setTimeout(() => {
+          const appElement = document.querySelector('[data-app-ready]');
+          if (!appElement) {
+            console.log("App failed to render on iOS, showing fallback");
+            root.innerHTML = createIOSFallback();
+          } else {
+            console.log("iOS app render successful");
+          }
+        }, 500);
+      } else {
+        reactRoot.render(<App />);
+      }
+      
+      console.log("App render initiated");
     } catch (error) {
       console.error("Critical error rendering app:", error);
       root.innerHTML = createIOSFallback();
     }
   };
 
-  // Set a timeout for iOS devices
-  if (isIOS) {
-    const fallbackTimer = setTimeout(() => {
-      console.log("iOS render timeout, showing fallback");
-      root.innerHTML = createIOSFallback();
-    }, renderTimeout);
-    
-    // Clear timeout if app renders successfully
-    window.addEventListener('load', () => {
-      clearTimeout(fallbackTimer);
-    });
-  }
-
+  // Immediate render - remove all timeout delays
   renderApp();
 }

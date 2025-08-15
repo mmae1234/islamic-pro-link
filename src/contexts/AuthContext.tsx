@@ -40,14 +40,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     console.log('AuthContext: Initializing auth...');
     let mounted = true;
     
-    // Immediate fallback for iOS - set loading to false quickly
+    // Detect iOS immediately
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    
+    // Much faster timeout for iOS to prevent blank screens
     const immediateTimeout = setTimeout(() => {
       if (mounted && loading) {
-        console.log('AuthContext: Fast timeout for iOS, proceeding as guest');
+        console.log('AuthContext: Timeout reached, proceeding as guest');
         setLoading(false);
         setUser(null);
       }
-    }, 800); // Faster timeout for iOS compatibility
+    }, isIOS ? 200 : 800); // Very fast for iOS
     
     // Get initial session with iOS-specific handling
     const initializeAuth = async () => {

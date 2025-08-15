@@ -3,22 +3,58 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
 const SUPABASE_URL = "https://zhtfygjxnyxqsmeoipst.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpodGZ5Z2p4bnl4cXNtZW9pcHN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4NTc3OTgsImV4cCI6MjA2OTQzMzc5OH0.e6BfsKvqmRYiRLO4DLqvylmV7smrlmVKBmKjRq2i5zw";
+const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpodGZ5Z2p4bnl4cXNtZW9pcHN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4NTc3OTgsImV4cCI6MjA2OTQzMzc5OH0.e6BfsKvqmRYiRLO4DLqvylmVKBmKjRq2i5zw";
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-// iOS-compatible storage with fallback
+// iOS WebKit-compatible storage with comprehensive fallbacks
 const getStorage = () => {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  
+  if (isIOS) {
+    console.log('iOS detected: configuring WebKit-compatible storage');
+  }
+  
   try {
-    // Test localStorage availability (iOS may block it)
-    const testKey = '__supabase_test__';
+    // Test localStorage availability (iOS private mode blocks this)
+    const testKey = '__supabase_storage_test__';
     localStorage.setItem(testKey, 'test');
+    const testValue = localStorage.getItem(testKey);
     localStorage.removeItem(testKey);
-    return localStorage;
+    
+    if (testValue === 'test') {
+      console.log('localStorage available');
+      return localStorage;
+    }
+    throw new Error('localStorage test failed');
   } catch (e) {
-    console.log('Supabase: localStorage unavailable, using sessionStorage fallback');
-    return sessionStorage;
+    console.log('localStorage unavailable, trying sessionStorage');
+    
+    try {
+      const testKey = '__supabase_session_test__';
+      sessionStorage.setItem(testKey, 'test');
+      const testValue = sessionStorage.getItem(testKey);
+      sessionStorage.removeItem(testKey);
+      
+      if (testValue === 'test') {
+        console.log('sessionStorage available');
+        return sessionStorage;
+      }
+      throw new Error('sessionStorage test failed');
+    } catch (e2) {
+      console.log('All storage unavailable, using memory fallback');
+      // Memory-only fallback for iOS private mode
+      const memoryStorage = new Map();
+      return {
+        getItem: (key: string) => memoryStorage.get(key) || null,
+        setItem: (key: string, value: string) => memoryStorage.set(key, value),
+        removeItem: (key: string) => memoryStorage.delete(key),
+        clear: () => memoryStorage.clear(),
+        get length() { return memoryStorage.size; },
+        key: (index: number) => Array.from(memoryStorage.keys())[index] || null
+      };
+    }
   }
 };
 
