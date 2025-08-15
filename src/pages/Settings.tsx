@@ -360,7 +360,15 @@ const Settings = () => {
             </p>
           </div>
 
-          <div className="space-y-8">
+          <Tabs defaultValue="profile" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="profile">Profile</TabsTrigger>
+              <TabsTrigger value="account">Account</TabsTrigger>
+              <TabsTrigger value="notifications">Notifications</TabsTrigger>
+              <TabsTrigger value="privacy">Privacy</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="profile" className="space-y-8">
             {!user && (
               <Card className="shadow-soft">
                 <CardHeader>
@@ -627,7 +635,46 @@ const Settings = () => {
       </AlertDialog>
 
       <Footer />
-    </div>
+            </TabsContent>
+
+            <TabsContent value="account">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Account Settings</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">Account settings coming soon...</p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="notifications">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Notification Settings</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">Notification settings coming soon...</p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="privacy">
+              <div className="space-y-6">
+                <MessagingPrivacySettings />
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Profile Privacy</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">Additional privacy settings coming soon...</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
   );
 };
 

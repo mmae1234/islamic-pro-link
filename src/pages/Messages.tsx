@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ConversationView from "@/components/ConversationView";
+import MessageRequests from "@/components/MessageRequests";
 import { 
   MessageCircle, 
   Send, 
@@ -17,7 +18,8 @@ import {
   SendIcon,
   User,
   Search,
-  Plus
+  Plus,
+  Shield
 } from "lucide-react";
 
 interface Message {
@@ -305,10 +307,14 @@ const Messages = () => {
           </div>
 
           <Tabs defaultValue="inbox" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="inbox" className="flex items-center gap-2">
                 <Inbox className="w-4 h-4" />
                 Inbox
+              </TabsTrigger>
+              <TabsTrigger value="requests" className="flex items-center gap-2">
+                <Shield className="w-4 h-4" />
+                Requests
               </TabsTrigger>
               <TabsTrigger value="sent" className="flex items-center gap-2">
                 <SendIcon className="w-4 h-4" />
@@ -324,7 +330,7 @@ const Messages = () => {
             <TabsContent value="inbox" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Inbox</CardTitle>
+                  <CardTitle>Active Conversations</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {inboxMessages.length === 0 ? (
@@ -380,6 +386,23 @@ const Messages = () => {
                       ))}
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="requests" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="w-5 h-5" />
+                    Message Requests
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <MessageRequests onAcceptRequest={() => {
+                    // Reload messages when a request is accepted
+                    loadMessages();
+                  }} />
                 </CardContent>
               </Card>
             </TabsContent>
