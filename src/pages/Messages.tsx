@@ -19,7 +19,8 @@ import {
   User,
   Search,
   Plus,
-  Shield
+  Shield,
+  Trash2
 } from "lucide-react";
 
 interface Message {
@@ -59,6 +60,7 @@ const Messages = () => {
   const [selectedRecipient, setSelectedRecipient] = useState<any>(null);
   const [professionals, setProfessionals] = useState<any[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<{partnerId: string, partnerName: string} | null>(null);
+  const [archivedMessages, setArchivedMessages] = useState<Message[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -165,6 +167,22 @@ const Messages = () => {
       }
 
       setConversations(conversationsList);
+
+      // Load archived messages (deleted, declined, or archived)
+      const { data: archivedData, error: archivedError } = await supabase
+        .from('messages')
+        .select(`
+          *,
+          sender_profile:profiles!messages_sender_id_fkey(first_name, last_name),
+          recipient_profile:profiles!messages_recipient_id_fkey(first_name, last_name)
+        `)
+        .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
+        .not('deleted_at', 'is', null)
+        .order('created_at', { ascending: false });
+
+      if (!archivedError) {
+        setArchivedMessages(archivedData || []);
+      }
     } catch (error) {
       console.error('Error loading messages:', error);
     } finally {
@@ -261,6 +279,28 @@ const Messages = () => {
       loadMessages();
     } catch (error) {
       console.error('Error marking message as read:', error);
+    }
+  };
+
+  const deleteMessage = async (messageId: string) => {
+    try {
+      await supabase
+        .from('messages')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', messageId);
+      
+      toast({
+        title: "Message deleted",
+        description: "The message has been moved to archived.",
+      });
+      
+      loadMessages();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete message.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -448,27 +488,96 @@ const Messages = () => {
                       </p>
                     </div>
                   ) : (
+                     <div className="space-y-4">
+                       {sentMessages.map((message) => (
+                         <Card 
+                           key={message.id} 
+                           className="shadow-soft"
+                         >
+                           <CardContent className="pt-6">
+                             <div className="flex items-start justify-between">
+                               <div 
+                                 className="flex items-start gap-3 flex-1 cursor-pointer"
+                                 onClick={() => setSelectedConversation({
+                                   partnerId: message.recipient_id, 
+                                   partnerName: `${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim() || 'Unknown'
+                                 })}
+                               >
+                                 <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center">
+                                   <span className="text-primary-foreground font-semibold text-sm">
+                                     {`${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim().split(' ').map(n => n[0]).join('') || 'U'}
+                                   </span>
+                                 </div>
+                                 <div className="flex-1">
+                                   <h3 className="font-medium text-foreground mb-1">
+                                     To: {`${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim() || 'Unknown'}
+                                   </h3>
+                                   <p className="text-sm text-muted-foreground">
+                                     {message.content}
+                                   </p>
+                                 </div>
+                               </div>
+                               <div className="flex items-center gap-2">
+                                 <p className="text-xs text-muted-foreground">
+                                   {formatTime(message.created_at)}
+                                 </p>
+                                 <Button
+                                   variant="ghost"
+                                   size="sm"
+                                   onClick={(e) => {
+                                     e.stopPropagation();
+                                     deleteMessage(message.id);
+                                   }}
+                                   className="text-destructive hover:text-destructive"
+                                 >
+                                   <Trash2 className="w-4 h-4" />
+                                 </Button>
+                               </div>
+                             </div>
+                           </CardContent>
+                         </Card>
+                       ))}
+                     </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="archived" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Archived Messages</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {archivedMessages.length === 0 ? (
+                    <div className="text-center py-12">
+                      <SendIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-foreground mb-2">No archived messages</h3>
+                      <p className="text-muted-foreground">
+                        Deleted, declined, and archived messages will appear here.
+                      </p>
+                    </div>
+                  ) : (
                     <div className="space-y-4">
-                      {sentMessages.map((message) => (
-                        <Card 
-                          key={message.id} 
-                          className="shadow-soft cursor-pointer"
-                          onClick={() => setSelectedConversation({
-                            partnerId: message.recipient_id, 
-                            partnerName: `${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim() || 'Unknown'
-                          })}
-                        >
+                      {archivedMessages.map((message) => (
+                        <Card key={message.id} className="shadow-soft opacity-75">
                           <CardContent className="pt-6">
                             <div className="flex items-start justify-between">
                               <div className="flex items-start gap-3">
                                 <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center">
                                   <span className="text-primary-foreground font-semibold text-sm">
-                                    {`${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim().split(' ').map(n => n[0]).join('') || 'U'}
+                                    {message.sender_id === user?.id 
+                                      ? `${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim().split(' ').map(n => n[0]).join('') || 'U'
+                                      : `${message.sender_profile?.first_name || ''} ${message.sender_profile?.last_name || ''}`.trim().split(' ').map(n => n[0]).join('') || 'U'
+                                    }
                                   </span>
                                 </div>
                                 <div className="flex-1">
                                   <h3 className="font-medium text-foreground mb-1">
-                                    To: {`${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim() || 'Unknown'}
+                                    {message.sender_id === user?.id 
+                                      ? `To: ${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim() || 'Unknown'
+                                      : `From: ${message.sender_profile?.first_name || ''} ${message.sender_profile?.last_name || ''}`.trim() || 'Unknown'
+                                    }
                                   </h3>
                                   <p className="text-sm text-muted-foreground">
                                     {message.content}
@@ -484,23 +593,6 @@ const Messages = () => {
                       ))}
                     </div>
                   )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="archived" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Archived Messages</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-12">
-                    <SendIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-foreground mb-2">No archived messages</h3>
-                    <p className="text-muted-foreground">
-                      Deleted, declined, and archived messages will appear here.
-                    </p>
-                  </div>
                 </CardContent>
               </Card>
             </TabsContent>

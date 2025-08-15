@@ -92,17 +92,12 @@ const Businesses = () => {
       }
     };
     
-    const performInitialLoad = async () => {
-      await loadSectors();
-      try {
-        await handleSearch();
-      } catch (error) {
-        console.error('Failed initial search:', error);
-      }
-    };
-    
-    performInitialLoad();
-  }, [user]); // Add user dependency to re-run when auth changes
+    loadSectors();
+  }, [user]);
+
+  useEffect(() => {
+    handleSearch();
+  }, [user]);
 
   useEffect(() => {
     const raw = localStorage.getItem('favorite_business_ids');
