@@ -114,6 +114,7 @@ const Businesses = () => {
     try {
       // Use contact-protected directory if authenticated, public if not
       const table = user ? 'business_directory_internal' : 'business_directory';
+      console.log('Using table:', table, 'User:', user?.id);
       let query = supabase.from(table).select('id, name, sector, bio, country, state, city, verified, logo_url');
 
       if (filters.searchTerm) {
@@ -129,7 +130,11 @@ const Businesses = () => {
       query = query.order('verified', { ascending: false }).order('created_at', { ascending: false }).limit(50);
 
       const { data, error } = await query;
-      if (error) throw error;
+      if (error) {
+        console.error('Query error:', error);
+        throw error;
+      }
+      console.log('Query result:', data);
       setResults((data || []) as any);
     } catch (e) {
       console.error('Business search error', e);
