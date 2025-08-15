@@ -375,71 +375,404 @@ const Settings = () => {
                 </Card>
               )}
 
-              {/* Basic Profile */}
+              {/* Profile Photo */}
               <Card className="shadow-soft">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <User className="w-5 h-5" />
-                    Basic Profile
+                    Profile Photo
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-4">
+                    <Label>Profile Photo</Label>
+                    <ImageUpload
+                      currentImageUrl={avatarUrl || undefined}
+                      onImageChange={setAvatarUrl}
+                      fallbackInitials={`${formData.first_name?.[0] || ''}${formData.last_name?.[0] || ''}`}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Professional Profile */}
+              {formData.role === 'professional' && (
+                <>
+                  <Card className="shadow-soft">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Briefcase className="w-5 h-5" />
+                        Professional Information
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="occupation">Occupation</Label>
+                          <OccupationSelect
+                            value={formData.occupation}
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, occupation: value }))}
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="sector">Sector</Label>
+                          <SectorSelect
+                            value={formData.sector}
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, sector: value }))}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="university">University</Label>
+                          <UniversitySelect
+                            value={formData.university}
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, university: value }))}
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="experience_years">Years of Experience</Label>
+                          <Select 
+                            value={formData.experience_years} 
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, experience_years: value }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select experience level" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="0">Fresh Graduate</SelectItem>
+                              <SelectItem value="1">1-2 years</SelectItem>
+                              <SelectItem value="3">3-5 years</SelectItem>
+                              <SelectItem value="6">6-10 years</SelectItem>
+                              <SelectItem value="11">11+ years</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="bio">Bio</Label>
+                        <Textarea
+                          id="bio"
+                          value={formData.bio}
+                          onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                          placeholder="Tell us about yourself..."
+                          rows={4}
+                          className={validationErrors.bio ? 'border-destructive' : ''}
+                        />
+                        {validationErrors.bio && (
+                          <p className="text-sm text-destructive mt-1">{validationErrors.bio}</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Location */}
+                  <Card className="shadow-soft">
+                    <CardHeader>
+                      <CardTitle>Location</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="grid md:grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="country">Country</Label>
+                          <CountrySelect
+                            value={formData.country}
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, country: value, state_province: '', city: '' }))}
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="state_province">State/Province</Label>
+                          <StateProvinceSelect
+                            country={formData.country}
+                            value={formData.state_province}
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, state_province: value, city: '' }))}
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="city">City</Label>
+                          <CitySelect
+                            country={formData.country}
+                            stateProvince={formData.state_province}
+                            value={formData.city}
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, city: value }))}
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Skills */}
+                  <Card className="shadow-soft">
+                    <CardHeader>
+                      <CardTitle>Skills</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="space-y-4">
+                        <div className="flex gap-2">
+                          <Select onValueChange={addSkill}>
+                            <SelectTrigger className="flex-1">
+                              <SelectValue placeholder="Select a skill to add" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {SKILLS_OPTIONS.filter(skill => !formData.skills.includes(skill)).map(skill => (
+                                <SelectItem key={skill} value={skill}>{skill}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <Input
+                            value={newSkill}
+                            onChange={(e) => setNewSkill(e.target.value)}
+                            placeholder="Or add a custom skill"
+                            className={validationErrors.newSkill ? 'border-destructive' : ''}
+                            onKeyPress={(e) => e.key === 'Enter' && addSkill(newSkill)}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => addSkill(newSkill)}
+                            disabled={!newSkill.trim()}
+                          >
+                            Add
+                          </Button>
+                        </div>
+                        {validationErrors.newSkill && (
+                          <p className="text-sm text-destructive">{validationErrors.newSkill}</p>
+                        )}
+                        
+                        <div className="flex flex-wrap gap-2">
+                          {formData.skills.map((skill) => (
+                            <Badge key={skill} variant="secondary" className="text-sm">
+                              {skill}
+                              <X
+                                className="ml-2 h-3 w-3 cursor-pointer"
+                                onClick={() => removeSkill(skill)}
+                              />
+                            </Badge>
+                          ))}
+                        </div>
+                        {validationErrors.skills && (
+                          <p className="text-sm text-destructive">{validationErrors.skills}</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Mentorship & Availability */}
+                  <Card className="shadow-soft">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Users className="w-5 h-5" />
+                        Mentorship & Availability
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <div className="flex items-center space-x-2">
+                            <Switch
+                              id="is_mentor"
+                              checked={formData.is_mentor}
+                              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_mentor: checked }))}
+                            />
+                            <Label htmlFor="is_mentor">Available as mentor</Label>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <Switch
+                              id="is_seeking_mentor"
+                              checked={formData.is_seeking_mentor}
+                              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_seeking_mentor: checked }))}
+                            />
+                            <Label htmlFor="is_seeking_mentor">Seeking mentor</Label>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="availability">Availability</Label>
+                          <AvailabilitySelect
+                            value={formData.availability}
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, availability: value }))}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label>Preferred Communication Methods</Label>
+                        <div className="grid grid-cols-2 gap-4 mt-2">
+                          {COMMUNICATION_OPTIONS.map((option) => (
+                            <div key={option.id} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={option.id}
+                                checked={formData.preferred_communication.includes(option.id)}
+                                onCheckedChange={(checked) => handleCommunicationChange(option.id, checked as boolean)}
+                              />
+                              <Label htmlFor={option.id} className="text-sm">{option.label}</Label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+
+              <div className="flex justify-between">
+                <Button onClick={saveProfile} disabled={saving}>
+                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Save Profile
+                </Button>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="account" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <SettingsIcon className="w-5 h-5" />
+                    Account Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4">
                     <div>
-                      <Label htmlFor="first_name">First Name</Label>
+                      <Label htmlFor="email">Email Address</Label>
                       <Input
-                        id="first_name"
-                        value={formData.first_name}
-                        onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
-                        placeholder="Enter your first name"
-                        className={validationErrors.first_name ? 'border-destructive' : ''}
+                        id="email"
+                        type="email"
+                        value={user?.email || ''}
+                        disabled
+                        className="bg-muted"
                       />
-                      {validationErrors.first_name && (
-                        <p className="text-sm text-destructive mt-1">{validationErrors.first_name}</p>
-                      )}
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Contact support to change your email address
+                      </p>
                     </div>
                     
                     <div>
-                      <Label htmlFor="last_name">Last Name</Label>
-                      <Input
-                        id="last_name"
-                        value={formData.last_name}
-                        onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
-                        placeholder="Enter your last name"
-                        className={validationErrors.last_name ? 'border-destructive' : ''}
-                      />
-                      {validationErrors.last_name && (
-                        <p className="text-sm text-destructive mt-1">{validationErrors.last_name}</p>
-                      )}
+                      <Label htmlFor="account_type">Account Type</Label>
+                      <Select value={formData.role} onValueChange={(value) => setFormData(prev => ({ ...prev, role: value }))}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="professional">Professional</SelectItem>
+                          <SelectItem value="business">Business</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
-
+                  
                   <Button onClick={saveProfile} disabled={saving}>
                     {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Save Profile
+                    Update Account
                   </Button>
                 </CardContent>
               </Card>
-            </TabsContent>
 
-            <TabsContent value="account">
               <Card>
                 <CardHeader>
-                  <CardTitle>Account Settings</CardTitle>
+                  <CardTitle className="text-destructive">Danger Zone</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">Account settings coming soon...</p>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-medium">Delete Account</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Permanently delete your account and all associated data. This action cannot be undone.
+                      </p>
+                    </div>
+                    <Button
+                      variant="destructive"
+                      onClick={() => setShowDeleteDialog(true)}
+                    >
+                      Delete Account
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
-            <TabsContent value="notifications">
+            <TabsContent value="notifications" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Notification Settings</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bell className="w-5 h-5" />
+                    Email Notifications
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">Notification settings coming soon...</p>
+                <CardContent className="space-y-4">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="email-messages">Message Notifications</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Receive email notifications for new messages
+                        </p>
+                      </div>
+                      <Switch id="email-messages" />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="email-mentorship">Mentorship Updates</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Receive email notifications for mentorship requests and updates
+                        </p>
+                      </div>
+                      <Switch id="email-mentorship" />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="email-profile">Profile Views</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Receive email notifications when someone views your profile
+                        </p>
+                      </div>
+                      <Switch id="email-profile" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Phone className="w-5 h-5" />
+                    Communication Preferences
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="sms-notifications">SMS Notifications</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Receive SMS notifications for urgent messages
+                        </p>
+                      </div>
+                      <Switch id="sms-notifications" />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="marketing-emails">Marketing Emails</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Receive updates about new features and platform news
+                        </p>
+                      </div>
+                      <Switch id="marketing-emails" />
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
