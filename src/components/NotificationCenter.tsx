@@ -210,7 +210,7 @@ const NotificationCenter = () => {
       </Button>
 
       {showNotifications && (
-        <Card className="absolute top-full right-0 mt-2 w-80 z-[60] shadow-lg">
+        <Card className="absolute top-full right-0 mt-2 w-80 z-[9999] shadow-lg">
           <CardContent className="p-0">
             <div className="p-4 border-b">
               <h3 className="font-semibold">Notifications</h3>

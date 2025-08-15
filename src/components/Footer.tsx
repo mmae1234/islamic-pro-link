@@ -19,7 +19,7 @@ const Footer = () => {
             </p>
             <div className="flex items-center text-sm text-primary-foreground/70">
               <Heart className="w-4 h-4 mr-2 text-accent" />
-              Made with love for the Ummah
+              Made with love from the Ummah
             </div>
           </div>
 
