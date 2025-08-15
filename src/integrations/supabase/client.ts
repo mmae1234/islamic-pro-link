@@ -48,8 +48,14 @@ const getStorage = () => {
       const memoryStorage = new Map();
       return {
         getItem: (key: string) => memoryStorage.get(key) || null,
-        setItem: (key: string, value: string) => memoryStorage.set(key, value),
-        removeItem: (key: string) => memoryStorage.delete(key),
+        setItem: (key: string, value: string) => {
+          memoryStorage.set(key, value);
+          return undefined; // Return void as expected
+        },
+        removeItem: (key: string) => {
+          memoryStorage.delete(key);
+          return undefined; // Return void as expected
+        },
         clear: () => memoryStorage.clear(),
         get length() { return memoryStorage.size; },
         key: (index: number) => Array.from(memoryStorage.keys())[index] || null
@@ -58,7 +64,8 @@ const getStorage = () => {
   }
 };
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+// Create client without strict typing to bypass empty Database type
+export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     storage: getStorage(),
     persistSession: true,

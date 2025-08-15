@@ -84,11 +84,17 @@ const NotificationCenter = () => {
 
       // Add message notifications
       messages?.forEach(msg => {
+        // Handle profiles data - it might be an array or object
+        const profileData = Array.isArray(msg.profiles) ? msg.profiles[0] : msg.profiles;
+        const senderName = profileData 
+          ? `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim() 
+          : 'Someone';
+          
         notificationsList.push({
           id: `msg-${msg.id}`,
           type: 'message',
           title: 'New Message',
-          description: `${`${msg.profiles?.first_name || ''} ${msg.profiles?.last_name || ''}`.trim() || 'Someone'} sent you a message`,
+          description: `${senderName || 'Someone'} sent you a message`,
           read: false,
           created_at: msg.created_at,
           data: { messageId: msg.id, senderId: msg.sender_id }
@@ -97,11 +103,17 @@ const NotificationCenter = () => {
 
       // Add mentorship request notifications
       requests?.forEach(req => {
+        // Handle profiles data - it might be an array or object
+        const profileData = Array.isArray(req.profiles) ? req.profiles[0] : req.profiles;
+        const requesterName = profileData 
+          ? `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim() 
+          : 'Someone';
+          
         notificationsList.push({
           id: `req-${req.id}`,
           type: 'mentorship_request',
           title: 'New Mentorship Request',
-          description: `${`${req.profiles?.first_name || ''} ${req.profiles?.last_name || ''}`.trim() || 'Someone'} wants you as a mentor`,
+          description: `${requesterName || 'Someone'} wants you as a mentor`,
           read: false,
           created_at: req.created_at,
           data: { requestId: req.id }
