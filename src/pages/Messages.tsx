@@ -101,8 +101,70 @@ const Messages = () => {
       setSentMessages(sentData || []);
       setInboxMessages(inboxData || []);
 
-      // Build conversations
-      buildConversations(sentData || [], inboxData || []);
+      // Build conversations from the conversations table
+      const { data: conversationsData, error: conversationsError } = await supabase
+        .from('conversations')
+        .select(`
+          id,
+          user_a,
+          user_b,
+          status,
+          updated_at,
+          profiles_a:profiles!conversations_user_a_fkey(first_name, last_name),
+          profiles_b:profiles!conversations_user_b_fkey(first_name, last_name)
+        `)
+        .or(`user_a.eq.${user.id},user_b.eq.${user.id}`)
+        .neq('status', 'blocked')
+        .order('updated_at', { ascending: false });
+
+      if (conversationsError) throw conversationsError;
+
+      const conversationsList = (conversationsData || []).map(conv => {
+        const isUserA = conv.user_a === user.id;
+        const partnerId = isUserA ? conv.user_b : conv.user_a;
+        const partnerProfile = isUserA ? conv.profiles_b : conv.profiles_a;
+        // Handle case where profile might be an array (shouldn't happen but TypeScript thinks it might)
+        const profile = Array.isArray(partnerProfile) ? partnerProfile[0] : partnerProfile;
+        
+        return {
+          partner_id: partnerId,
+          partner_name: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'Unknown',
+          last_message: '', // We'll get this from the last message
+          last_message_time: conv.updated_at,
+          unread_count: 0 // We'll calculate this separately
+        };
+      });
+
+      // Get last messages and unread counts for each conversation
+      for (const conv of conversationsList) {
+        // Get last message
+        const { data: lastMessageData } = await supabase
+          .from('messages')
+          .select('content, created_at')
+          .or(`and(sender_id.eq.${user.id},recipient_id.eq.${conv.partner_id}),and(sender_id.eq.${conv.partner_id},recipient_id.eq.${user.id})`)
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (lastMessageData) {
+          conv.last_message = lastMessageData.content;
+          conv.last_message_time = lastMessageData.created_at;
+        }
+
+        // Get unread count
+        const { count } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact' })
+          .eq('sender_id', conv.partner_id)
+          .eq('recipient_id', user.id)
+          .is('read_at', null)
+          .is('deleted_at', null);
+
+        conv.unread_count = count || 0;
+      }
+
+      setConversations(conversationsList);
     } catch (error) {
       console.error('Error loading messages:', error);
     } finally {
@@ -111,47 +173,8 @@ const Messages = () => {
   };
 
   const buildConversations = (sent: Message[], inbox: Message[]) => {
-    const conversationMap = new Map<string, Conversation>();
-
-    // Process sent messages
-    sent.forEach(msg => {
-      if (!conversationMap.has(msg.recipient_id)) {
-        conversationMap.set(msg.recipient_id, {
-          partner_id: msg.recipient_id,
-          partner_name: `${msg.recipient_profile?.first_name || ''} ${msg.recipient_profile?.last_name || ''}`.trim() || 'Unknown',
-          last_message: msg.content,
-          last_message_time: msg.created_at,
-          unread_count: 0
-        });
-      }
-    });
-
-    // Process inbox messages
-    inbox.forEach(msg => {
-      const existing = conversationMap.get(msg.sender_id);
-      if (!existing || new Date(msg.created_at) > new Date(existing.last_message_time)) {
-        conversationMap.set(msg.sender_id, {
-          partner_id: msg.sender_id,
-          partner_name: `${msg.sender_profile?.first_name || ''} ${msg.sender_profile?.last_name || ''}`.trim() || 'Unknown',
-          last_message: msg.content,
-          last_message_time: msg.created_at,
-          unread_count: existing?.unread_count || 0
-        });
-      }
-      
-      // Count unread messages
-      if (!msg.read_at) {
-        const conv = conversationMap.get(msg.sender_id);
-        if (conv) {
-          conv.unread_count++;
-        }
-      }
-    });
-
-    const conversations = Array.from(conversationMap.values())
-      .sort((a, b) => new Date(b.last_message_time).getTime() - new Date(a.last_message_time).getTime());
-
-    setConversations(conversations);
+    // This method is now replaced by the above conversation loading
+    // but kept for compatibility
   };
 
   const loadProfessionals = async () => {
@@ -330,28 +353,27 @@ const Messages = () => {
             <TabsContent value="inbox" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Active Conversations</CardTitle>
+                  <CardTitle>Conversations</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {inboxMessages.length === 0 ? (
+                  {conversations.length === 0 ? (
                     <div className="text-center py-12">
                       <Inbox className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-foreground mb-2">No messages</h3>
+                      <h3 className="text-lg font-medium text-foreground mb-2">No conversations</h3>
                       <p className="text-muted-foreground">
-                        You haven't received any messages yet.
+                        You haven't started any conversations yet.
                       </p>
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {inboxMessages.map((message) => (
+                      {conversations.map((conversation) => (
                         <Card 
-                          key={message.id} 
-                          className={`shadow-soft cursor-pointer ${!message.read_at ? 'border-primary/50' : ''}`}
+                          key={conversation.partner_id} 
+                          className={`shadow-soft cursor-pointer ${conversation.unread_count > 0 ? 'border-primary/50' : ''}`}
                           onClick={() => {
-                            if (!message.read_at) markAsRead(message.id);
                             setSelectedConversation({
-                              partnerId: message.sender_id, 
-                              partnerName: `${message.sender_profile?.first_name || ''} ${message.sender_profile?.last_name || ''}`.trim() || 'Unknown'
+                              partnerId: conversation.partner_id, 
+                              partnerName: conversation.partner_name
                             });
                           }}
                         >
@@ -360,25 +382,25 @@ const Messages = () => {
                               <div className="flex items-start gap-3">
                                 <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center">
                                   <span className="text-primary-foreground font-semibold text-sm">
-                                    {`${message.sender_profile?.first_name || ''} ${message.sender_profile?.last_name || ''}`.trim().split(' ').map(n => n[0]).join('') || 'U'}
+                                    {conversation.partner_name.split(' ').map(n => n[0]).join('') || 'U'}
                                   </span>
                                 </div>
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-1">
                                     <h3 className="font-medium text-foreground">
-                                      {`${message.sender_profile?.first_name || ''} ${message.sender_profile?.last_name || ''}`.trim() || 'Unknown'}
+                                      {conversation.partner_name}
                                     </h3>
-                                    {!message.read_at && (
-                                      <Badge variant="destructive" className="text-xs">New</Badge>
+                                    {conversation.unread_count > 0 && (
+                                      <Badge variant="destructive" className="text-xs">{conversation.unread_count}</Badge>
                                     )}
                                   </div>
                                   <p className="text-sm text-muted-foreground">
-                                    {message.content}
+                                    {conversation.last_message || 'No messages yet'}
                                   </p>
                                 </div>
                               </div>
                               <p className="text-xs text-muted-foreground">
-                                {formatTime(message.created_at)}
+                                {formatTime(conversation.last_message_time)}
                               </p>
                             </div>
                           </CardContent>

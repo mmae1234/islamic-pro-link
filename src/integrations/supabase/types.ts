@@ -945,6 +945,10 @@ export type Database = {
         Args: { user_id_param: string }
         Returns: boolean
       }
+      consolidate_conversations: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       delete_user_account: {
         Args: { user_id_param: string }
         Returns: boolean
