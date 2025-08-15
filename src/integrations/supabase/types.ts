@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      abuse_reports: {
+        Row: {
+          accused_id: string
+          conversation_id: string | null
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          reporter_id: string
+        }
+        Insert: {
+          accused_id: string
+          conversation_id?: string | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: string
+          reporter_id: string
+        }
+        Update: {
+          accused_id?: string
+          conversation_id?: string | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          reporter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "abuse_reports_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_accounts: {
         Row: {
           address_line1: string | null
@@ -165,6 +203,33 @@ export type Database = {
           },
         ]
       }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          status: Database["public"]["Enums"]["conversation_status"]
+          updated_at: string
+          user_a: string
+          user_b: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["conversation_status"]
+          updated_at?: string
+          user_a: string
+          user_b: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["conversation_status"]
+          updated_at?: string
+          user_a?: string
+          user_b?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -308,6 +373,7 @@ export type Database = {
         Row: {
           archived_at: string | null
           content: string
+          conversation_id: string | null
           created_at: string
           deleted_at: string | null
           id: string
@@ -321,6 +387,7 @@ export type Database = {
         Insert: {
           archived_at?: string | null
           content: string
+          conversation_id?: string | null
           created_at?: string
           deleted_at?: string | null
           id?: string
@@ -334,6 +401,7 @@ export type Database = {
         Update: {
           archived_at?: string | null
           content?: string
+          conversation_id?: string | null
           created_at?: string
           deleted_at?: string | null
           id?: string
@@ -345,6 +413,13 @@ export type Database = {
           sender_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "messages_recipient_id_fkey"
             columns: ["recipient_id"]
@@ -569,6 +644,7 @@ export type Database = {
           first_name: string | null
           id: string
           last_name: string | null
+          messaging_privacy: Database["public"]["Enums"]["messaging_privacy"]
           role: string | null
           updated_at: string
           user_id: string
@@ -580,6 +656,7 @@ export type Database = {
           first_name?: string | null
           id?: string
           last_name?: string | null
+          messaging_privacy?: Database["public"]["Enums"]["messaging_privacy"]
           role?: string | null
           updated_at?: string
           user_id: string
@@ -591,6 +668,7 @@ export type Database = {
           first_name?: string | null
           id?: string
           last_name?: string | null
+          messaging_privacy?: Database["public"]["Enums"]["messaging_privacy"]
           role?: string | null
           updated_at?: string
           user_id?: string
@@ -618,6 +696,36 @@ export type Database = {
           id?: string
           source?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_message_limits: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          requests_declined: number
+          requests_sent: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          id?: string
+          requests_declined?: number
+          requests_sent?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          requests_declined?: number
+          requests_sent?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -833,6 +941,10 @@ export type Database = {
         Args: { user_id_param: string }
         Returns: boolean
       }
+      get_or_create_conversation: {
+        Args: { user_a_param: string; user_b_param: string }
+        Returns: string
+      }
       has_business_role_safe: {
         Args: {
           _business_id: string
@@ -852,7 +964,9 @@ export type Database = {
     }
     Enums: {
       business_member_role: "admin" | "editor" | "viewer"
+      conversation_status: "request" | "active" | "blocked"
       link_status: "pending" | "approved" | "rejected"
+      messaging_privacy: "open" | "mentorship_only" | "closed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -981,7 +1095,9 @@ export const Constants = {
   public: {
     Enums: {
       business_member_role: ["admin", "editor", "viewer"],
+      conversation_status: ["request", "active", "blocked"],
       link_status: ["pending", "approved", "rejected"],
+      messaging_privacy: ["open", "mentorship_only", "closed"],
     },
   },
 } as const
