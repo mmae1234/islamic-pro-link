@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Bell, MessageCircle, Users, Calendar } from 'lucide-react';
@@ -24,6 +25,18 @@ const NotificationCenter = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
+
+  useEffect(() => {
+    if (showNotifications && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right
+      });
+    }
+  }, [showNotifications]);
 
   useEffect(() => {
     if (user) {
@@ -193,6 +206,7 @@ const NotificationCenter = () => {
   return (
     <div className="relative">
       <Button
+        ref={buttonRef}
         variant="ghost"
         size="sm"
         className="relative"
@@ -209,12 +223,19 @@ const NotificationCenter = () => {
         )}
       </Button>
 
-      {showNotifications && (
-        <div className="fixed inset-0 z-[9998]" onClick={() => setShowNotifications(false)} />
+      {showNotifications && createPortal(
+        <div className="fixed inset-0 z-[9998]" onClick={() => setShowNotifications(false)} />,
+        document.body
       )}
       
-      {showNotifications && (
-        <Card className="absolute top-full right-0 mt-2 w-80 z-[9999] shadow-xl border-border bg-background">
+      {showNotifications && createPortal(
+        <Card 
+          className="fixed w-80 z-[9999] shadow-xl border-border bg-background"
+          style={{
+            top: `${dropdownPosition.top}px`,
+            right: `${dropdownPosition.right}px`
+          }}
+        >
           <CardContent className="p-0">
             <div className="p-4 border-b">
               <h3 className="font-semibold">Notifications</h3>
@@ -307,7 +328,8 @@ const NotificationCenter = () => {
               </div>
             )}
           </CardContent>
-        </Card>
+        </Card>,
+        document.body
       )}
     </div>
   );
