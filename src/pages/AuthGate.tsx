@@ -6,12 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle, Search, MessageCircle, Heart } from "lucide-react";
 import AuthForm from "@/components/AuthForm";
+import { RoleSelection, type AccountType } from "@/components/RoleSelection";
 
 const AuthGate = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const [activeTab, setActiveTab] = useState("signup");
+  const [signupStep, setSignupStep] = useState<"auth" | "role">("auth");
+  const [selectedRole, setSelectedRole] = useState<AccountType>("visitor");
   
   const redirect = searchParams.get('redirect') || '/dashboard';
 
@@ -24,6 +27,16 @@ const AuthGate = () => {
 
   const toggleMode = () => {
     setActiveTab(activeTab === "signup" ? "login" : "signup");
+    setSignupStep("auth"); // Reset signup step when switching tabs
+  };
+
+  const handleRoleSubmit = (role: AccountType) => {
+    setSelectedRole(role);
+    setSignupStep("role");
+  };
+
+  const handleBackToAuth = () => {
+    setSignupStep("auth");
   };
 
   if (loading) {
@@ -105,28 +118,36 @@ const AuthGate = () => {
                 </TabsList>
                 
                 <TabsContent value="signup" className="mt-6">
-                  <AuthForm mode="signup" onToggleMode={toggleMode} />
+                  {signupStep === "auth" ? (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-center">First, choose your account type</h3>
+                      <RoleSelection 
+                        defaultValue={selectedRole}
+                        onSubmit={handleRoleSubmit}
+                      />
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <AuthForm 
+                        mode="signup" 
+                        selectedRole={selectedRole}
+                        onToggleMode={toggleMode}
+                      />
+                      <Button 
+                        variant="outline" 
+                        onClick={handleBackToAuth}
+                        className="w-full"
+                      >
+                        ← Back to account type
+                      </Button>
+                    </div>
+                  )}
                 </TabsContent>
                 
                 <TabsContent value="login" className="mt-6">
                   <AuthForm mode="login" onToggleMode={toggleMode} />
                 </TabsContent>
               </Tabs>
-              
-              <div className="mt-6 text-center">
-                <p className="text-sm text-muted-foreground">
-                  {activeTab === "signup" 
-                    ? "Already have an account? " 
-                    : "Don't have an account? "}
-                  <Button 
-                    variant="link" 
-                    className="p-0 text-primary h-auto"
-                    onClick={toggleMode}
-                  >
-                    {activeTab === "signup" ? "Log in" : "Sign up"}
-                  </Button>
-                </p>
-              </div>
             </CardContent>
           </Card>
         </div>
