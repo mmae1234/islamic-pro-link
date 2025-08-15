@@ -2,9 +2,12 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Search, Users, MessageCircle, Award } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import heroImage from "@/assets/diverse-professionals-hero.jpg";
 
 const Hero = () => {
+  const { user } = useAuth();
+  
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary via-primary-glow to-primary">
       {/* iOS-specific viewport fixes */}
@@ -70,12 +73,21 @@ const Hero = () => {
                   Find Professionals
                 </Link>
               </Button>
-              <Button variant="elegant" size="lg" className="font-semibold hover:shadow-elegant w-full sm:w-auto text-sm sm:text-base" asChild>
-                <Link to="/login">
-                  <Users className="w-4 h-4 mr-2" />
-                  Join Community
-                </Link>
-              </Button>
+              {user ? (
+                <Button variant="elegant" size="lg" className="font-semibold hover:shadow-elegant w-full sm:w-auto text-sm sm:text-base" asChild>
+                  <Link to="/businesses">
+                    <Users className="w-4 h-4 mr-2" />
+                    Find Businesses
+                  </Link>
+                </Button>
+              ) : (
+                <Button variant="elegant" size="lg" className="font-semibold hover:shadow-elegant w-full sm:w-auto text-sm sm:text-base" asChild>
+                  <Link to="/login">
+                    <Users className="w-4 h-4 mr-2" />
+                    Join Community
+                  </Link>
+                </Button>
+              )}
             </div>
 
             {/* Stats - Responsive Grid */}

@@ -231,10 +231,7 @@ const Dashboard = () => {
 
       await loadUserData();
       
-      // Redirect to profile page
-      if (professionalProfile || (country && city && sector && occupation)) {
-        navigate(`/profile/${user.id}`);
-      }
+      // Don't redirect - let users stay on dashboard
     } catch (error) {
       console.error('Error saving profile:', error);
       toast({

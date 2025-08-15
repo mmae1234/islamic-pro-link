@@ -272,6 +272,27 @@ const Settings = () => {
     }
   };
 
+  const handleEmailChange = async (newEmail: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        email: newEmail
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Email update requested",
+        description: "Check both your old and new email addresses for confirmation links.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update email.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleDeleteAccount = async () => {
     if (!user || deleteConfirmation !== 'delete') return;
     
@@ -371,9 +392,19 @@ const Settings = () => {
                         disabled
                         className="bg-muted"
                       />
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Contact support to change your email address
-                      </p>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="mt-2"
+                        onClick={() => {
+                          const newEmail = prompt('Enter your new email address:');
+                          if (newEmail && newEmail !== user?.email) {
+                            handleEmailChange(newEmail);
+                          }
+                        }}
+                      >
+                        Change Email
+                      </Button>
                     </div>
                     
                     <div>
@@ -504,8 +535,56 @@ const Settings = () => {
                   <CardHeader>
                     <CardTitle>Profile Privacy</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">Additional privacy settings coming soon...</p>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="profile-visibility">Profile Visibility</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Control who can see your full profile information
+                        </p>
+                      </div>
+                      <Switch id="profile-visibility" />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="contact-info">Contact Information</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Show email and phone number to other users
+                        </p>
+                      </div>
+                      <Switch id="contact-info" />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="search-indexing">Search Engine Indexing</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Allow search engines to index your public profile
+                        </p>
+                      </div>
+                      <Switch id="search-indexing" />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="location-sharing">Location Sharing</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Share your city and country with other users
+                        </p>
+                      </div>
+                      <Switch id="location-sharing" defaultChecked />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="activity-status">Activity Status</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Show when you were last active on the platform
+                        </p>
+                      </div>
+                      <Switch id="activity-status" />
+                    </div>
                   </CardContent>
                 </Card>
               </div>
