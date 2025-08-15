@@ -110,7 +110,7 @@ const Businesses = () => {
       // Use contact-protected directory if authenticated, public if not
       const table = user ? 'business_directory_internal' : 'business_directory';
       console.log('Using table:', table, 'User:', user?.id);
-      let query = supabase.from(table).select('id, name, sector, bio, country, state, city, verified, logo_url');
+      let query = supabase.from(table).select('id, name, sector, bio, country, state, city, verified, logo_url, website');
 
       if (filters.searchTerm) {
         const t = filters.searchTerm;
