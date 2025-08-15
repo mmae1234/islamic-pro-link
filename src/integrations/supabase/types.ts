@@ -937,6 +937,14 @@ export type Database = {
       }
     }
     Functions: {
+      can_send_message: {
+        Args: { recipient_id_param: string; sender_id_param: string }
+        Returns: string
+      }
+      check_message_rate_limit: {
+        Args: { user_id_param: string }
+        Returns: boolean
+      }
       delete_user_account: {
         Args: { user_id_param: string }
         Returns: boolean
@@ -944,6 +952,10 @@ export type Database = {
       get_or_create_conversation: {
         Args: { user_a_param: string; user_b_param: string }
         Returns: string
+      }
+      has_active_mentorship: {
+        Args: { user_a_param: string; user_b_param: string }
+        Returns: boolean
       }
       has_business_role_safe: {
         Args: {

@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
@@ -24,6 +26,7 @@ import {
 } from "@/components/EnhancedFormDropdowns";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import MessagingPrivacySettings from "@/components/MessagingPrivacySettings";
 import { User, Briefcase, Users, X, Loader2, Shield, Bell, Settings as SettingsIcon, Mail, Phone } from "lucide-react";
 
 const SKILLS_OPTIONS = [
@@ -66,24 +69,6 @@ const Settings = () => {
     is_mentor: false,
     is_seeking_mentor: false,
     preferred_communication: ['in_app_messaging'] as string[]
-  });
-
-  const [accountSettings, setAccountSettings] = useState({
-    email: user?.email || '',
-    phone: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
-
-  const [notificationSettings, setNotificationSettings] = useState({
-    emailNotifications: true,
-    mentorshipUpdates: true,
-    messageNotifications: true,
-    newsAndUpdates: false
-  });
-
-  const [privacySettings, setPrivacySettings] = useState({
-    profileVisibility: 'public' // public, members_only, private
   });
 
   const [newSkill, setNewSkill] = useState('');
@@ -369,272 +354,72 @@ const Settings = () => {
             </TabsList>
 
             <TabsContent value="profile" className="space-y-8">
-            {!user && (
+              {!user && (
+                <Card className="shadow-soft">
+                  <CardHeader>
+                    <CardTitle>Get Started</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Create a professional account to build your profile and get discovered.
+                    </p>
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      <Button
+                        variant="default"
+                        onClick={() => window.location.assign('/signup?role=professional')}
+                      >
+                        Upgrade to Professional
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Basic Profile */}
               <Card className="shadow-soft">
                 <CardHeader>
-                  <CardTitle>Get Started</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="w-5 h-5" />
+                    Basic Profile
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Create a professional account to build your profile and get discovered.
-                  </p>
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    <Button
-                      variant="accent"
-                      onClick={() => window.location.assign('/signup?role=professional')}
-                    >
-                      Upgrade to Professional
-                    </Button>
+                <CardContent className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="first_name">First Name</Label>
+                      <Input
+                        id="first_name"
+                        value={formData.first_name}
+                        onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
+                        placeholder="Enter your first name"
+                        className={validationErrors.first_name ? 'border-destructive' : ''}
+                      />
+                      {validationErrors.first_name && (
+                        <p className="text-sm text-destructive mt-1">{validationErrors.first_name}</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="last_name">Last Name</Label>
+                      <Input
+                        id="last_name"
+                        value={formData.last_name}
+                        onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
+                        placeholder="Enter your last name"
+                        className={validationErrors.last_name ? 'border-destructive' : ''}
+                      />
+                      {validationErrors.last_name && (
+                        <p className="text-sm text-destructive mt-1">{validationErrors.last_name}</p>
+                      )}
+                    </div>
                   </div>
+
+                  <Button onClick={saveProfile} disabled={saving}>
+                    {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Save Profile
+                  </Button>
                 </CardContent>
               </Card>
-            )}
-
-            {/* Basic Profile */}
-            <Card className="shadow-soft">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="w-5 h-5" />
-                  Basic Profile
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="first_name">First Name</Label>
-                    <Input
-                      id="first_name"
-                      value={formData.first_name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
-                      placeholder="Enter your first name"
-                      className={validationErrors.first_name ? 'border-destructive' : ''}
-                    />
-                    {validationErrors.first_name && (
-                      <p className="text-sm text-destructive mt-1">{validationErrors.first_name}</p>
-                    )}
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="last_name">Last Name</Label>
-                    <Input
-                      id="last_name"
-                      value={formData.last_name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
-                      placeholder="Enter your last name"
-                      className={validationErrors.last_name ? 'border-destructive' : ''}
-                    />
-                    {validationErrors.last_name && (
-                      <p className="text-sm text-destructive mt-1">{validationErrors.last_name}</p>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Account Settings */}
-            <Card className="shadow-soft">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <SettingsIcon className="w-5 h-5" />
-                  Account Settings
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={accountSettings.email}
-                      onChange={(e) => setAccountSettings(prev => ({ ...prev, email: e.target.value }))}
-                      placeholder="your@email.com"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={accountSettings.phone}
-                      onChange={(e) => setAccountSettings(prev => ({ ...prev, phone: e.target.value }))}
-                      placeholder="+1 (555) 123-4567"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="newPassword">New Password</Label>
-                    <Input
-                      id="newPassword"
-                      type="password"
-                      value={accountSettings.newPassword}
-                      onChange={(e) => setAccountSettings(prev => ({ ...prev, newPassword: e.target.value }))}
-                      placeholder="Enter new password"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="confirmPassword">Confirm Password</Label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      value={accountSettings.confirmPassword}
-                      onChange={(e) => setAccountSettings(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                      placeholder="Confirm new password"
-                    />
-                  </div>
-                </div>
-
-                <Button variant="outline" size="sm">
-                  Update Account Settings
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Notification Settings */}
-            <Card className="shadow-soft">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bell className="w-5 h-5" />
-                  Notification Settings
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Mail className="w-4 h-4" />
-                      <Label htmlFor="emailNotifications">Email Notifications</Label>
-                    </div>
-                    <Checkbox
-                      id="emailNotifications"
-                      checked={notificationSettings.emailNotifications}
-                      onCheckedChange={(checked) => setNotificationSettings(prev => ({ ...prev, emailNotifications: checked as boolean }))}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Users className="w-4 h-4" />
-                      <Label htmlFor="mentorshipUpdates">Mentorship Updates</Label>
-                    </div>
-                    <Checkbox
-                      id="mentorshipUpdates"
-                      checked={notificationSettings.mentorshipUpdates}
-                      onCheckedChange={(checked) => setNotificationSettings(prev => ({ ...prev, mentorshipUpdates: checked as boolean }))}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Mail className="w-4 h-4" />
-                      <Label htmlFor="messageNotifications">Message Notifications</Label>
-                    </div>
-                    <Checkbox
-                      id="messageNotifications"
-                      checked={notificationSettings.messageNotifications}
-                      onCheckedChange={(checked) => setNotificationSettings(prev => ({ ...prev, messageNotifications: checked as boolean }))}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Bell className="w-4 h-4" />
-                      <Label htmlFor="newsAndUpdates">News & Updates</Label>
-                    </div>
-                    <Checkbox
-                      id="newsAndUpdates"
-                      checked={notificationSettings.newsAndUpdates}
-                      onCheckedChange={(checked) => setNotificationSettings(prev => ({ ...prev, newsAndUpdates: checked as boolean }))}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Privacy Settings */}
-            <Card className="shadow-soft">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="w-5 h-5" />
-                  Privacy Settings
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label>Profile Visibility</Label>
-                  <Select 
-                    value={privacySettings.profileVisibility} 
-                    onValueChange={(value) => setPrivacySettings(prev => ({ ...prev, profileVisibility: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="public">Public - Anyone can view</SelectItem>
-                      <SelectItem value="members_only">Members Only - Only registered users</SelectItem>
-                      <SelectItem value="private">Private - Only visible to you</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Actions */}
-            <Card className="shadow-soft">
-              <CardContent className="pt-6">
-                <div className="flex gap-4">
-                  <Button onClick={saveProfile} disabled={saving}>
-                    {saving ? 'Saving...' : 'Save Changes'}
-                  </Button>
-                  <Button 
-                    variant="destructive" 
-                    onClick={() => setShowDeleteDialog(true)}
-                  >
-                    Delete Account
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </main>
-
-      {/* Delete Account Dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Account</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your account and remove all your data from our servers.
-              <br /><br />
-              Type "delete" in the box below to confirm.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="my-4">
-            <Input
-              placeholder="Type 'delete' to confirm"
-              value={deleteConfirmation}
-              onChange={(e) => setDeleteConfirmation(e.target.value)}
-            />
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteAccount}
-              disabled={deleteConfirmation !== 'delete' || deleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleting ? 'Deleting...' : 'Delete Account'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <Footer />
             </TabsContent>
 
             <TabsContent value="account">
@@ -675,6 +460,41 @@ const Settings = () => {
             </TabsContent>
           </Tabs>
         </div>
+      </main>
+
+      <Footer />
+
+      {/* Delete Account Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your account and remove all your data from our servers.
+              <br /><br />
+              Type "delete" in the box below to confirm.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="my-4">
+            <Input
+              placeholder="Type 'delete' to confirm"
+              value={deleteConfirmation}
+              onChange={(e) => setDeleteConfirmation(e.target.value)}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={deleteConfirmation !== 'delete' || deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? 'Deleting...' : 'Delete Account'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 };
 
