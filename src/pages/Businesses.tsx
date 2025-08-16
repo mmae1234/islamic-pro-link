@@ -122,7 +122,7 @@ const Businesses = () => {
       if (filters.sector) query = query.eq('sector', filters.sector);
       if (filters.verifiedOnly) query = query.eq('verified', true);
 
-      query = query.order('verified', { ascending: false }).order('created_at', { ascending: false }).limit(50);
+      query = query.order('verified', { ascending: false }).limit(50);
 
       const { data, error } = await query;
       if (error) {
@@ -297,9 +297,11 @@ const Businesses = () => {
                     const isFav = favoriteBusinessIds.includes(b.id);
                     return (
                       <div className="actions flex flex-wrap items-center justify-end gap-3 md:gap-4 mt-2">
-                        <Button variant={isFav ? "default" : "outline"} onClick={() => handleFavorite(b.id, b.name)} aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}>
-                          <Heart className={`w-4 h-4 mr-2 ${isFav ? 'fill-current' : ''}`} /> {isFav ? 'Favorited' : 'Favorite'}
-                        </Button>
+                        {user && (
+                          <Button variant={isFav ? "default" : "outline"} onClick={() => handleFavorite(b.id, b.name)} aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}>
+                            <Heart className={`w-4 h-4 mr-2 ${isFav ? 'fill-current' : ''}`} /> {isFav ? 'Favorited' : 'Favorite'}
+                          </Button>
+                        )}
                         <Button variant="outline" onClick={() => openMessageDialog(b)} aria-label="Message business">
                           <MessageCircle className="w-4 h-4 mr-2" /> Message
                         </Button>
