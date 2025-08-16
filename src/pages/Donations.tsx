@@ -3,7 +3,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, Target, Users, Zap } from "lucide-react";
+import { Heart, Target, Users, Zap, Download } from "lucide-react";
+import donationCampaignImage from "@/assets/donation-campaign-hero.jpg";
 
 const Donations = () => {
   useEffect(() => {
@@ -17,6 +18,28 @@ const Donations = () => {
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-4xl mx-auto">
+          {/* Campaign Image */}
+          <div className="text-center mb-8">
+            <img 
+              src={donationCampaignImage} 
+              alt="Muslim Professionals Donation Campaign" 
+              className="w-full max-w-3xl mx-auto rounded-lg shadow-lg mb-4"
+            />
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                const link = document.createElement('a');
+                link.href = donationCampaignImage;
+                link.download = 'muslim-professionals-donation-campaign.jpg';
+                link.click();
+              }}
+              className="inline-flex items-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Download Campaign Image
+            </Button>
+          </div>
+
           {/* Header Section */}
           <div className="text-center mb-12">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
