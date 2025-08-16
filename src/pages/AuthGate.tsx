@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle, Search, MessageCircle, Heart } from "lucide-react";
+import { CheckCircle, Search, MessageCircle, Heart, ArrowLeft } from "lucide-react";
 import AuthForm from "@/components/AuthForm";
 import { RoleSelection, type AccountType } from "@/components/RoleSelection";
 
@@ -49,6 +49,17 @@ const AuthGate = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+      {/* Back Button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => navigate(-1)}
+        className="absolute top-4 left-4 flex items-center gap-2"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back
+      </Button>
+      
       <div className="w-full max-w-4xl grid lg:grid-cols-2 gap-8 items-center">
         
         {/* Left side - Benefits */}
