@@ -139,6 +139,15 @@ const Businesses = () => {
     }
   };
   const handleFavorite = (id: string, name?: string | null) => {
+    if (!user) {
+      toast({ 
+        title: 'Login required', 
+        description: 'Please log in to save businesses to your favorites.',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
     try {
       const key = 'favorite_business_ids';
       const arr = [...favoriteBusinessIds];
