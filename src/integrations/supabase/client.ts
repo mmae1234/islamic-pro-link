@@ -8,66 +8,8 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-// iOS WebKit-compatible storage with comprehensive fallbacks
-const getStorage = () => {
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  
-  if (isIOS) {
-    console.log('iOS detected: configuring WebKit-compatible storage');
-  }
-  
-  try {
-    // Test localStorage availability (iOS private mode blocks this)
-    const testKey = '__supabase_storage_test__';
-    localStorage.setItem(testKey, 'test');
-    const testValue = localStorage.getItem(testKey);
-    localStorage.removeItem(testKey);
-    
-    if (testValue === 'test') {
-      console.log('localStorage available');
-      return localStorage;
-    }
-    throw new Error('localStorage test failed');
-  } catch (e) {
-    console.log('localStorage unavailable, trying sessionStorage');
-    
-    try {
-      const testKey = '__supabase_session_test__';
-      sessionStorage.setItem(testKey, 'test');
-      const testValue = sessionStorage.getItem(testKey);
-      sessionStorage.removeItem(testKey);
-      
-      if (testValue === 'test') {
-        console.log('sessionStorage available');
-        return sessionStorage;
-      }
-      throw new Error('sessionStorage test failed');
-    } catch (e2) {
-      console.log('All storage unavailable, using memory fallback');
-      // Memory-only fallback for iOS private mode
-      const memoryStorage = new Map();
-      return {
-        getItem: (key: string) => memoryStorage.get(key) || null,
-        setItem: (key: string, value: string) => {
-          memoryStorage.set(key, value);
-          return undefined; // Return void as expected
-        },
-        removeItem: (key: string) => {
-          memoryStorage.delete(key);
-          return undefined; // Return void as expected
-        },
-        clear: () => memoryStorage.clear(),
-        get length() { return memoryStorage.size; },
-        key: (index: number) => Array.from(memoryStorage.keys())[index] || null
-      };
-    }
-  }
-};
-
-// Create client without strict typing to bypass empty Database type
-export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: getStorage(),
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
