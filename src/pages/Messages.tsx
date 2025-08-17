@@ -306,13 +306,18 @@ const Messages = () => {
 
   const deleteConversation = async (partnerId: string) => {
     try {
+      console.log('Deleting conversation with partner:', partnerId);
+      
       // First delete the conversation record
       const { error: conversationError } = await supabase
         .from('conversations')
         .delete()
         .or(`and(user_a.eq.${user?.id},user_b.eq.${partnerId}),and(user_a.eq.${partnerId},user_b.eq.${user?.id})`);
       
-      if (conversationError) throw conversationError;
+      if (conversationError) {
+        console.error('Error deleting conversation:', conversationError);
+        throw conversationError;
+      }
 
       // Then mark all messages in this conversation as deleted
       const { error: messageError } = await supabase
@@ -320,14 +325,20 @@ const Messages = () => {
         .update({ deleted_at: new Date().toISOString() })
         .or(`and(sender_id.eq.${user?.id},recipient_id.eq.${partnerId}),and(sender_id.eq.${partnerId},recipient_id.eq.${user?.id})`);
       
-      if (messageError) throw messageError;
+      if (messageError) {
+        console.error('Error deleting messages:', messageError);
+        throw messageError;
+      }
       
       toast({
         title: "Conversation deleted",
         description: "The entire conversation has been deleted.",
       });
       
-      // Refresh the messages list
+      // Remove the conversation from the local state immediately for better UX
+      setConversations(prev => prev.filter(conv => conv.partner_id !== partnerId));
+      
+      // Then refresh all messages to ensure consistency
       await loadMessages();
     } catch (error: any) {
       console.error('Delete conversation error:', error);
