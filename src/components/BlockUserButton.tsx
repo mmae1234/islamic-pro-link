@@ -30,6 +30,21 @@ const BlockUserButton = ({
 
     setLoading(true);
     try {
+      // First check if the target user has a profile
+      const { data: targetProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('user_id', targetUserId)
+        .single();
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        throw new Error('Error checking user profile');
+      }
+
+      if (!targetProfile) {
+        throw new Error('Cannot block this user - profile not found');
+      }
+
       const { error } = await supabase
         .from('blocked_users')
         .insert({
@@ -53,7 +68,7 @@ const BlockUserButton = ({
       } else {
         toast({
           title: "Error blocking user",
-          description: error.message,
+          description: error.message || "Unable to block this user",
           variant: "destructive",
         });
       }
@@ -79,7 +94,7 @@ const BlockUserButton = ({
           Block User
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="z-50">
+      <AlertDialogContent className="z-[9999] max-w-md">
         <AlertDialogHeader>
           <AlertDialogTitle>Block {targetUserName}?</AlertDialogTitle>
           <AlertDialogDescription>
