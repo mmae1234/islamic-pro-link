@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Phone, Globe, Building2, Users, ExternalLink, ArrowRight, Heart, MessageCircle } from "lucide-react";
+import BlockUserButton from "@/components/BlockUserButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -262,11 +263,21 @@ const handleRequestLink = async () => {
             </div>
 <div className="flex flex-wrap gap-2">
   {user && (
-    <Button variant="accent" asChild>
-      <Link to="/messages" aria-label="Message this business">
-        <MessageCircle className="w-4 h-4 mr-2" /> Message
-      </Link>
-    </Button>
+    <>
+      <Button variant="accent" asChild>
+        <Link to="/messages" aria-label="Message this business">
+          <MessageCircle className="w-4 h-4 mr-2" /> Message
+        </Link>
+      </Button>
+      {user.id !== business.owner_id && (
+        <BlockUserButton 
+          targetUserId={business.owner_id} 
+          targetUserName={business.name || 'this business'} 
+          variant="outline"
+          size="sm"
+        />
+      )}
+    </>
   )}
   {business.website && (
     <Button variant="accent" asChild>

@@ -68,7 +68,7 @@ const Hero = () => {
 
             <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 justify-center lg:justify-start pt-2">
               <Button variant="accent" size="lg" className="font-semibold hover:shadow-glow w-full sm:w-auto text-sm sm:text-base" asChild>
-                <Link to="/search">
+                <Link to={user ? "/search" : "/auth-gate"}>
                   <Search className="w-4 h-4 mr-2" />
                   Find Professionals
                 </Link>

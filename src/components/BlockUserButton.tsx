@@ -79,7 +79,7 @@ const BlockUserButton = ({
           Block User
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className="z-50">
         <AlertDialogHeader>
           <AlertDialogTitle>Block {targetUserName}?</AlertDialogTitle>
           <AlertDialogDescription>
@@ -87,7 +87,7 @@ const BlockUserButton = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
           <AlertDialogAction 
             onClick={handleBlock}
             disabled={loading}
