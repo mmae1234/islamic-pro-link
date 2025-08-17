@@ -134,13 +134,13 @@ useEffect(() => {
             if (isFirstLogin) {
               navigate('/edit-profile', { replace: true });
             } else {
-              navigate('/', { replace: true });
+              navigate('/dashboard', { replace: true });
             }
           } else {
-            navigate('/', { replace: true });
+            navigate('/dashboard', { replace: true });
           }
         } catch {
-          navigate('/', { replace: true });
+          navigate('/dashboard', { replace: true });
         }
       }
     } catch (error: any) {
