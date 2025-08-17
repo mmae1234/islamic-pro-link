@@ -304,6 +304,29 @@ const Messages = () => {
     }
   };
 
+  const deleteConversation = async (partnerId: string) => {
+    try {
+      // Mark all messages in this conversation as deleted
+      await supabase
+        .from('messages')
+        .update({ deleted_at: new Date().toISOString() })
+        .or(`and(sender_id.eq.${user?.id},recipient_id.eq.${partnerId}),and(sender_id.eq.${partnerId},recipient_id.eq.${user?.id})`);
+      
+      toast({
+        title: "Conversation deleted",
+        description: "The conversation has been moved to archived.",
+      });
+      
+      loadMessages();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete conversation.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -411,19 +434,18 @@ const Messages = () => {
                   ) : (
                     <div className="space-y-4">
                       {conversations.map((conversation) => (
-                        <Card 
-                          key={conversation.partner_id} 
-                          className={`shadow-soft cursor-pointer ${conversation.unread_count > 0 ? 'border-primary/50' : ''}`}
-                          onClick={() => {
-                            setSelectedConversation({
-                              partnerId: conversation.partner_id, 
-                              partnerName: conversation.partner_name
-                            });
-                          }}
-                        >
+        <Card 
+          key={conversation.partner_id} 
+          className={`shadow-soft ${conversation.unread_count > 0 ? 'border-primary/50' : ''}`}
+        >
                           <CardContent className="pt-6">
                             <div className="flex items-start justify-between">
-                              <div className="flex items-start gap-3">
+                              <div className="flex items-start gap-3 flex-1 cursor-pointer" onClick={() => {
+                                setSelectedConversation({
+                                  partnerId: conversation.partner_id, 
+                                  partnerName: conversation.partner_name
+                                });
+                              }}>
                                 <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center">
                                   <span className="text-primary-foreground font-semibold text-sm">
                                     {conversation.partner_name.split(' ').map(n => n[0]).join('') || 'U'}
@@ -443,9 +465,22 @@ const Messages = () => {
                                   </p>
                                 </div>
                               </div>
-                              <p className="text-xs text-muted-foreground">
-                                {formatTime(conversation.last_message_time)}
-                              </p>
+                              <div className="flex items-center gap-2">
+                                <p className="text-xs text-muted-foreground">
+                                  {formatTime(conversation.last_message_time)}
+                                </p>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteConversation(conversation.partner_id);
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
