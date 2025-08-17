@@ -1,247 +1,287 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { ImageUpload } from "@/components/ImageUpload";
-import { 
-  CountrySelect, 
-  StateProvinceSelect, 
-  CitySelect,
-  UniversitySelect, 
-  SectorSelect, 
-  OccupationSelect, 
-  AvailabilitySelect 
-} from "@/components/EnhancedFormDropdowns";
-import { SearchableMultiSelect } from "@/components/SearchableMultiSelect";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Loader2, Save, User, Briefcase, Users, X, Globe } from "lucide-react";
+import { 
+  Loader2, 
+  User, 
+  Briefcase, 
+  Users, 
+  MessageCircle, 
+  Building2, 
+  Search, 
+  Settings, 
+  Eye,
+  Star,
+  CheckCircle,
+  Clock,
+  ArrowRight,
+  Bell
+} from "lucide-react";
+
+interface DashboardStats {
+  profileViews: number;
+  favoritesCount: number;
+  mentorshipRequests: number;
+  unreadMessages: number;
+}
+
+interface NotificationPreview {
+  id: string;
+  type: 'message' | 'mentorship_request';
+  title: string;
+  description: string;
+  created_at: string;
+}
 
 const Dashboard = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const [professionalProfile, setProfessionalProfile] = useState<any>(null);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-
-  // Form states
-  const [fullName, setFullName] = useState("");
-  const [role, setRole] = useState("professional");
-
-  // Redirect businesses to their dedicated dashboard
-  useEffect(() => {
-    if (role === 'business') {
-      navigate('/dashboard/business');
-    }
-  }, [role, navigate]);
-
-  const [gender, setGender] = useState("");
-  const [country, setCountry] = useState("");
-  const [countryCode, setCountryCode] = useState("");
-  const [stateProvince, setStateProvince] = useState("");
-  const [stateCode, setStateCode] = useState("");
-  const [city, setCity] = useState("");
-
-  // Reset dependent fields when parent selections change
-  useEffect(() => {
-    if (stateProvince) {
-      setCity(""); // Reset city when state/province changes
-    }
-  }, [stateProvince]);
-
-  useEffect(() => {
-    if (country) {
-      setStateProvince(""); // Reset state/province when country changes
-      setCity(""); // Reset city when country changes
-    }
-  }, [country]);
-
-  const [sector, setSector] = useState("");
-  
-  // Reset occupation when sector changes
-  useEffect(() => {
-    if (sector) {
-      setOccupation(""); // Reset occupation when sector changes
-    }
-  }, [sector]);
-  const [occupation, setOccupation] = useState("");
-  const [university, setUniversity] = useState("");
-  const [educationLevel, setEducationLevel] = useState("");
-  const [educationCountry, setEducationCountry] = useState("");
-  const [languages, setLanguages] = useState<string[]>([]);
-  const [bio, setBio] = useState("");
-  const [experienceYears, setExperienceYears] = useState("");
-  const [skills, setSkills] = useState<string[]>([]);
-  const [availability, setAvailability] = useState("");
-  const [isMentor, setIsMentor] = useState(false);
-  const [isSeekingMentor, setIsSeekingMentor] = useState(false);
-  const [preferredCommunication, setPreferredCommunication] = useState<string[]>(["in_app_messaging"]);
-  const [profileViews, setProfileViews] = useState(0);
+  const [businessAccount, setBusinessAccount] = useState<any>(null);
+  const [stats, setStats] = useState<DashboardStats>({
+    profileViews: 0,
+    favoritesCount: 0,
+    mentorshipRequests: 0,
+    unreadMessages: 0
+  });
+  const [notifications, setNotifications] = useState<NotificationPreview[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
+  const [profileCompletion, setProfileCompletion] = useState(0);
 
   useEffect(() => {
     if (user) {
-      loadUserData();
+      loadDashboardData();
     }
   }, [user]);
 
-  const loadUserData = async () => {
+  const loadDashboardData = async () => {
+    if (!user) return;
+    
     try {
-      // Load profile
-      const { data: profileData, error: profileError } = await supabase
+      // Load basic profile
+      const { data: profileData } = await supabase
         .from('profiles')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .maybeSingle();
 
-      if (profileError && profileError.code !== 'PGRST116') {
-        console.error('Error loading profile:', profileError);
-      } else if (profileData) {
-        setProfile(profileData);
-        setFullName(`${profileData.first_name || ''} ${profileData.last_name || ''}`.trim());
-        setRole(profileData.role || 'professional');
+      setProfile(profileData);
+
+      // Redirect business users to business dashboard
+      if (profileData?.role === 'business') {
+        navigate('/dashboard/business');
+        return;
       }
 
       // Load professional profile
-      const { data: professionalData, error: professionalError } = await supabase
+      const { data: professionalData } = await supabase
         .from('professional_profiles')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .maybeSingle();
 
-      if (professionalError && professionalError.code !== 'PGRST116') {
-        console.error('Error loading professional profile:', professionalError);
-      } else if (professionalData) {
-        setProfessionalProfile(professionalData);
-        setGender(professionalData.gender || '');
-        setCountry(professionalData.country || '');
-        setStateProvince(professionalData.state_province || '');
-        setCity(professionalData.city || '');
-        setSector(professionalData.sector || '');
-        setOccupation(professionalData.occupation || '');
-        setUniversity(professionalData.university || '');
-        setBio(professionalData.bio || '');
-        setExperienceYears(professionalData.experience_years?.toString() || '');
-        setSkills(professionalData.skills || []);
-        setLanguages(professionalData.languages || []);
-        setAvailability(professionalData.availability || '');
-        setIsMentor(professionalData.is_mentor || false);
-        setIsSeekingMentor(professionalData.is_seeking_mentor || false);
-        setPreferredCommunication(professionalData.preferred_communication || ["in_app_messaging"]);
-        setAvatarUrl(professionalData.avatar_url);
-      }
+      setProfessionalProfile(professionalData);
 
-      if (profileData) {
-        setAvatarUrl(profileData.avatar_url || avatarUrl);
-      }
+      // Load business account if exists
+      const { data: businessData } = await supabase
+        .from('business_accounts')
+        .select('*')
+        .eq('owner_id', user.id)
+        .maybeSingle();
 
-      // Load profile views count
-      const { data: viewsData, error: viewsError } = await supabase
-        .from('profile_views')
-        .select('id')
-        .eq('viewed_profile_id', user?.id);
+      setBusinessAccount(businessData);
 
-      if (!viewsError && viewsData) {
-        setProfileViews(viewsData.length);
-      }
+      // Load stats in parallel
+      const [viewsRes, favoritesRes, requestsRes, messagesRes] = await Promise.all([
+        supabase.from('profile_views').select('id').eq('viewed_profile_id', user.id),
+        supabase.from('favorites').select('id').eq('user_id', user.id),
+        supabase.from('mentorship_requests').select('id').eq('mentor_id', user.id).eq('status', 'pending'),
+        supabase.from('messages').select('id').eq('recipient_id', user.id).is('read_at', null)
+      ]);
+
+      setStats({
+        profileViews: viewsRes.data?.length || 0,
+        favoritesCount: favoritesRes.data?.length || 0,
+        mentorshipRequests: requestsRes.data?.length || 0,
+        unreadMessages: messagesRes.data?.length || 0
+      });
+
+      // Load recent notifications (messages + mentorship requests)
+      await loadNotifications();
+
+      // Load pending mentorship requests for quick actions
+      await loadPendingRequests();
+
+      // Calculate profile completion
+      calculateProfileCompletion(profileData, professionalData);
+      
     } catch (error) {
-      console.error('Error loading user data:', error);
+      console.error('Error loading dashboard data:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const saveProfile = async () => {
+  const loadNotifications = async () => {
     if (!user) return;
-    
-    setSaving(true);
+
+    const notifications: NotificationPreview[] = [];
+
+    // Load recent messages
+    const { data: messages } = await supabase
+      .from('messages')
+      .select(`
+        id, created_at, sender_id,
+        profiles!messages_sender_id_fkey(first_name, last_name)
+      `)
+      .eq('recipient_id', user.id)
+      .is('read_at', null)
+      .order('created_at', { ascending: false })
+      .limit(3);
+
+    messages?.forEach(msg => {
+      const profileData = Array.isArray(msg.profiles) ? msg.profiles[0] : msg.profiles;
+      const senderName = profileData 
+        ? `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim() 
+        : 'Someone';
+      
+      notifications.push({
+        id: `msg-${msg.id}`,
+        type: 'message',
+        title: 'New Message',
+        description: `${senderName} sent you a message`,
+        created_at: msg.created_at
+      });
+    });
+
+    // Load recent mentorship requests
+    const { data: requests } = await supabase
+      .from('mentorship_requests')
+      .select(`
+        id, created_at, mentee_id,
+        profiles!mentorship_requests_mentee_id_fkey(first_name, last_name)
+      `)
+      .eq('mentor_id', user.id)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .limit(2);
+
+    requests?.forEach(req => {
+      const profileData = Array.isArray(req.profiles) ? req.profiles[0] : req.profiles;
+      const requesterName = profileData 
+        ? `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim() 
+        : 'Someone';
+      
+      notifications.push({
+        id: `req-${req.id}`,
+        type: 'mentorship_request',
+        title: 'Mentorship Request',
+        description: `${requesterName} wants you as a mentor`,
+        created_at: req.created_at
+      });
+    });
+
+    // Sort by creation date and limit to 5
+    notifications.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    setNotifications(notifications.slice(0, 5));
+  };
+
+  const loadPendingRequests = async () => {
+    if (!user) return;
+
+    const { data: requests } = await supabase
+      .from('mentorship_requests')
+      .select(`
+        id, message, created_at, mentee_id,
+        profiles!mentorship_requests_mentee_id_fkey(first_name, last_name, avatar_url)
+      `)
+      .eq('mentor_id', user.id)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .limit(3);
+
+    setPendingRequests(requests || []);
+  };
+
+  const calculateProfileCompletion = (profileData: any, professionalData: any) => {
+    const fields = [
+      profileData?.first_name,
+      profileData?.last_name,
+      professionalData?.bio,
+      professionalData?.country,
+      professionalData?.city,
+      professionalData?.sector,
+      professionalData?.occupation,
+      professionalData?.skills?.length > 0,
+      professionalData?.experience_years
+    ];
+
+    const filledFields = fields.filter(field => field).length;
+    const completion = Math.round((filledFields / fields.length) * 100);
+    setProfileCompletion(completion);
+  };
+
+  const handleMentorshipAction = async (requestId: string, action: 'accept' | 'decline') => {
     try {
-      // Split full name into first and last names
-      const names = fullName.trim().split(' ');
-      const firstName = names[0] || '';
-      const lastName = names.slice(1).join(' ') || '';
+      const { error } = await supabase
+        .from('mentorship_requests')
+        .update({ status: action === 'accept' ? 'accepted' : 'declined' })
+        .eq('id', requestId);
 
-      // Save basic profile
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .upsert({
-            user_id: user.id,
-            first_name: firstName,
-            last_name: lastName,
-            role: role as any,
-            avatar_url: avatarUrl,
-          }, {
-            onConflict: 'user_id'
-          });
-
-      if (profileError) throw profileError;
-
-      // Save professional profile if fields are filled or if it exists (to update mentorship settings)
-      if (country && city && sector && occupation || professionalProfile) {
-        const { error: professionalError } = await supabase
-          .from('professional_profiles')
-          .upsert({
-            user_id: user.id,
-            first_name: firstName,
-            last_name: lastName,
-            gender: gender || null,
-            country: country || professionalProfile?.country,
-            state_province: stateProvince || professionalProfile?.state_province,
-            city: city || professionalProfile?.city,
-            sector: sector || professionalProfile?.sector,
-            occupation: occupation || professionalProfile?.occupation,
-            university: university || professionalProfile?.university,
-            bio: bio || professionalProfile?.bio,
-            experience_years: experienceYears ? parseInt(experienceYears) : professionalProfile?.experience_years,
-            skills: skills.length > 0 ? skills : professionalProfile?.skills,
-            languages: languages.length > 0 ? languages : professionalProfile?.languages,
-            availability: availability || professionalProfile?.availability,
-            is_mentor: isMentor,
-            is_seeking_mentor: isSeekingMentor,
-            preferred_communication: preferredCommunication,
-            avatar_url: avatarUrl,
-          }, {
-            onConflict: 'user_id'
-          });
-
-        if (professionalError) throw professionalError;
-      }
+      if (error) throw error;
 
       toast({
-        title: "Profile saved!",
-        description: "Your profile has been updated successfully.",
+        title: `Request ${action}ed`,
+        description: `Mentorship request has been ${action}ed.`,
       });
 
-      await loadUserData();
-      
-      // Don't redirect - let users stay on dashboard
+      loadPendingRequests();
+      loadNotifications();
     } catch (error) {
-      console.error('Error saving profile:', error);
       toast({
         title: "Error",
-        description: "Failed to save profile. Please try again.",
+        description: "Failed to update request.",
         variant: "destructive",
       });
-    } finally {
-      setSaving(false);
     }
+  };
+
+  const getUserDisplayName = () => {
+    if (profile?.first_name || profile?.last_name) {
+      return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+    }
+    return user?.email?.split('@')[0] || 'User';
+  };
+
+  const getAvatarUrl = () => {
+    return profile?.avatar_url || professionalProfile?.avatar_url;
+  };
+
+  const formatTimeAgo = (timestamp: string) => {
+    const now = new Date();
+    const time = new Date(timestamp);
+    const diffInMinutes = Math.floor((now.getTime() - time.getTime()) / (1000 * 60));
+
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays}d ago`;
   };
 
   if (loading) {
@@ -260,444 +300,247 @@ const Dashboard = () => {
       <Header />
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Dashboard
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Welcome back! Manage your profile and connect with other professionals.
-            </p>
-          </div>
+        <div className="max-w-6xl mx-auto space-y-8">
+          
+          {/* Welcome Section */}
+          <Card className="shadow-soft">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <Avatar className="w-16 h-16">
+                  <AvatarImage src={getAvatarUrl()} alt={getUserDisplayName()} />
+                  <AvatarFallback className="text-lg">
+                    {getUserDisplayName().split(' ').map(n => n[0]).join('').toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h1 className="text-2xl font-bold text-foreground">
+                    Welcome back, {getUserDisplayName()}!
+                  </h1>
+                  <p className="text-muted-foreground">
+                    {profile?.role === 'professional' ? 'Professional' : 'Visitor'} • {user?.email}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Profile Forms */}
+            
+            {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
-              {/* Basic Profile */}
+              
+              {/* Quick Actions */}
               <Card className="shadow-soft">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <User className="w-5 h-5" />
-                    Basic Profile
+                    <Settings className="w-5 h-5" />
+                    Quick Actions
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="fullName">Full Name</Label>
-                    <Input
-                      id="fullName"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Enter your full name"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label>Role</Label>
-                    <Select value={role} onValueChange={setRole}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="visitor">Visitor (Service Seeker)</SelectItem>
-                        <SelectItem value="professional">Professional</SelectItem>
-                      </SelectContent>
-                    </Select>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Button asChild variant="outline" className="h-20 flex-col gap-2">
+                      <Link to="/profile/edit">
+                        <User className="w-5 h-5" />
+                        <span className="text-sm">Edit Profile</span>
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-20 flex-col gap-2">
+                      <Link to="/search">
+                        <Search className="w-5 h-5" />
+                        <span className="text-sm">Find Professionals</span>
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-20 flex-col gap-2">
+                      <Link to="/businesses">
+                        <Building2 className="w-5 h-5" />
+                        <span className="text-sm">Find Businesses</span>
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" className="h-20 flex-col gap-2">
+                      <Link to="/messages">
+                        <MessageCircle className="w-5 h-5" />
+                        <span className="text-sm">Messages</span>
+                      </Link>
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Professional Profile */}
+              {/* Notifications Preview */}
               <Card className="shadow-soft">
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
-                    <Briefcase className="w-5 h-5" />
-                    Professional Information
+                    <Bell className="w-5 h-5" />
+                    Recent Activity
                   </CardTitle>
+                  <Button asChild variant="ghost" size="sm">
+                    <Link to="/messages" className="flex items-center gap-1">
+                      View all <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </Button>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>Gender</Label>
-                      <Select value={gender} onValueChange={setGender}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select gender" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="male">Male</SelectItem>
-                          <SelectItem value="female">Female</SelectItem>
-                          <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-                        </SelectContent>
-                      </Select>
+                <CardContent>
+                  {notifications.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <p>No recent notifications</p>
                     </div>
-                    
-                    <div>
-                      <Label>Country</Label>
-                      <CountrySelect 
-                        value={country} 
-                        onValueChange={(countryName) => {
-                          setCountry(countryName);
-                          // Reset dependent fields
-                          setStateProvince("");
-                          setCity("");
-                        }} 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>State/Province</Label>
-                      <StateProvinceSelect 
-                        country={country}
-                        value={stateProvince} 
-                        onValueChange={(value) => {
-                          setStateProvince(value);
-                          // Reset city when state changes
-                          setCity("");
-                        }}
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label>City</Label>
-                      <CitySelect 
-                        country={country}
-                        stateProvince={stateProvince}
-                        value={city} 
-                        onValueChange={setCity}
-                      />
-                    </div>
-                  </div>
-
-                   <div className="grid md:grid-cols-2 gap-4">
-                     <div>
-                       <Label>Education Country</Label>
-                       <CountrySelect 
-                         value={educationCountry} 
-                         onValueChange={setEducationCountry} 
-                       />
-                     </div>
-                     
-                     <div>
-                       <Label>Education Level</Label>
-                       <Select value={educationLevel} onValueChange={setEducationLevel}>
-                         <SelectTrigger>
-                           <SelectValue placeholder="Select education level" />
-                         </SelectTrigger>
-                         <SelectContent>
-                           <SelectItem value="high_school">High School</SelectItem>
-                           <SelectItem value="associate">Associate Degree</SelectItem>
-                           <SelectItem value="bachelor">Bachelor's Degree</SelectItem>
-                           <SelectItem value="master">Master's Degree</SelectItem>
-                           <SelectItem value="doctorate">Doctorate</SelectItem>
-                           <SelectItem value="professional">Professional Degree</SelectItem>
-                           <SelectItem value="certificate">Certificate</SelectItem>
-                         </SelectContent>
-                       </Select>
-                     </div>
-                   </div>
-
-                   <div>
-                     <Label>University/School</Label>
-                     <UniversitySelect value={university} onValueChange={setUniversity} />
-                   </div>
-
-                   <div>
-                     <Label>Languages (Press Enter to add)</Label>
-                     <div className="space-y-2">
-                       <Input
-                         placeholder="e.g., English, Arabic, French"
-                         onKeyPress={(e) => {
-                           if (e.key === 'Enter') {
-                             e.preventDefault();
-                             const value = e.currentTarget.value.trim();
-                             if (value && !languages.includes(value)) {
-                               setLanguages([...languages, value]);
-                               e.currentTarget.value = '';
-                             }
-                           }
-                         }}
-                       />
-                       {languages.length > 0 && (
-                         <div className="flex flex-wrap gap-2">
-                           {languages.map((language, index) => (
-                             <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                               {language}
-                               <X 
-                                 className="w-3 h-3 cursor-pointer" 
-                                 onClick={() => setLanguages(languages.filter((_, i) => i !== index))}
-                               />
-                             </Badge>
-                           ))}
-                         </div>
-                       )}
-                     </div>
-                   </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>Sector</Label>
-                      <SectorSelect value={sector} onValueChange={setSector} />
-                    </div>
-                    
-                    <div>
-                      <Label>Occupation</Label>
-                      <OccupationSelect 
-                        value={occupation} 
-                        onValueChange={setOccupation}
-                        sector={sector}
-                        disabled={!sector}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="experienceYears">Years of Experience</Label>
-                    <Input
-                      id="experienceYears"
-                      type="number"
-                      min="0"
-                      value={experienceYears}
-                      onChange={(e) => setExperienceYears(e.target.value)}
-                      placeholder="Enter years of experience"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="bio">Bio</Label>
-                    <Textarea
-                      id="bio"
-                      value={bio}
-                      onChange={(e) => setBio(e.target.value)}
-                      placeholder="Tell us about yourself and your professional background..."
-                      rows={4}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Mentorship Preferences - Only show for professionals */}
-              {role === 'professional' && (
-                <Card className="shadow-soft">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="w-5 h-5" />
-                      Mentorship & Skills
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                  {/* Skills */}
-                  <div>
-                    <Label htmlFor="skills">Skills (Press Enter to add)</Label>
-                    <div className="space-y-2">
-                      <Input
-                        id="skills"
-                        placeholder="e.g., JavaScript, Leadership, Marketing"
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            const value = e.currentTarget.value.trim();
-                            if (value && !skills.includes(value)) {
-                              setSkills([...skills, value]);
-                              e.currentTarget.value = '';
-                            }
-                          }
-                        }}
-                      />
-                      {skills.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {skills.map((skill, index) => (
-                            <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                              {skill}
-                              <X 
-                                className="w-3 h-3 cursor-pointer" 
-                                onClick={() => setSkills(skills.filter((_, i) => i !== index))}
-                              />
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Availability */}
-                  <div>
-                    <Label>Availability</Label>
-                    <AvailabilitySelect value={availability} onValueChange={setAvailability} />
-                  </div>
-
-                  {/* Mentorship Preferences */}
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="is_mentor"
-                        checked={isMentor}
-                        onCheckedChange={(checked) => setIsMentor(checked === true)}
-                      />
-                      <Label htmlFor="is_mentor">I'm available as a mentor</Label>
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="is_seeking_mentor"
-                        checked={isSeekingMentor}
-                        onCheckedChange={(checked) => setIsSeekingMentor(checked === true)}
-                      />
-                      <Label htmlFor="is_seeking_mentor">I'm seeking a mentor</Label>
-                    </div>
-                  </div>
-
-                  {/* Preferred Communication */}
-                  <div>
-                    <Label>Preferred Communication Methods</Label>
-                    <div className="grid grid-cols-2 gap-2 mt-2">
-                      {[
-                        { value: "in_app_messaging", label: "In-app Messaging" },
-                        { value: "video_calls", label: "Video Calls" },
-                        { value: "phone_calls", label: "Phone Calls" },
-                        { value: "in_person", label: "In Person" }
-                      ].map((method) => (
-                        <div key={method.value} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={method.value}
-                            checked={preferredCommunication.includes(method.value)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setPreferredCommunication([...preferredCommunication, method.value]);
-                              } else {
-                                setPreferredCommunication(
-                                  preferredCommunication.filter(m => m !== method.value)
-                                );
-                              }
-                            }}
-                          />
-                          <Label htmlFor={method.value} className="text-sm">{method.label}</Label>
+                  ) : (
+                    <div className="space-y-4">
+                      {notifications.map((notification) => (
+                        <div key={notification.id} className="flex items-start gap-3 p-3 rounded-lg border">
+                          <div className="mt-1">
+                            {notification.type === 'message' ? (
+                              <MessageCircle className="w-4 h-4 text-primary" />
+                            ) : (
+                              <Users className="w-4 h-4 text-primary" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm">{notification.title}</p>
+                            <p className="text-sm text-muted-foreground">{notification.description}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {formatTimeAgo(notification.created_at)}
+                            </p>
+                          </div>
                         </div>
                       ))}
                     </div>
-                  </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Pending Mentorship Requests */}
+              {pendingRequests.length > 0 && (
+                <Card className="shadow-soft">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Clock className="w-5 h-5" />
+                      Pending Mentorship Requests
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {pendingRequests.map((request) => {
+                        const profileData = Array.isArray(request.profiles) ? request.profiles[0] : request.profiles;
+                        const requesterName = profileData 
+                          ? `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim() 
+                          : 'Someone';
+                        
+                        return (
+                          <div key={request.id} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="w-10 h-10">
+                                <AvatarImage src={profileData?.avatar_url} alt={requesterName} />
+                                <AvatarFallback>
+                                  {requesterName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium">{requesterName}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {request.message ? request.message.slice(0, 60) + '...' : 'Wants mentorship'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleMentorshipAction(request.id, 'accept')}
+                              >
+                                <CheckCircle className="w-4 h-4 mr-1" />
+                                Accept
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                onClick={() => handleMentorshipAction(request.id, 'decline')}
+                              >
+                                Decline
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </CardContent>
                 </Card>
               )}
-
-              <Button onClick={saveProfile} disabled={saving} variant="hero" size="lg">
-                {saving ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4 mr-2" />
-                    Save Profile
-                  </>
-                )}
-              </Button>
             </div>
 
-            {/* Profile Picture & Summary */}
+            {/* Sidebar */}
             <div className="space-y-6">
+              
+              {/* Profile Completion */}
               <Card className="shadow-soft">
                 <CardHeader>
-                  <CardTitle>Profile Picture</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col items-center space-y-4">
-                    <ImageUpload
-                      currentImageUrl={avatarUrl}
-                      onImageChange={setAvatarUrl}
-                      fallbackInitials={`${fullName.charAt(0)}${fullName.charAt(fullName.indexOf(' ') + 1) || ''}`.toUpperCase()}
-                      size="lg"
-                    />
-                    <p className="text-sm text-muted-foreground text-center">
-                      Upload or change your profile picture
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="shadow-soft">
-                <CardHeader>
-                  <CardTitle>Profile Summary</CardTitle>
+                  <CardTitle className="text-lg">Profile Completion</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center">
-                        <span className="text-primary-foreground font-semibold">
-                          {fullName.split(' ').map(n => n[0]).join('')}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="font-medium text-foreground">{fullName || 'Your Name'}</p>
-                        <p className="text-sm text-muted-foreground">{user?.email}</p>
-                      </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Progress</span>
+                      <span className="text-sm font-medium">{profileCompletion}%</span>
                     </div>
-                    
-                    <div className="space-y-2">
-                      <Badge variant="secondary">{role}</Badge>
-                      {sector && <Badge variant="outline">{sector}</Badge>}
-                      {country && <Badge variant="outline">{country}</Badge>}
-                    </div>
-
-                    {bio && (
-                      <div>
-                        <Label className="text-sm font-medium">Bio</Label>
-                        <p className="text-sm text-muted-foreground mt-1">{bio}</p>
+                    <Progress value={profileCompletion} className="h-2" />
+                    {profileCompletion < 100 && (
+                      <div className="text-sm text-muted-foreground">
+                        <p>Complete your profile to get discovered by more professionals!</p>
+                        <Button asChild size="sm" className="mt-2" variant="outline">
+                          <Link to="/profile/edit">Complete Profile</Link>
+                        </Button>
                       </div>
                     )}
-
-                    <div>
-                      <Label className="text-sm font-medium">Profile Views</Label>
-                      <p className="text-sm text-muted-foreground mt-1">{profileViews} views</p>
-                    </div>
                   </div>
                 </CardContent>
               </Card>
 
+              {/* Stats */}
               <Card className="shadow-soft">
                 <CardHeader>
-                  <CardTitle>Profile Completion</CardTitle>
+                  <CardTitle className="text-lg">Your Stats</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Profile Completion</span>
-                      <span>
-                        {Math.round(
-                          ((fullName ? 1 : 0) +
-                          (country ? 1 : 0) +
-                          (city ? 1 : 0) +
-                          (sector ? 1 : 0) +
-                          (occupation ? 1 : 0) +
-                          (bio ? 1 : 0)) / 6 * 100
-                        )}%
-                      </span>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Eye className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm">Profile Views</span>
+                      </div>
+                      <span className="font-medium">{stats.profileViews}</span>
                     </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div 
-                        className="bg-gradient-primary h-2 rounded-full transition-all duration-300"
-                        style={{ 
-                          width: `${Math.round(
-                            ((fullName ? 1 : 0) +
-                            (country ? 1 : 0) +
-                            (city ? 1 : 0) +
-                            (sector ? 1 : 0) +
-                            (occupation ? 1 : 0) +
-                            (bio ? 1 : 0)) / 6 * 100
-                          )}%` 
-                        }}
-                      />
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Star className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm">Favorites</span>
+                      </div>
+                      <span className="font-medium">{stats.favoritesCount}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <MessageCircle className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm">Unread Messages</span>
+                      </div>
+                      <span className="font-medium">{stats.unreadMessages}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm">Mentorship Requests</span>
+                      </div>
+                      <span className="font-medium">{stats.mentorshipRequests}</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
+
             </div>
           </div>
         </div>
       </main>
-
+      
       <Footer />
     </div>
   );
