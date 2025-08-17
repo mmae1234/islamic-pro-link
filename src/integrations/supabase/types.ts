@@ -997,6 +997,14 @@ export type Database = {
         Args: { user_a_param: string; user_b_param: string }
         Returns: boolean
       }
+      has_business_role: {
+        Args: {
+          _business_id: string
+          _roles: Database["public"]["Enums"]["business_member_role"][]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_business_role_safe: {
         Args: {
           _business_id: string
@@ -1005,7 +1013,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_business_owner: {
+        Args: { _business_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_business_owner_safe: {
+        Args: { _business_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_business_team_member: {
         Args: { _business_id: string; _user_id: string }
         Returns: boolean
       }
