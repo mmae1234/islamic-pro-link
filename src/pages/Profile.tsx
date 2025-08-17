@@ -1,40 +1,41 @@
-import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import { 
   User, 
-  MapPin, 
+  Star, 
+  Users, 
   Briefcase, 
-  GraduationCap, 
   Calendar, 
+  GraduationCap, 
+  MapPin, 
+  Heart,
   MessageCircle,
-  Users,
-  Star,
-  Heart
+  MoreVertical,
+  Flag
 } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
-import { useProfileViews } from "@/hooks/useProfileViews";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import ReportDialog from "@/components/ReportDialog";
+import BlockUserButton from "@/components/BlockUserButton";
 
 const Profile = () => {
   const { userId } = useParams();
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
   const [professionalProfile, setProfessionalProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
-
-  // Track profile view for non-owner visits
-  useProfileViews(userId && user?.id !== userId ? userId : '');
+  const [showReportDialog, setShowReportDialog] = useState(false);
 
   useEffect(() => {
     if (userId) {
@@ -58,30 +59,16 @@ const Profile = () => {
       setProfile(profileData);
 
       // Load professional profile
-      if (user) {
-        const { data: professionalData, error: professionalError } = await supabase
-          .from('professional_profiles')
-          .select('*')
-          .eq('user_id', userId)
-          .maybeSingle();
+      const { data: professionalData, error: professionalError } = await supabase
+        .from('professional_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
 
-        if (professionalError && professionalError.code !== 'PGRST116') {
-          console.error('Error loading professional profile:', professionalError);
-        } else if (professionalData) {
-          setProfessionalProfile(professionalData);
-        }
-      } else {
-        const { data: publicData, error: publicError } = await supabase
-          .from('professional_directory')
-          .select('*')
-          .eq('user_id', userId)
-          .single();
-
-        if (publicError) {
-          console.error('Error loading public professional profile:', publicError);
-        } else if (publicData) {
-          setProfessionalProfile(publicData);
-        }
+      if (professionalError && professionalError.code !== 'PGRST116') {
+        console.error('Error loading professional profile:', professionalError);
+      } else if (professionalData) {
+        setProfessionalProfile(professionalData);
       }
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -238,10 +225,41 @@ const Profile = () => {
                           <Heart className={`w-4 h-4 mr-2 ${isFavorite ? 'fill-current text-red-500' : ''}`} />
                           {isFavorite ? 'Unfavorite' : 'Favorite'}
                         </Button>
-                        <Button variant="secondary" size="sm">
+                        <Button 
+                          variant="secondary" 
+                          size="sm"
+                          onClick={() => navigate(`/messages?userId=${userId}`)}
+                        >
                           <MessageCircle className="w-4 h-4 mr-2" />
                           Message
                         </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem 
+                              onClick={() => setShowReportDialog(true)}
+                              className="text-destructive"
+                            >
+                              <Flag className="w-4 h-4 mr-2" />
+                              Report Profile
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <div className="w-full">
+                                <BlockUserButton 
+                                  targetUserId={userId!}
+                                  targetUserName={`${profile?.first_name || ''} ${profile?.last_name || ''}`.trim()}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="w-full justify-start p-0 h-auto text-destructive hover:text-destructive"
+                                />
+                              </div>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     )}
                   </div>
@@ -401,6 +419,14 @@ const Profile = () => {
           </div>
         </div>
       </main>
+      
+      <ReportDialog
+        open={showReportDialog}
+        onOpenChange={setShowReportDialog}
+        accusedId={userId!}
+        accusedName={`${profile?.first_name || ''} ${profile?.last_name || ''}`.trim()}
+        reportType="profile"
+      />
       
       <Footer />
     </div>

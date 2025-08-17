@@ -61,7 +61,7 @@ const ProfessionalDashboard = () => {
           <CardContent className="space-y-4">
             <p className="text-muted-foreground">Complete your professional profile so others can find and contact you.</p>
             <Button asChild variant="accent">
-              <Link to="/edit-profile">Edit Professional Profile</Link>
+              <Link to="/dashboard">Manage Profile</Link>
             </Button>
           </CardContent>
         </Card>

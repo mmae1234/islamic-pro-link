@@ -13,6 +13,7 @@ import { MapPin, MessageCircle, Calendar, Star, Users, Heart, Flag, MoreVertical
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Link } from 'react-router-dom';
 import ReportDialog from '@/components/ReportDialog';
+import BlockUserButton from '@/components/BlockUserButton';
 
 interface Professional {
   id: string;
@@ -327,6 +328,17 @@ const ProfessionalCard = ({
                         >
                           <Flag className="w-4 h-4 mr-2" />
                           Report Profile
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <div className="w-full">
+                            <BlockUserButton 
+                              targetUserId={professional.user_id}
+                              targetUserName={getFullName()}
+                              variant="ghost"
+                              size="sm"
+                              className="w-full justify-start p-0 h-auto text-destructive hover:text-destructive"
+                            />
+                          </div>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

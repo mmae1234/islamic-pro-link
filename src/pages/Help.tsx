@@ -217,6 +217,20 @@ const Help = () => {
                   </AccordionContent>
                 </AccordionItem>
 
+                <AccordionItem value="item-2g">
+                  <AccordionTrigger>How do I block or unblock users?</AccordionTrigger>
+                  <AccordionContent>
+                    You can block users from their profile page or from professional cards using the menu (three dots). To unblock users, go to Settings → Privacy → Blocked Users section and click "Unblock" next to any user you want to unblock.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-2h">
+                  <AccordionTrigger>How do I delete message conversations?</AccordionTrigger>
+                  <AccordionContent>
+                    On the Messages page, click the "Delete" button next to any conversation. This will permanently delete the entire conversation thread for both you and the other user.
+                  </AccordionContent>
+                </AccordionItem>
+
                 <AccordionItem value="item-3">
                   <AccordionTrigger>What is the mentorship program?</AccordionTrigger>
                   <AccordionContent>
