@@ -306,25 +306,31 @@ const Messages = () => {
 
   const deleteConversation = async (partnerId: string) => {
     try {
-      // Mark all messages in this conversation as deleted
-      await supabase
+      // First delete the conversation record
+      const { error: conversationError } = await supabase
+        .from('conversations')
+        .delete()
+        .or(`and(user_a.eq.${user?.id},user_b.eq.${partnerId}),and(user_a.eq.${partnerId},user_b.eq.${user?.id})`);
+      
+      if (conversationError) throw conversationError;
+
+      // Then mark all messages in this conversation as deleted
+      const { error: messageError } = await supabase
         .from('messages')
         .update({ deleted_at: new Date().toISOString() })
         .or(`and(sender_id.eq.${user?.id},recipient_id.eq.${partnerId}),and(sender_id.eq.${partnerId},recipient_id.eq.${user?.id})`);
       
-      // Also delete the conversation record
-      await supabase
-        .from('conversations')
-        .delete()
-        .or(`and(user_a.eq.${user?.id},user_b.eq.${partnerId}),and(user_a.eq.${partnerId},user_b.eq.${user?.id})`);
+      if (messageError) throw messageError;
       
       toast({
         title: "Conversation deleted",
         description: "The entire conversation has been deleted.",
       });
       
-      loadMessages();
+      // Refresh the messages list
+      await loadMessages();
     } catch (error: any) {
+      console.error('Delete conversation error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to delete conversation.",

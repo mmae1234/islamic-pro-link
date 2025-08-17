@@ -37,6 +37,7 @@ import BusinessProfile from "./pages/BusinessProfile";
 import Businesses from "./pages/Businesses";
 import AutoDashboard from "./pages/AutoDashboard";
 import AdminReleaseNotes from "./pages/AdminReleaseNotes";
+import AdminReports from "./pages/AdminReports";
 import Diag from "./pages/Diag";
 import AuthGate from "./pages/AuthGate";
 
@@ -129,6 +130,11 @@ const App = () => {
               <Route path="/admin/release-notes" element={
                 <ProtectedRoute>
                   <AdminReleaseNotes />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/reports" element={
+                <ProtectedRoute>
+                  <AdminReports />
                 </ProtectedRoute>
               } />
               <Route path="/auth-gate" element={<AuthGate />} />
