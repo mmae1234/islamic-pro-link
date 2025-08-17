@@ -9,8 +9,10 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { MapPin, MessageCircle, Calendar, Star, Users, Heart } from 'lucide-react';
+import { MapPin, MessageCircle, Calendar, Star, Users, Heart, Flag, MoreVertical } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Link } from 'react-router-dom';
+import ReportDialog from '@/components/ReportDialog';
 
 interface Professional {
   id: string;
@@ -57,6 +59,7 @@ const ProfessionalCard = ({
   const [messageContent, setMessageContent] = useState('');
   const [loading, setLoading] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
 
   // Check if professional is favorited on mount
   useEffect(() => {
@@ -311,6 +314,23 @@ const ProfessionalCard = ({
                       <Link to={`/profile/${professional.user_id}`}>View Profile</Link>
                     </Button>
 
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem 
+                          onClick={() => setShowReportDialog(true)}
+                          className="text-destructive"
+                        >
+                          <Flag className="w-4 h-4 mr-2" />
+                          Report Profile
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
                     {showMentorshipButton && professional.is_mentor && (
                       <Dialog open={isRequestDialogOpen} onOpenChange={setIsRequestDialogOpen}>
                         <DialogTrigger asChild>
@@ -503,6 +523,15 @@ const ProfessionalCard = ({
           )}
         </div>
       </CardContent>
+
+      {/* Report Dialog */}
+      <ReportDialog
+        open={showReportDialog}
+        onOpenChange={setShowReportDialog}
+        accusedId={professional.user_id}
+        accusedName={`${professional.first_name} ${professional.last_name}`}
+        reportType="profile"
+      />
     </Card>
   );
 };

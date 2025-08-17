@@ -74,7 +74,7 @@ const Messages = () => {
     if (!user) return;
 
     try {
-      // Load sent messages
+      // Load sent messages - get latest message per recipient
       const { data: sentData, error: sentError } = await supabase
         .from('messages')
         .select(`
@@ -312,9 +312,15 @@ const Messages = () => {
         .update({ deleted_at: new Date().toISOString() })
         .or(`and(sender_id.eq.${user?.id},recipient_id.eq.${partnerId}),and(sender_id.eq.${partnerId},recipient_id.eq.${user?.id})`);
       
+      // Also delete the conversation record
+      await supabase
+        .from('conversations')
+        .delete()
+        .or(`and(user_a.eq.${user?.id},user_b.eq.${partnerId}),and(user_a.eq.${partnerId},user_b.eq.${user?.id})`);
+      
       toast({
         title: "Conversation deleted",
-        description: "The conversation has been moved to archived.",
+        description: "The entire conversation has been deleted.",
       });
       
       loadMessages();

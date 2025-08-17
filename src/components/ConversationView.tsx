@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Send, ArrowLeft, Trash2, Archive, Flag } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import ReportDialog from '@/components/ReportDialog';
 
 interface Message {
   id: string;
@@ -39,6 +40,9 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
   const [messageError, setMessageError] = useState<string>('');
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [reportType, setReportType] = useState<'message' | 'conversation'>('message');
+  const [reportMessageId, setReportMessageId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user && partnerId) {
@@ -242,29 +246,8 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
   };
 
   const reportThread = async () => {
-    try {
-      const { error } = await supabase
-        .from('messages')
-        .update({ 
-          reported_at: new Date().toISOString(),
-          report_reason: "Inappropriate content"
-        })
-        .or(`sender_id.eq.${partnerId},recipient_id.eq.${partnerId}`)
-        .eq('recipient_id', user?.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Thread reported",
-        description: "The conversation has been reported to moderators.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
+    setReportType('conversation');
+    setShowReportDialog(true);
   };
 
   if (loading) {
@@ -376,14 +359,18 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
                               Delete
                             </DropdownMenuItem>
                             {message.sender_id !== user?.id && (
-                              <DropdownMenuItem 
-                                onClick={() => reportMessage(message.id)}
-                                className="text-destructive"
-                              >
-                                <Flag className="w-4 h-4 mr-2" />
-                                Report
-                              </DropdownMenuItem>
-                            )}
+                               <DropdownMenuItem 
+                                 onClick={() => {
+                                   setReportType('message');
+                                   setReportMessageId(message.id);
+                                   setShowReportDialog(true);
+                                 }}
+                                 className="text-destructive"
+                               >
+                                 <Flag className="w-4 h-4 mr-2" />
+                                 Report
+                               </DropdownMenuItem>
+                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
@@ -446,6 +433,17 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Report Dialog */}
+      <ReportDialog
+        open={showReportDialog}
+        onOpenChange={setShowReportDialog}
+        accusedId={partnerId}
+        accusedName={partnerName}
+        conversationId={reportType === 'conversation' ? undefined : undefined}
+        messageId={reportType === 'message' ? reportMessageId : undefined}
+        reportType={reportType}
+      />
     </Card>
   );
 };
