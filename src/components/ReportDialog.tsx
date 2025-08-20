@@ -84,6 +84,22 @@ const ReportDialog = ({
 
       if (error) throw error;
 
+      // Send admin notification email
+      try {
+        await supabase.functions.invoke('send-report-notification', {
+          body: {
+            reporterName: user.user_metadata?.first_name || user.email || 'Anonymous',
+            accusedName: accusedName,
+            reason: selectedReason,
+            details: details.trim() || undefined,
+            reportType: reportType
+          }
+        });
+      } catch (emailError) {
+        console.error('Failed to send admin notification:', emailError);
+        // Don't fail the whole operation if email fails
+      }
+
       toast({
         title: "Report submitted",
         description: "Thank you for your report. Our team will review it shortly.",
