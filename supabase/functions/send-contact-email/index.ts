@@ -31,7 +31,7 @@ const handler = async (req: Request): Promise<Response> => {
     
     const { data, error } = await resend.emails.send({
       from: "Muslim Pros Net <contact@muslimprosnet.com>",
-      to: ["bowandarrowanalytics@outlook.com"],
+      to: ["contact@muslimprosnet.com"],
       subject: emailSubject,
       reply_to: email ? [email] : undefined,
       html: `
