@@ -127,7 +127,7 @@ const Terms = () => {
               If you have any questions about these Terms of Service, please contact us at:
             </p>
             <p className="mb-4">
-              Email: legal@muslimpros.com<br />
+              Email: contact@muslimprosnet.com<br />
               Address: Portland, Oregon, USA
             </p>
           </section>

@@ -30,7 +30,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailSubject = isContactForm ? `Contact Form: ${subject}` : `Feedback: ${subject}`;
     
     const emailResponse = await resend.emails.send({
-      from: "Muslim Pros <onboarding@resend.dev>",
+      from: "Muslim Pros Net <onboarding@resend.dev>",
       to: ["bowandarrowanalytics@outlook.com"],
       subject: emailSubject,
       html: `
@@ -40,7 +40,7 @@ const handler = async (req: Request): Promise<Response> => {
         <p><strong>Message:</strong></p>
         <p>${message.replace(/\n/g, '<br>')}</p>
         <hr>
-        <p><em>This ${isContactForm ? 'contact form' : 'feedback'} was submitted through Muslim Pros platform.</em></p>
+        <p><em>This ${isContactForm ? 'contact form' : 'feedback'} was submitted through Muslim Pros Net platform at www.muslimprosnet.com</em></p>
       `,
     });
 

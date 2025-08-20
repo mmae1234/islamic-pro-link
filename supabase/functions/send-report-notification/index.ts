@@ -33,7 +33,7 @@ const handler = async (req: Request): Promise<Response> => {
     };
 
     const emailResponse = await resend.emails.send({
-      from: "Muslim Pros <onboarding@resend.dev>",
+      from: "Muslim Pros Net <onboarding@resend.dev>",
       to: ["bowandarrowanalytics@outlook.com"],
       subject: `${typeMap[reportType]} - Action Required`,
       html: `
@@ -43,7 +43,7 @@ const handler = async (req: Request): Promise<Response> => {
         <p><strong>Reason:</strong> ${reason}</p>
         ${details ? `<p><strong>Additional Details:</strong></p><p>${details.replace(/\n/g, '<br>')}</p>` : ''}
         <hr>
-        <p><em>This report was submitted through the Muslim Pros reporting system and requires moderation review.</em></p>
+        <p><em>This report was submitted through Muslim Pros Net platform at www.muslimprosnet.com and requires moderation review.</em></p>
       `,
     });
 

@@ -93,7 +93,7 @@ const Privacy = () => {
               If you have any questions about this Privacy Policy, please contact us at:
             </p>
             <p className="mb-4">
-              Email: privacy@muslimpros.com<br />
+              Email: contact@muslimprosnet.com<br />
               Address: Portland, Oregon, USA
             </p>
           </section>

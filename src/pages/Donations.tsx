@@ -127,7 +127,7 @@ const Donations = () => {
               Interested in making a larger contribution or becoming a sponsor?
             </p>
             <Button variant="outline" asChild>
-              <a href="mailto:donations@muslimpros.net">
+              <a href="mailto:contact@muslimprosnet.com">
                 Contact Us
               </a>
             </Button>
