@@ -41,7 +41,7 @@ const handler = async (req: Request): Promise<Response> => {
         <p><strong>Message:</strong></p>
         <p>${message.replace(/\n/g, '<br>')}</p>
         <hr>
-        <p><em>This ${isContactForm ? 'contact form' : 'feedback'} was submitted through Muslim Pros Net platform at www.muslimprosnet.com</em></p>
+        <p><em>This ${isContactForm ? 'contact form' : 'feedback'} was submitted through Muslim Professionals Network platform at www.muslimprosnet.com</em></p>
       `,
     });
 
