@@ -29,10 +29,11 @@ const handler = async (req: Request): Promise<Response> => {
     const isContactForm = type === 'contact';
     const emailSubject = isContactForm ? `Contact Form: ${subject}` : `Feedback: ${subject}`;
     
-    const emailResponse = await resend.emails.send({
-      from: "Muslim Pros Net <onboarding@resend.dev>",
+    const { data, error } = await resend.emails.send({
+      from: "Muslim Pros Net <contact@muslimprosnet.com>",
       to: ["bowandarrowanalytics@outlook.com"],
       subject: emailSubject,
+      reply_to: email ? [email] : undefined,
       html: `
         <h2>${isContactForm ? 'New Contact Form Submission' : 'New Feedback Submission'}</h2>
         <p><strong>From:</strong> ${name} (${email})</p>
@@ -44,9 +45,17 @@ const handler = async (req: Request): Promise<Response> => {
       `,
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    if (error) {
+      console.error("Resend error:", error);
+      return new Response(JSON.stringify({ success: false, error }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
 
-    return new Response(JSON.stringify({ success: true }), {
+    console.log("Email sent:", data);
+
+    return new Response(JSON.stringify({ success: true, id: data?.id }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
