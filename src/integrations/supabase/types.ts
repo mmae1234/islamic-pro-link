@@ -819,23 +819,15 @@ export type Database = {
           country: string | null
           cover_url: string | null
           created_at: string | null
-          facebook_url: string | null
           id: string | null
-          instagram_url: string | null
-          linkedin_url: string | null
           logo_url: string | null
           name: string | null
           sector: string | null
           services: string | null
           state: string | null
           status: string | null
-          telegram_url: string | null
-          tiktok_url: string | null
-          twitter_url: string | null
           verified: boolean | null
           website: string | null
-          whatsapp_number: string | null
-          youtube_url: string | null
         }
         Insert: {
           bio?: string | null
@@ -843,23 +835,15 @@ export type Database = {
           country?: string | null
           cover_url?: string | null
           created_at?: string | null
-          facebook_url?: string | null
           id?: string | null
-          instagram_url?: string | null
-          linkedin_url?: string | null
           logo_url?: string | null
           name?: string | null
           sector?: string | null
           services?: string | null
           state?: string | null
           status?: string | null
-          telegram_url?: string | null
-          tiktok_url?: string | null
-          twitter_url?: string | null
           verified?: boolean | null
           website?: string | null
-          whatsapp_number?: string | null
-          youtube_url?: string | null
         }
         Update: {
           bio?: string | null
@@ -867,23 +851,15 @@ export type Database = {
           country?: string | null
           cover_url?: string | null
           created_at?: string | null
-          facebook_url?: string | null
           id?: string | null
-          instagram_url?: string | null
-          linkedin_url?: string | null
           logo_url?: string | null
           name?: string | null
           sector?: string | null
           services?: string | null
           state?: string | null
           status?: string | null
-          telegram_url?: string | null
-          tiktok_url?: string | null
-          twitter_url?: string | null
           verified?: boolean | null
           website?: string | null
-          whatsapp_number?: string | null
-          youtube_url?: string | null
         }
         Relationships: []
       }
