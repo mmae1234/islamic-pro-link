@@ -14,5 +14,4 @@ jobs:
             p/javascript
             p/typescript
             p/react
-          generateSarif: "1"
-          publishSarif: "1"
+    
