@@ -1,17 +1,24 @@
 name: Semgrep
 on:
-  push: { branches: [main] }
+  push:
   pull_request:
+
 jobs:
   semgrep:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write   # needed to upload SARIF
     steps:
       - uses: actions/checkout@v4
       - uses: returntocorp/semgrep-action@v1
         with:
-          config: >-
+          config: >
             p/owasp-top-ten
             p/javascript
             p/typescript
             p/react
-    
+            p/secrets
+            p/supply-chain
+          generateSarif: "1"
+          publishSarif: "1"
