@@ -20,5 +20,3 @@ jobs:
             p/react
             p/secrets
             p/supply-chain
-          generateSarif: "1"
-          publishSarif: "1"
