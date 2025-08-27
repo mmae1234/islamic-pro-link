@@ -23,7 +23,7 @@ const Terms = () => {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">2. Description of Service</h2>
             <p className="mb-4">
-              Muslim Pros is a professional networking platform that connects Muslim professionals, 
+              Muslim Pros Network is a professional networking platform that connects Muslim professionals, 
               entrepreneurs, and individuals seeking professional services within the Muslim community.
             </p>
           </section>

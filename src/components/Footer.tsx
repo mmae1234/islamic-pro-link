@@ -12,7 +12,7 @@ const Footer = () => {
               <div className="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
                 <span className="text-primary font-bold text-lg">MP</span>
               </div>
-              <span className="text-xl font-bold">Muslim Pros</span>
+              <span className="text-xl font-bold">Muslim Pros Network</span>
             </div>
             <p className="text-primary-foreground/80 mb-4 leading-relaxed">
               Connecting Muslim professionals worldwide to build careers that align with their values and faith.

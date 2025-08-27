@@ -64,7 +64,7 @@ const SafeModeIndex = ({ errorInfo }: SafeModeIndexProps) => {
               <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-sm">MP</span>
               </div>
-              <h1 className="text-lg sm:text-xl font-bold text-foreground truncate">Muslim Professionals</h1>
+              <h1 className="text-lg sm:text-xl font-bold text-foreground truncate">Muslim Professionals Network</h1>
             </div>
             <div className="flex items-center space-x-2">
               <a 
@@ -110,7 +110,7 @@ const SafeModeIndex = ({ errorInfo }: SafeModeIndexProps) => {
         {/* Hero section - Responsive */}
         <div className="text-center mb-8 sm:mb-12">
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-foreground mb-3 sm:mb-4 leading-tight">
-            Connect with Muslim Professionals
+            Connect with Muslim Professionals Network
           </h1>
           <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed">
             Join our global community of Muslim professionals. Find mentors, build your network, and grow your career.

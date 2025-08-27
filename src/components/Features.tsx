@@ -72,7 +72,7 @@ const Features = () => {
             <span className="block text-primary">Build Your Career</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Muslim Pros provides comprehensive tools and features to help you connect, 
+            Muslim Pros Network provides comprehensive tools and features to help you connect, 
             grow, and succeed in your professional journey.
           </p>
         </div>
@@ -113,8 +113,8 @@ const Features = () => {
               Ready to Join Our Global Community?
             </h3>
             <p className="text-lg text-primary-foreground/90 mb-8">
-              Connect with thousands of Muslim professionals who are building 
-              successful careers while staying true to their faith.
+              Connect with Muslim professionals from over 200 industries and 50+ countries worldwide 
+              building successful careers while staying true to their faith.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button variant="accent" size="lg" className="font-semibold" asChild>

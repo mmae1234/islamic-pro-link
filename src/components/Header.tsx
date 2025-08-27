@@ -78,7 +78,7 @@ const Header = () => {
               <span className="text-primary-foreground font-bold text-sm sm:text-lg">MP</span>
             </div>
             <span className="text-lg sm:text-xl font-bold text-foreground truncate hidden xs:block">
-              Muslim Professionals
+              Muslim Professionals Network
             </span>
             <span className="text-lg font-bold text-foreground xs:hidden">MP</span>
           </Link>
