@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,10 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Heart, Target, Users, Zap } from "lucide-react";
 
 const Donations = () => {
+  const [selectedAmount, setSelectedAmount] = useState<string>('');
+
   useEffect(() => {
     // Scroll to top when component mounts
     window.scrollTo(0, 0);
   }, []);
+
+  const handleDonation = (amount: string) => {
+    const numericAmount = amount.replace('$', '');
+    const paypalUrl = `https://paypal.me/MuslimProsNet/${numericAmount}`;
+    window.open(paypalUrl, '_blank');
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -96,7 +104,13 @@ const Donations = () => {
                   <Button 
                     key={amount} 
                     variant="outline" 
-                    className="h-16 text-lg font-semibold hover:bg-primary hover:text-primary-foreground"
+                    className={`h-16 text-lg font-semibold hover:bg-primary hover:text-primary-foreground transition-colors ${
+                      selectedAmount === amount ? 'bg-primary text-primary-foreground' : ''
+                    }`}
+                    onClick={() => {
+                      setSelectedAmount(amount);
+                      handleDonation(amount);
+                    }}
                   >
                     {amount}
                   </Button>
@@ -105,10 +119,14 @@ const Donations = () => {
               
               <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-4">
-                  Donation processing will be available soon. We're working on integrating secure payment options.
+                  Click any amount above to donate securely through PayPal
                 </p>
-                <Button disabled className="bg-muted text-muted-foreground">
-                  PayPal Integration Coming Soon
+                <Button 
+                  variant="default" 
+                  className="bg-primary hover:bg-primary/90"
+                  onClick={() => window.open('https://paypal.me/MuslimProsNet', '_blank')}
+                >
+                  Donate via PayPal
                 </Button>
               </div>
 
