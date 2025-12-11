@@ -31,6 +31,7 @@ import Organizations from "./pages/Organizations";
 import Careers from "./pages/Careers";
 import Scholarships from "./pages/Scholarships";
 import EditProfile from "./pages/EditProfile";
+import EditBusinessProfile from "./pages/EditBusinessProfile";
 import Signup from "./pages/Signup";
 import ProfessionalDashboard from "./pages/ProfessionalDashboard";
 import BusinessDashboard from "./pages/BusinessDashboard";
@@ -101,6 +102,11 @@ const App = () => {
               <Route path="/edit-profile" element={
                 <ProtectedRoute>
                   <EditProfile />
+                </ProtectedRoute>
+              } />
+              <Route path="/edit-business-profile" element={
+                <ProtectedRoute>
+                  <EditBusinessProfile />
                 </ProtectedRoute>
               } />
               <Route path="/mentorship" element={<Mentorship />} />

@@ -94,7 +94,7 @@ const EditProfile = () => {
       .maybeSingle();
 
     if (profileData?.role === 'business') {
-      navigate('/dashboard/business');
+      navigate('/edit-business-profile');
       return;
     }
 
