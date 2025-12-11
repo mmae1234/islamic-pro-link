@@ -82,8 +82,8 @@ const Businesses = () => {
   useEffect(() => {
     const loadSectors = async () => {
       try {
-        const table = user ? 'business_directory_internal' : 'business_directory';
-        const { data } = await supabase.from(table).select('sector');
+        // Use business_directory view which only exposes safe public fields
+        const { data } = await supabase.from('business_directory').select('sector');
         const unique = Array.from(new Set((data || []).map((d: any) => d.sector).filter(Boolean)));
         setSectors(unique as string[]);
       } catch (error) {
@@ -93,7 +93,7 @@ const Businesses = () => {
     };
     
     loadSectors();
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     handleSearch();
@@ -107,10 +107,8 @@ const Businesses = () => {
   const handleSearch = async () => {
     setLoading(true);
     try {
-      // Use contact-protected directory if authenticated, public if not
-      const table = user ? 'business_directory_internal' : 'business_directory';
-      console.log('Using table:', table, 'User:', user?.id);
-      let query = supabase.from(table).select('id, name, sector, bio, country, state, city, verified, logo_url, website');
+      // Use business_directory view which only exposes safe public fields (no contact info)
+      let query = supabase.from('business_directory').select('id, name, sector, bio, country, state, city, verified, logo_url, website');
 
       if (filters.searchTerm) {
         const t = filters.searchTerm;
