@@ -81,11 +81,15 @@ const Businesses = () => {
 
   useEffect(() => {
     const loadSectors = async () => {
+      if (!user) {
+        setSectors([]);
+        return;
+      }
       try {
-        // Use business_directory view which only exposes safe public fields
-        const { data } = await supabase.from('business_directory').select('sector');
-        const unique = Array.from(new Set((data || []).map((d: any) => d.sector).filter(Boolean)));
-        setSectors(unique as string[]);
+        // Use RPC function which only exposes safe public fields
+        const { data, error } = await supabase.rpc('get_business_sectors');
+        if (error) throw error;
+        setSectors((data || []).map((d: any) => d.sector).filter(Boolean));
       } catch (error) {
         console.error('Failed to load sectors:', error);
         setSectors([]);
@@ -93,10 +97,14 @@ const Businesses = () => {
     };
     
     loadSectors();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
-    handleSearch();
+    if (user) {
+      handleSearch();
+    } else {
+      setResults([]);
+    }
   }, [user]);
 
   useEffect(() => {
@@ -105,29 +113,27 @@ const Businesses = () => {
   }, []);
 
   const handleSearch = async () => {
+    if (!user) {
+      setResults([]);
+      return;
+    }
     setLoading(true);
     try {
-      // Use business_directory view which only exposes safe public fields (no contact info)
-      let query = supabase.from('business_directory').select('id, name, sector, bio, country, state, city, verified, logo_url, website');
+      // Use RPC function which only exposes safe public fields (no contact info)
+      const { data, error } = await supabase.rpc('search_business_directory', {
+        search_term: filters.searchTerm || null,
+        filter_country: filters.country || null,
+        filter_state: filters.state || null,
+        filter_city: filters.city || null,
+        filter_sector: filters.sector || null,
+        verified_only: filters.verifiedOnly,
+        result_limit: 50
+      });
 
-      if (filters.searchTerm) {
-        const t = filters.searchTerm;
-        query = query.or(`name.ilike.%${t}%,bio.ilike.%${t}%,sector.ilike.%${t}%`);
-      }
-      if (filters.country) query = query.eq('country', filters.country);
-      if (filters.state) query = query.eq('state', filters.state);
-      if (filters.city) query = query.eq('city', filters.city);
-      if (filters.sector) query = query.eq('sector', filters.sector);
-      if (filters.verifiedOnly) query = query.eq('verified', true);
-
-      query = query.order('verified', { ascending: false }).order('created_at', { ascending: false }).limit(50);
-
-      const { data, error } = await query;
       if (error) {
         console.error('Query error:', error);
         throw error;
       }
-      console.log('Query result:', data);
       setResults((data || []) as any);
     } catch (e) {
       console.error('Business search error', e);
