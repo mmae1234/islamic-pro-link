@@ -115,13 +115,18 @@ const [favoriteBusinessIds, setFavoriteBusinessIds] = useState<string[]>([]);
             biz = publicData;
           }
         } else {
-          // Guest users can only see public directory data (verified businesses only)
-          const { data } = await supabase
-            .from('business_directory')
-            .select('id, name, bio, services, sector, country, state, city, website, logo_url, verified')
-            .eq('id', id)
-            .maybeSingle();
-          biz = data;
+          // Guest users use RPC function to get public business data
+          const { data } = await supabase.rpc('search_business_directory', {
+            search_term: null,
+            filter_country: null,
+            filter_state: null,
+            filter_city: null,
+            filter_sector: null,
+            verified_only: false,
+            result_limit: 1000
+          });
+          // Find the specific business from results
+          biz = data?.find((b: any) => b.id === id) || null;
         }
         
         if (biz) setBusiness(biz as unknown as BusinessAccount);

@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.12 (cd3cf9e)"
+    PostgrestVersion: "13.0.5"
   }
   public: {
     Tables: {
@@ -206,13 +206,6 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "business_accounts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_business_members_business"
-            columns: ["business_id"]
-            isOneToOne: false
-            referencedRelation: "business_directory"
             referencedColumns: ["id"]
           },
           {
@@ -516,13 +509,6 @@ export type Database = {
             foreignKeyName: "fk_links_business"
             columns: ["business_id"]
             isOneToOne: false
-            referencedRelation: "business_directory"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_links_business"
-            columns: ["business_id"]
-            isOneToOne: false
             referencedRelation: "business_directory_internal"
             referencedColumns: ["id"]
           },
@@ -767,51 +753,6 @@ export type Database = {
       }
     }
     Views: {
-      business_directory: {
-        Row: {
-          bio: string | null
-          city: string | null
-          country: string | null
-          created_at: string | null
-          id: string | null
-          logo_url: string | null
-          name: string | null
-          sector: string | null
-          services: string | null
-          state: string | null
-          verified: boolean | null
-          website: string | null
-        }
-        Insert: {
-          bio?: string | null
-          city?: string | null
-          country?: string | null
-          created_at?: string | null
-          id?: string | null
-          logo_url?: string | null
-          name?: string | null
-          sector?: string | null
-          services?: string | null
-          state?: string | null
-          verified?: boolean | null
-          website?: string | null
-        }
-        Update: {
-          bio?: string | null
-          city?: string | null
-          country?: string | null
-          created_at?: string | null
-          id?: string | null
-          logo_url?: string | null
-          name?: string | null
-          sector?: string | null
-          services?: string | null
-          state?: string | null
-          verified?: boolean | null
-          website?: string | null
-        }
-        Relationships: []
-      }
       business_directory_internal: {
         Row: {
           bio: string | null
@@ -959,6 +900,12 @@ export type Database = {
       }
       consolidate_conversations: { Args: never; Returns: undefined }
       delete_user_account: { Args: { user_id_param: string }; Returns: boolean }
+      get_business_sectors: {
+        Args: never
+        Returns: {
+          sector: string
+        }[]
+      }
       get_or_create_conversation: {
         Args: { user_a_param: string; user_b_param: string }
         Returns: string
@@ -998,6 +945,31 @@ export type Database = {
       is_business_team_member_safe: {
         Args: { _business_id: string; _user_id: string }
         Returns: boolean
+      }
+      search_business_directory: {
+        Args: {
+          filter_city?: string
+          filter_country?: string
+          filter_sector?: string
+          filter_state?: string
+          result_limit?: number
+          search_term?: string
+          verified_only?: boolean
+        }
+        Returns: {
+          bio: string
+          city: string
+          country: string
+          created_at: string
+          id: string
+          logo_url: string
+          name: string
+          sector: string
+          services: string
+          state: string
+          verified: boolean
+          website: string
+        }[]
       }
     }
     Enums: {

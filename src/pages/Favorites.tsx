@@ -96,14 +96,20 @@ const Favorites = () => {
       const raw = localStorage.getItem('favorite_business_ids');
       const businessIds: string[] = raw ? JSON.parse(raw) : [];
       if (businessIds.length > 0) {
-        // Use contact-protected directory since favorites require authentication
-        const { data: businesses, error: bizError } = await supabase
-          .from('business_directory_internal')
-          .select('id, name, sector, country, state, city, verified, logo_url')
-          .in('id', businessIds);
+        // Use RPC function to get business data securely
+        const { data: allBusinesses, error: bizError } = await supabase.rpc('search_business_directory', {
+          search_term: null,
+          filter_country: null,
+          filter_state: null,
+          filter_city: null,
+          filter_sector: null,
+          verified_only: false,
+          result_limit: 1000
+        });
         if (bizError) throw bizError;
+        // Filter to only favorited businesses and maintain order
         const ordered = businessIds
-          .map(id => businesses?.find(b => b.id === id))
+          .map(id => allBusinesses?.find((b: any) => b.id === id))
           .filter(Boolean) as FavoriteBusiness[];
         setFavoriteBusinesses(ordered);
       } else {
