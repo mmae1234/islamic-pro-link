@@ -76,6 +76,14 @@ const Signup = () => {
       if (!user) {
         setRole(selected);
         localStorage.setItem('pending_account_type', selected);
+        
+        // Store business details for later use when creating business account
+        if (selected === 'business') {
+          if (values.businessName) localStorage.setItem('pending_business_name', values.businessName);
+          if (values.phone) localStorage.setItem('pending_business_phone', values.phone);
+          if (values.website) localStorage.setItem('pending_business_website', values.website);
+        }
+        
         const params = new URLSearchParams(searchParams);
         params.set('account_type', selected);
         params.set('type', selected);

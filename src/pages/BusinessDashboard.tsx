@@ -110,12 +110,30 @@ setForm({
   const createBusiness = async () => {
     if (!user) return;
     setCreating(true);
+    
+    // Get pending business details from signup flow
+    const pendingName = localStorage.getItem('pending_business_name');
+    const pendingPhone = localStorage.getItem('pending_business_phone');
+    const pendingWebsite = localStorage.getItem('pending_business_website');
+    
     const { data, error } = await supabase
       .from('business_accounts')
-      .insert({ owner_id: user.id, name: name || null, status: 'active' })
+      .insert({ 
+        owner_id: user.id, 
+        name: name || pendingName || null, 
+        phone: pendingPhone || null,
+        website: pendingWebsite || null,
+        status: 'active' 
+      })
       .select('*')
       .maybeSingle();
     setCreating(false);
+    
+    // Clear pending values after use
+    localStorage.removeItem('pending_business_name');
+    localStorage.removeItem('pending_business_phone');
+    localStorage.removeItem('pending_business_website');
+    
     if (!error && data) setAccount(data as any);
   };
 const updateBusiness = async () => {
