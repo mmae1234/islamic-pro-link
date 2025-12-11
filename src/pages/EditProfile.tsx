@@ -78,11 +78,28 @@ const EditProfile = () => {
   const [tiktokUrl, setTiktokUrl] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [telegramUrl, setTelegramUrl] = useState('');
+
   useEffect(() => {
     if (user) {
-      loadProfile();
+      checkUserTypeAndLoad();
     }
   }, [user]);
+
+  const checkUserTypeAndLoad = async () => {
+    // Check if user is a business account - if so, redirect to business dashboard
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('user_id', user?.id)
+      .maybeSingle();
+
+    if (profileData?.role === 'business') {
+      navigate('/dashboard/business');
+      return;
+    }
+
+    loadProfile();
+  };
 
   const loadProfile = async () => {
     try {
