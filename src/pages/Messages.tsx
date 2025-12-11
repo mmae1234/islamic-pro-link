@@ -137,33 +137,39 @@ const Messages = () => {
         };
       });
 
-      // Get last messages and unread counts for each conversation
-      for (const conv of conversationsList) {
-        // Get last message
-        const { data: lastMessageData } = await supabase
+      // Batch load all messages for conversations to avoid N+1 queries
+      if (conversationsList.length > 0) {
+        const partnerIds = conversationsList.map(c => c.partner_id);
+        
+        // Get all messages involving these partners in a single query
+        const { data: allMessages } = await supabase
           .from('messages')
-          .select('content, created_at')
-          .or(`and(sender_id.eq.${user.id},recipient_id.eq.${conv.partner_id}),and(sender_id.eq.${conv.partner_id},recipient_id.eq.${user.id})`)
+          .select('content, created_at, sender_id, recipient_id, read_at')
+          .or(partnerIds.map(pid => 
+            `and(sender_id.eq.${user.id},recipient_id.eq.${pid}),and(sender_id.eq.${pid},recipient_id.eq.${user.id})`
+          ).join(','))
           .is('deleted_at', null)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
-
-        if (lastMessageData) {
-          conv.last_message = lastMessageData.content;
-          conv.last_message_time = lastMessageData.created_at;
+          .order('created_at', { ascending: false });
+        
+        // Process messages for each conversation
+        for (const conv of conversationsList) {
+          const convMessages = (allMessages || []).filter(msg =>
+            (msg.sender_id === user.id && msg.recipient_id === conv.partner_id) ||
+            (msg.sender_id === conv.partner_id && msg.recipient_id === user.id)
+          );
+          
+          if (convMessages.length > 0) {
+            conv.last_message = convMessages[0].content;
+            conv.last_message_time = convMessages[0].created_at;
+          }
+          
+          // Count unread messages from partner
+          conv.unread_count = convMessages.filter(msg =>
+            msg.sender_id === conv.partner_id && 
+            msg.recipient_id === user.id && 
+            !msg.read_at
+          ).length;
         }
-
-        // Get unread count
-        const { count } = await supabase
-          .from('messages')
-          .select('*', { count: 'exact' })
-          .eq('sender_id', conv.partner_id)
-          .eq('recipient_id', user.id)
-          .is('read_at', null)
-          .is('deleted_at', null);
-
-        conv.unread_count = count || 0;
       }
 
       setConversations(conversationsList);
@@ -190,10 +196,7 @@ const Messages = () => {
     }
   };
 
-  const buildConversations = (sent: Message[], inbox: Message[]) => {
-    // This method is now replaced by the above conversation loading
-    // but kept for compatibility
-  };
+  // Note: buildConversations has been replaced by loadMessages conversation logic
 
   const loadProfessionals = async () => {
     try {
@@ -364,9 +367,11 @@ const Messages = () => {
 
   const filteredProfessionals = professionals.filter(prof => {
     const fullName = `${prof.profiles?.first_name || ''} ${prof.profiles?.last_name || ''}`.trim();
+    const occupation = prof.occupation || '';
+    const sector = prof.sector || '';
     return fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      prof.occupation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      prof.sector.toLowerCase().includes(searchTerm.toLowerCase());
+      occupation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      sector.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
   if (loading) {

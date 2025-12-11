@@ -440,8 +440,7 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
         onOpenChange={setShowReportDialog}
         accusedId={partnerId}
         accusedName={partnerName}
-        conversationId={reportType === 'conversation' ? undefined : undefined}
-        messageId={reportType === 'message' ? reportMessageId : undefined}
+        messageId={reportType === 'message' ? (reportMessageId ?? undefined) : undefined}
         reportType={reportType}
       />
     </Card>

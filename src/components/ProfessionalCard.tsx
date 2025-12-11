@@ -78,9 +78,9 @@ const ProfessionalCard = ({
         .select('id')
         .eq('user_id', user.id)
         .eq('professional_id', professional.user_id)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error) throw error;
       setIsFavorited(!!data);
     } catch (error) {
       console.error('Error checking favorite status:', error);

@@ -151,12 +151,17 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
     
     setLoading(true);
     try {
-      // Save to profiles table
+      // Save to profiles table - split full_name into first/last name
+      const nameParts = profileData.full_name.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert({
           user_id: user.id,
-          full_name: profileData.full_name,
+          first_name: firstName,
+          last_name: lastName,
           role: profileData.role,
           avatar_url: avatarUrl
         }, {
