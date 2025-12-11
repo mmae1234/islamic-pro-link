@@ -648,7 +648,7 @@ export type Database = {
       profile_views: {
         Row: {
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           user_agent: string | null
           viewed_at: string
           viewed_profile_id: string
@@ -656,7 +656,7 @@ export type Database = {
         }
         Insert: {
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
           viewed_at?: string
           viewed_profile_id: string
@@ -664,7 +664,7 @@ export type Database = {
         }
         Update: {
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           user_agent?: string | null
           viewed_at?: string
           viewed_profile_id?: string
@@ -957,14 +957,8 @@ export type Database = {
         Args: { user_id_param: string }
         Returns: boolean
       }
-      consolidate_conversations: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      delete_user_account: {
-        Args: { user_id_param: string }
-        Returns: boolean
-      }
+      consolidate_conversations: { Args: never; Returns: undefined }
+      delete_user_account: { Args: { user_id_param: string }; Returns: boolean }
       get_or_create_conversation: {
         Args: { user_a_param: string; user_b_param: string }
         Returns: string
