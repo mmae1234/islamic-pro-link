@@ -340,7 +340,7 @@ const Dashboard = () => {
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <Button asChild variant="outline" className="h-20 flex-col gap-2">
-                      <Link to="/profile/edit">
+                      <Link to="/edit-profile">
                         <User className="w-5 h-5" />
                         <span className="text-sm">Edit Profile</span>
                       </Link>
