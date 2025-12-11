@@ -111,11 +111,11 @@ useEffect(() => {
     try {
       if (mode === 'signup') {
         if (selectedRole === 'business') {
-          await signUp(emailValidation.sanitized, password, "", "");
+          await signUp(emailValidation.sanitized, password, "", "", selectedRole);
         } else {
           const firstNameValidation = validateName(firstName);
           const lastNameValidation = validateName(lastName);
-          await signUp(emailValidation.sanitized, password, firstNameValidation.sanitized, lastNameValidation.sanitized);
+          await signUp(emailValidation.sanitized, password, firstNameValidation.sanitized, lastNameValidation.sanitized, selectedRole);
         }
         setSignupSuccess(true);
       } else {
