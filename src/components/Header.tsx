@@ -176,9 +176,15 @@ const Header = () => {
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
+                          <Link to="/edit-business-profile" className="flex items-center text-foreground">
+                            <Settings className="w-4 h-4 mr-2" />
+                            Edit Business Profile
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
                           <Link to={`/business/${businessId}`} className="flex items-center text-foreground">
                             <User className="w-4 h-4 mr-2" />
-                            Business Profile
+                            View Public Profile
                           </Link>
                         </DropdownMenuItem>
                       </>
@@ -191,9 +197,9 @@ const Header = () => {
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link to="/dashboard/business" className="flex items-center text-foreground">
-                            <User className="w-4 h-4 mr-2" />
-                            Business Profile
+                          <Link to="/edit-business-profile" className="flex items-center text-foreground">
+                            <Settings className="w-4 h-4 mr-2" />
+                            Edit Business Profile
                           </Link>
                         </DropdownMenuItem>
                       </>
@@ -203,6 +209,12 @@ const Header = () => {
                           <Link to="/dashboard" className="flex items-center text-foreground">
                             <User className="w-4 h-4 mr-2" />
                             Dashboard
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link to="/edit-profile" className="flex items-center text-foreground">
+                            <Settings className="w-4 h-4 mr-2" />
+                            Edit Profile
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
@@ -393,6 +405,12 @@ const Header = () => {
                       <Link to={(businessId || showBiz) ? "/dashboard/business" : "/dashboard"}>
                         <User className="w-4 h-4 mr-2" />
                         Dashboard
+                      </Link>
+                    </Button>
+                    <Button variant="outline" size="sm" asChild className="justify-start">
+                      <Link to={(businessId || showBiz) ? "/edit-business-profile" : "/edit-profile"}>
+                        <Settings className="w-4 h-4 mr-2" />
+                        Edit Profile
                       </Link>
                     </Button>
                     <Button variant="outline" size="sm" onClick={handleSignOut} className="justify-start">
