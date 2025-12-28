@@ -95,38 +95,29 @@ const [favoriteBusinessIds, setFavoriteBusinessIds] = useState<string[]>([]);
       try {
         let biz: any = null;
         
-        if (user) {
-          // First try to get full business account data (if user has permission)
+        // Use RPC function for all users - it returns public business data safely
+        const { data: rpcResult } = await supabase.rpc('search_business_directory', {
+          search_term: null,
+          filter_country: null,
+          filter_state: null,
+          filter_city: null,
+          filter_sector: null,
+          verified_only: false,
+          result_limit: 1000
+        });
+        biz = rpcResult?.find((b: any) => b.id === id) || null;
+        
+        // If user is logged in, try to get additional details (contact info) if they have permission
+        if (user && biz) {
           const { data: fullData } = await supabase
             .from('business_accounts')
-            .select('id, owner_id, name, bio, services, sector, country, state, city, email, phone, website, logo_url, status, address_line1, address_line2, postal_code, facebook_url, instagram_url, linkedin_url, twitter_url, youtube_url, tiktok_url, whatsapp_number, telegram_url')
+            .select('email, phone, address_line1, address_line2, postal_code, facebook_url, instagram_url, linkedin_url, twitter_url, youtube_url, tiktok_url, whatsapp_number, telegram_url, owner_id')
             .eq('id', id)
             .maybeSingle();
           
           if (fullData) {
-            biz = fullData;
-          } else {
-            // Fallback to contact-protected directory for authenticated users
-            const { data: publicData } = await supabase
-              .from('business_directory_internal')
-              .select('*')
-              .eq('id', id)
-              .maybeSingle();
-            biz = publicData;
+            biz = { ...biz, ...fullData };
           }
-        } else {
-          // Guest users use RPC function to get public business data
-          const { data } = await supabase.rpc('search_business_directory', {
-            search_term: null,
-            filter_country: null,
-            filter_state: null,
-            filter_city: null,
-            filter_sector: null,
-            verified_only: false,
-            result_limit: 1000
-          });
-          // Find the specific business from results
-          biz = data?.find((b: any) => b.id === id) || null;
         }
         
         if (biz) setBusiness(biz as unknown as BusinessAccount);
