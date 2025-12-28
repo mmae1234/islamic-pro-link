@@ -86,6 +86,7 @@
             details += 'Message: ' + msg + '\n';
             if (e.filename) details += 'File: ' + e.filename + '\n';
             if (typeof e.lineno === 'number') details += 'Line: ' + e.lineno + ':' + e.colno + '\n';
+            if (e.error && e.error.stack) details += '\nStack:\n' + e.error.stack;
           }
           show('This iPhone browser couldn\'t start the app.', details);
         }, true);
