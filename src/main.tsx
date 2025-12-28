@@ -57,7 +57,7 @@ if (!root) {
         // Immediate render - no delays for iOS
         reactRoot.render(<App />);
         
-        // Verify render success after short delay
+        // Verify render success after short delay (older iPhones can take longer to mount)
         setTimeout(() => {
           const appElement = document.querySelector('[data-app-ready]');
           if (!appElement) {
@@ -66,7 +66,7 @@ if (!root) {
           } else {
             console.log("iOS app render successful");
           }
-        }, 500);
+        }, 2500);
       } else {
         reactRoot.render(<App />);
       }

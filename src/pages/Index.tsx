@@ -58,18 +58,8 @@ const Index = () => {
   const [showSafeMode, setShowSafeMode] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
-    // Immediate safe mode for iOS to prevent blank screens
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    if (isIOS) {
-      // Much shorter timeout - show safe mode quickly
-      const timer = setTimeout(() => {
-        setShowSafeMode(true);
-      }, 1000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, []);
+  // Note: we no longer force iOS into “safe mode” by default.
+  // Safe mode is now only triggered by real runtime errors (see global listeners below).
 
   // Global error catcher
   useEffect(() => {
