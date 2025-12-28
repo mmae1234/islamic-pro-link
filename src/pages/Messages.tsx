@@ -138,36 +138,50 @@ const Messages = () => {
       });
 
       // Batch load all messages for conversations to avoid N+1 queries
+      // NOTE: Avoid large `.or(...)` filters (can cause stack overflows on iOS Safari for users with many conversations).
       if (conversationsList.length > 0) {
-        const partnerIds = conversationsList.map(c => c.partner_id);
-        
-        // Get all messages involving these partners in a single query
-        const { data: allMessages } = await supabase
-          .from('messages')
-          .select('content, created_at, sender_id, recipient_id, read_at')
-          .or(partnerIds.map(pid => 
-            `and(sender_id.eq.${user.id},recipient_id.eq.${pid}),and(sender_id.eq.${pid},recipient_id.eq.${user.id})`
-          ).join(','))
-          .is('deleted_at', null)
-          .order('created_at', { ascending: false });
-        
+        const partnerIds = conversationsList.map((c) => c.partner_id);
+
+        const [outRes, inRes] = await Promise.all([
+          supabase
+            .from('messages')
+            .select('content, created_at, sender_id, recipient_id, read_at')
+            .eq('sender_id', user.id)
+            .in('recipient_id', partnerIds)
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false })
+            .limit(500),
+          supabase
+            .from('messages')
+            .select('content, created_at, sender_id, recipient_id, read_at')
+            .eq('recipient_id', user.id)
+            .in('sender_id', partnerIds)
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false })
+            .limit(500),
+        ]);
+
+        const allMessages = [...(outRes.data || []), ...(inRes.data || [])].sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+
         // Process messages for each conversation
         for (const conv of conversationsList) {
-          const convMessages = (allMessages || []).filter(msg =>
-            (msg.sender_id === user.id && msg.recipient_id === conv.partner_id) ||
-            (msg.sender_id === conv.partner_id && msg.recipient_id === user.id)
+          const convMessages = (allMessages || []).filter(
+            (msg) =>
+              (msg.sender_id === user.id && msg.recipient_id === conv.partner_id) ||
+              (msg.sender_id === conv.partner_id && msg.recipient_id === user.id)
           );
-          
+
           if (convMessages.length > 0) {
             conv.last_message = convMessages[0].content;
             conv.last_message_time = convMessages[0].created_at;
           }
-          
+
           // Count unread messages from partner
-          conv.unread_count = convMessages.filter(msg =>
-            msg.sender_id === conv.partner_id && 
-            msg.recipient_id === user.id && 
-            !msg.read_at
+          conv.unread_count = convMessages.filter(
+            (msg) =>
+              msg.sender_id === conv.partner_id && msg.recipient_id === user.id && !msg.read_at
           ).length;
         }
       }
