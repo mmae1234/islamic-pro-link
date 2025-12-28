@@ -3,7 +3,11 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
+
 console.log("Starting app initialization...");
+
+// Used by index.html pre-boot fallback to detect whether JS executed at all.
+;(window as any).__APP_BOOT_OK__ = true;
 
 // iOS WebKit detection and immediate handling
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
