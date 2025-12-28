@@ -894,6 +894,10 @@ export type Database = {
         Args: { recipient_id_param: string; sender_id_param: string }
         Returns: string
       }
+      can_view_profile: {
+        Args: { _profile_user_id: string; _viewer_id: string }
+        Returns: boolean
+      }
       check_message_rate_limit: {
         Args: { user_id_param: string }
         Returns: boolean
