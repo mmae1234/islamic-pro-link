@@ -278,13 +278,31 @@ const Businesses = () => {
         </section>
 
         <section aria-label="Search results" className="space-y-4">
-          {results.length === 0 && !loading && (
+          {!user && (
+            <Card className="shadow-soft">
+              <CardContent className="p-8 text-center">
+                <Building2 className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                <h2 className="text-xl font-semibold text-foreground mb-2">Sign in to Browse Businesses</h2>
+                <p className="text-muted-foreground mb-4">Create an account or sign in to discover Muslim-owned and Muslim-friendly businesses.</p>
+                <div className="flex flex-wrap gap-3 justify-center">
+                  <Button asChild>
+                    <Link to="/login?redirect=/businesses">Sign In</Link>
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <Link to="/signup?redirect=/businesses">Create Account</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {user && results.length === 0 && !loading && (
             <Card className="shadow-soft">
               <CardContent className="p-8 text-center text-muted-foreground">No businesses found. Try adjusting your filters.</CardContent>
             </Card>
           )}
 
-          {results.map((b) => (
+          {user && results.map((b) => (
             <Card key={b.id} className="shadow-soft">
               <CardContent className="p-6">
                 <div>
