@@ -60,101 +60,128 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  // Add data attribute for iOS render verification
-  React.useEffect(() => {
-    document.body.setAttribute('data-app-ready', 'true');
-  }, []);
-
   return (
-    <GlobalErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AuthProvider>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/search" element={<Search />} />
-              <Route path="/businesses" element={<Businesses />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <AutoDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/dashboard/professional" element={
-                <ProtectedRoute>
-                  <ProfessionalDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/dashboard/business" element={
-                <ProtectedRoute>
-                  <BusinessDashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/profile/:userId" element={<Profile />} />
-              <Route path="/business/:id" element={<BusinessProfile />} />
-              <Route path="/edit-profile" element={
-                <ProtectedRoute>
-                  <EditProfile />
-                </ProtectedRoute>
-              } />
-              <Route path="/edit-business-profile" element={
-                <ProtectedRoute>
-                  <EditBusinessProfile />
-                </ProtectedRoute>
-              } />
-              <Route path="/mentorship" element={<Mentorship />} />
-              <Route path="/messages" element={
-                <ProtectedRoute>
-                  <Messages />
-                </ProtectedRoute>
-              } />
-              <Route path="/favorites" element={
-                <ProtectedRoute>
-                  <Favorites />
-                </ProtectedRoute>
-              } />
-              <Route path="/settings" element={
-                <ProtectedRoute>
-                  <Settings />
-                </ProtectedRoute>
-              } />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/feedback" element={<Feedback />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/help" element={<Help />} />
-              <Route path="/donations" element={<Donations />} />
-              <Route path="/news" element={<News />} />
-              <Route path="/organizations" element={<Organizations />} />
-              <Route path="/careers" element={<Careers />} />
-              <Route path="/scholarships" element={<Scholarships />} />
-              <Route path="/admin/release-notes" element={
-                <ProtectedRoute>
-                  <AdminReleaseNotes />
-                </ProtectedRoute>
-              } />
-              <Route path="/admin/reports" element={
-                <ProtectedRoute>
-                  <AdminReports />
-                </ProtectedRoute>
-              } />
-              <Route path="/auth-gate" element={<AuthGate />} />
-              <Route path="/diag" element={<Diag />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-    </GlobalErrorBoundary>
+    <div data-app-ready="true">
+      <GlobalErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AuthProvider>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/search" element={<Search />} />
+                  <Route path="/businesses" element={<Businesses />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route
+                    path="/dashboard"
+                    element={
+                      <ProtectedRoute>
+                        <AutoDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/dashboard/professional"
+                    element={
+                      <ProtectedRoute>
+                        <ProfessionalDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/dashboard/business"
+                    element={
+                      <ProtectedRoute>
+                        <BusinessDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="/profile/:userId" element={<Profile />} />
+                  <Route path="/business/:id" element={<BusinessProfile />} />
+                  <Route
+                    path="/edit-profile"
+                    element={
+                      <ProtectedRoute>
+                        <EditProfile />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/edit-business-profile"
+                    element={
+                      <ProtectedRoute>
+                        <EditBusinessProfile />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="/mentorship" element={<Mentorship />} />
+                  <Route
+                    path="/messages"
+                    element={
+                      <ProtectedRoute>
+                        <Messages />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/favorites"
+                    element={
+                      <ProtectedRoute>
+                        <Favorites />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/settings"
+                    element={
+                      <ProtectedRoute>
+                        <Settings />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/feedback" element={<Feedback />} />
+                  <Route path="/privacy" element={<Privacy />} />
+                  <Route path="/terms" element={<Terms />} />
+                  <Route path="/help" element={<Help />} />
+                  <Route path="/donations" element={<Donations />} />
+                  <Route path="/news" element={<News />} />
+                  <Route path="/organizations" element={<Organizations />} />
+                  <Route path="/careers" element={<Careers />} />
+                  <Route path="/scholarships" element={<Scholarships />} />
+                  <Route
+                    path="/admin/release-notes"
+                    element={
+                      <ProtectedRoute>
+                        <AdminReleaseNotes />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/reports"
+                    element={
+                      <ProtectedRoute>
+                        <AdminReports />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="/auth-gate" element={<AuthGate />} />
+                  <Route path="/diag" element={<Diag />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </AuthProvider>
+            </BrowserRouter>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </GlobalErrorBoundary>
+    </div>
   );
 };
 
