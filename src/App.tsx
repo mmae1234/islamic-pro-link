@@ -7,43 +7,63 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import GlobalErrorBoundary from "@/components/GlobalErrorBoundary";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import LazyRouteErrorBoundary from "@/components/LazyRouteErrorBoundary";
 
-// Lazy-load pages to reduce initial JS evaluation (helps iOS Safari/WebKit stability)
-const Index = React.lazy(() => import("./pages/Index"));
-const Search = React.lazy(() => import("./pages/Search"));
-const About = React.lazy(() => import("./pages/About"));
-const Login = React.lazy(() => import("./pages/Login"));
-const Dashboard = React.lazy(() => import("./pages/Dashboard"));
-const Profile = React.lazy(() => import("./pages/Profile"));
-const Mentorship = React.lazy(() => import("./pages/Mentorship"));
-const Messages = React.lazy(() => import("./pages/Messages"));
-const Favorites = React.lazy(() => import("./pages/Favorites"));
-const Settings = React.lazy(() => import("./pages/Settings"));
-const Contact = React.lazy(() => import("./pages/Contact"));
-const Privacy = React.lazy(() => import("./pages/Privacy"));
-const Terms = React.lazy(() => import("./pages/Terms"));
-const Help = React.lazy(() => import("./pages/Help"));
-const Feedback = React.lazy(() => import("./pages/Feedback"));
-const NotFound = React.lazy(() => import("./pages/NotFound"));
-const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword"));
-const ResetPassword = React.lazy(() => import("./pages/ResetPassword"));
-const Donations = React.lazy(() => import("./pages/Donations"));
-const News = React.lazy(() => import("./pages/News"));
-const Organizations = React.lazy(() => import("./pages/Organizations"));
-const Careers = React.lazy(() => import("./pages/Careers"));
-const Scholarships = React.lazy(() => import("./pages/Scholarships"));
-const EditProfile = React.lazy(() => import("./pages/EditProfile"));
-const EditBusinessProfile = React.lazy(() => import("./pages/EditBusinessProfile"));
-const Signup = React.lazy(() => import("./pages/Signup"));
-const ProfessionalDashboard = React.lazy(() => import("./pages/ProfessionalDashboard"));
-const BusinessDashboard = React.lazy(() => import("./pages/BusinessDashboard"));
-const BusinessProfile = React.lazy(() => import("./pages/BusinessProfile"));
-const Businesses = React.lazy(() => import("./pages/Businesses"));
-const AutoDashboard = React.lazy(() => import("./pages/AutoDashboard"));
-const AdminReleaseNotes = React.lazy(() => import("./pages/AdminReleaseNotes"));
-const AdminReports = React.lazy(() => import("./pages/AdminReports"));
-const Diag = React.lazy(() => import("./pages/Diag"));
-const AuthGate = React.lazy(() => import("./pages/AuthGate"));
+// Helper function to create lazy imports with retry logic
+const lazyWithRetry = (importFn: () => Promise<any>, retries = 3) => {
+  return React.lazy(() => {
+    const tryImport = async (attempt: number): Promise<any> => {
+      try {
+        return await importFn();
+      } catch (error) {
+        if (attempt < retries) {
+          // Wait a bit before retrying
+          await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+          return tryImport(attempt + 1);
+        }
+        throw error;
+      }
+    };
+    return tryImport(1);
+  });
+};
+
+// Lazy-load pages with retry logic to handle transient network issues
+const Index = lazyWithRetry(() => import("./pages/Index"));
+const Search = lazyWithRetry(() => import("./pages/Search"));
+const About = lazyWithRetry(() => import("./pages/About"));
+const Login = lazyWithRetry(() => import("./pages/Login"));
+const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
+const Profile = lazyWithRetry(() => import("./pages/Profile"));
+const Mentorship = lazyWithRetry(() => import("./pages/Mentorship"));
+const Messages = lazyWithRetry(() => import("./pages/Messages"));
+const Favorites = lazyWithRetry(() => import("./pages/Favorites"));
+const Settings = lazyWithRetry(() => import("./pages/Settings"));
+const Contact = lazyWithRetry(() => import("./pages/Contact"));
+const Privacy = lazyWithRetry(() => import("./pages/Privacy"));
+const Terms = lazyWithRetry(() => import("./pages/Terms"));
+const Help = lazyWithRetry(() => import("./pages/Help"));
+const Feedback = lazyWithRetry(() => import("./pages/Feedback"));
+const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
+const ForgotPassword = lazyWithRetry(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazyWithRetry(() => import("./pages/ResetPassword"));
+const Donations = lazyWithRetry(() => import("./pages/Donations"));
+const News = lazyWithRetry(() => import("./pages/News"));
+const Organizations = lazyWithRetry(() => import("./pages/Organizations"));
+const Careers = lazyWithRetry(() => import("./pages/Careers"));
+const Scholarships = lazyWithRetry(() => import("./pages/Scholarships"));
+const EditProfile = lazyWithRetry(() => import("./pages/EditProfile"));
+const EditBusinessProfile = lazyWithRetry(() => import("./pages/EditBusinessProfile"));
+const Signup = lazyWithRetry(() => import("./pages/Signup"));
+const ProfessionalDashboard = lazyWithRetry(() => import("./pages/ProfessionalDashboard"));
+const BusinessDashboard = lazyWithRetry(() => import("./pages/BusinessDashboard"));
+const BusinessProfile = lazyWithRetry(() => import("./pages/BusinessProfile"));
+const Businesses = lazyWithRetry(() => import("./pages/Businesses"));
+const AutoDashboard = lazyWithRetry(() => import("./pages/AutoDashboard"));
+const AdminReleaseNotes = lazyWithRetry(() => import("./pages/AdminReleaseNotes"));
+const AdminReports = lazyWithRetry(() => import("./pages/AdminReports"));
+const Diag = lazyWithRetry(() => import("./pages/Diag"));
+const AuthGate = lazyWithRetry(() => import("./pages/AuthGate"));
 
 const AppLoading = () => (
   <div className="min-h-screen bg-background flex items-center justify-center p-6">
@@ -80,16 +100,17 @@ const App = () => {
             <Sonner />
             <BrowserRouter>
               <AuthProvider>
-                <Suspense fallback={<AppLoading />}>
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/search" element={<Search />} />
-                    <Route path="/businesses" element={<Businesses />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<Signup />} />
-                    <Route path="/forgot-password" element={<ForgotPassword />} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
+                <LazyRouteErrorBoundary>
+                  <Suspense fallback={<AppLoading />}>
+                    <Routes>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/search" element={<Search />} />
+                      <Route path="/businesses" element={<Businesses />} />
+                      <Route path="/about" element={<About />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/signup" element={<Signup />} />
+                      <Route path="/forgot-password" element={<ForgotPassword />} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
                     <Route
                       path="/dashboard"
                       element={
@@ -187,8 +208,9 @@ const App = () => {
                     <Route path="/diag" element={<Diag />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
+                    </Routes>
+                  </Suspense>
+                </LazyRouteErrorBoundary>
               </AuthProvider>
             </BrowserRouter>
           </TooltipProvider>
