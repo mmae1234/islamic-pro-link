@@ -14,8 +14,9 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     // Ensures compatibility with older iOS Safari/WebKit builds that can otherwise blank-screen.
+    // NOTE: targets here are for the *legacy* bundle; keep them broad to support older iPhones.
     legacy({
-      targets: ["iOS >= 12", "Safari >= 12", "Chrome >= 60", "Firefox >= 60", "Edge >= 79"],
+      targets: ["defaults", "not IE 11"],
     }),
     mode === "development" && componentTagger(),
   ].filter(Boolean),
