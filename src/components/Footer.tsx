@@ -106,7 +106,13 @@ const Footer = () => {
         <div className="border-t border-primary-foreground/20 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-sm text-primary-foreground/70 mb-4 md:mb-0">
-              © 2024 Muslim Pros. All rights reserved.
+              <div>© {new Date().getFullYear()} Muslim Pros. All rights reserved.</div>
+              <div className="mt-1">
+                Designed by{" "}
+                <a href="https://tajdeedtech.com/" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">
+                  Tajdeed Tech
+                </a>
+              </div>
             </div>
             <div className="flex space-x-6">
               <Link to="/facebook" className="text-primary-foreground/70 hover:text-accent transition-smooth">
