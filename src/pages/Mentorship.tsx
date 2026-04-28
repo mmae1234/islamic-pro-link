@@ -92,73 +92,42 @@ const Mentorship = () => {
 
   const loadMentors = async () => {
     try {
-      // Get professional profiles with mentor flag
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('professional_profiles')
-        .select('*')
-        .eq('is_mentor', true)
-        .neq('user_id', user?.id);
+      // Use SECURITY DEFINER RPC — returns only safe directory fields and respects blocks
+      const { data: mentorsData, error: mentorsError } = await supabase.rpc('list_professional_directory', {
+        _is_mentor: true,
+        _limit: 100,
+      });
 
-      if (profilesError) {
-        console.error('Error loading mentors:', profilesError);
-        
-        // Handle specific infinite recursion error
-        if (profilesError.code === '42P17') {
-          if (toast) {
-            toast({
-              title: "Mentors temporarily unavailable",
-              description: "We're fixing a technical issue. Please try again in a moment.",
-              variant: "destructive",
-            });
-          }
-        } else {
-          if (toast) {
-            toast({
-              title: "Failed to load mentors",
-              description: "Please refresh the page and try again.",
-              variant: "destructive",
-            });
-          }
+      if (mentorsError) {
+        console.error('Error loading mentors:', mentorsError);
+        if (toast) {
+          toast({
+            title: "Failed to load mentors",
+            description: "Please refresh the page and try again.",
+            variant: "destructive",
+          });
         }
         setMentors([]);
         setAllMentors([]);
         return;
       }
 
-      // Get existing mentorship requests from current user to filter out already requested mentors
+      // Filter out mentors already requested
       const { data: existingRequests } = await supabase
         .from('mentorship_requests')
         .select('mentor_id, status')
         .eq('mentee_id', user?.id);
 
-      // Filter out mentors who already have accepted requests or pending requests from current user
       const excludedMentorIds = existingRequests
         ?.filter(req => req.status === 'accepted' || req.status === 'pending')
         .map(req => req.mentor_id) || [];
 
-      const availableProfilesData = profilesData?.filter(
-        profile => !excludedMentorIds.includes(profile.user_id)
-      ) || [];
-
-      // Get corresponding user profiles
-      const userIds = availableProfilesData?.map(p => p.user_id) || [];
-      if (userIds.length === 0) {
-        setMentors([]);
-        return;
-      }
-
-      const { data: usersData, error: usersError } = await supabase
-        .from('profiles')
-        .select('user_id, first_name, last_name')
-        .in('user_id', userIds);
-
-      if (usersError) throw usersError;
-
-      // Combine the data
-      const mentorsWithProfiles = availableProfilesData?.map(profile => ({
-        ...profile,
-        profiles: usersData?.find(u => u.user_id === profile.user_id) || { first_name: 'Unknown', last_name: '' }
-      })) || [];
+      const mentorsWithProfiles = (mentorsData || [])
+        .filter((m: any) => !excludedMentorIds.includes(m.user_id))
+        .map((m: any) => ({
+          ...m,
+          profiles: { first_name: m.first_name, last_name: m.last_name },
+        }));
 
       setMentors(mentorsWithProfiles);
       setAllMentors(mentorsWithProfiles);
