@@ -71,18 +71,18 @@ const StaticLandingFallback = () => {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 pt-8 border-t border-primary-foreground/20 mb-8">
+            <div className="grid grid-cols-3 gap-4 pt-8 border-t border-primary-foreground/30 mb-8">
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-accent">10K+</div>
-                <div className="text-sm text-primary-foreground/80">Professionals</div>
+                <div className="text-2xl md:text-3xl font-bold text-primary-foreground">10K+</div>
+                <div className="text-sm text-primary-foreground/90">Professionals</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-accent">50+</div>
-                <div className="text-sm text-primary-foreground/80">Countries</div>
+                <div className="text-2xl md:text-3xl font-bold text-primary-foreground">50+</div>
+                <div className="text-sm text-primary-foreground/90">Countries</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-accent">200+</div>
-                <div className="text-sm text-primary-foreground/80">Industries</div>
+                <div className="text-2xl md:text-3xl font-bold text-primary-foreground">200+</div>
+                <div className="text-sm text-primary-foreground/90">Industries</div>
               </div>
             </div>
 
