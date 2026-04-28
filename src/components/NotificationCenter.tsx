@@ -133,9 +133,11 @@ const NotificationCenter = () => {
   const setupRealtimeSubscriptions = () => {
     if (!user) return;
 
-    // Subscribe to new messages
+    // Subscribe to new messages — channel name MUST be unique per component
+    // instance, otherwise a second `.subscribe()` on the same channel name
+    // throws "cannot add postgres_changes callbacks after subscribe()".
     const messagesChannel = supabase
-      .channel('user-messages')
+      .channel(`notifications-messages-${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -159,7 +161,7 @@ const NotificationCenter = () => {
 
     // Subscribe to mentorship requests
     const requestsChannel = supabase
-      .channel('user-requests')
+      .channel(`notifications-requests-${user.id}`)
       .on(
         'postgres_changes',
         {

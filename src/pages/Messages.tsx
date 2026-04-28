@@ -260,7 +260,7 @@ const Messages = () => {
     if (!user) return;
 
     const channel = supabase
-      .channel('user-messages')
+      .channel(`messages-page-${user.id}`)
       .on(
         'postgres_changes',
         {
