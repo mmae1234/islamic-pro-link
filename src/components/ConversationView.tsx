@@ -55,19 +55,34 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
-        .from('messages')
-        .select(`
+      // Split cross-pair .or() into two parallel queries (iOS-safe). The pair (sender, recipient)
+      // produces disjoint sets — send_message blocks self-messaging, so no dedupe needed.
+      const selectStr = `
           *,
           sender_profile:profiles!messages_sender_id_fkey(first_name, last_name),
           recipient_profile:profiles!messages_recipient_id_fkey(first_name, last_name)
-        `)
-        .or(`and(sender_id.eq.${user.id},recipient_id.eq.${partnerId}),and(sender_id.eq.${partnerId},recipient_id.eq.${user.id})`)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: true });
+        `;
+      const [{ data: outData, error: outErr }, { data: inData, error: inErr }] = await Promise.all([
+        supabase
+          .from('messages')
+          .select(selectStr)
+          .eq('sender_id', user.id)
+          .eq('recipient_id', partnerId)
+          .is('deleted_at', null),
+        supabase
+          .from('messages')
+          .select(selectStr)
+          .eq('sender_id', partnerId)
+          .eq('recipient_id', user.id)
+          .is('deleted_at', null),
+      ]);
 
-      if (error) throw error;
-      setMessages(data || []);
+      if (outErr) throw outErr;
+      if (inErr) throw inErr;
+
+      const merged = [...(outData || []), ...(inData || [])]
+        .sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at));
+      setMessages(merged);
     } catch (error) {
       console.error('Error loading conversation:', error);
       toast({
@@ -220,12 +235,24 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
   };
 
   const deleteThread = async () => {
+    if (!user) return;
     try {
-      const { error } = await supabase
-        .from('messages')
-        .update({ deleted_at: new Date().toISOString() })
-        .or(`and(sender_id.eq.${user?.id},recipient_id.eq.${partnerId}),and(sender_id.eq.${partnerId},recipient_id.eq.${user?.id})`);
+      // Two parallel writes instead of a nested .or() (iOS-safe).
+      const nowIso = new Date().toISOString();
+      const [outRes, inRes] = await Promise.all([
+        supabase
+          .from('messages')
+          .update({ deleted_at: nowIso })
+          .eq('sender_id', user.id)
+          .eq('recipient_id', partnerId),
+        supabase
+          .from('messages')
+          .update({ deleted_at: nowIso })
+          .eq('sender_id', partnerId)
+          .eq('recipient_id', user.id),
+      ]);
 
+      const error = outRes.error || inRes.error;
       if (error) throw error;
 
       toast({
