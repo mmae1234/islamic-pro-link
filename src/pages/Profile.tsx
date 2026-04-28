@@ -192,6 +192,13 @@ const Profile = () => {
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-4xl mx-auto">
+          {isLimitedView && !isOwnProfile && (
+            <Alert className="mb-6 border-primary/20 bg-primary/5">
+              <AlertDescription>
+                You're viewing a limited profile. <span className="font-medium">Connect with this professional</span> to see their full bio, skills, education, and contact preferences.
+              </AlertDescription>
+            </Alert>
+          )}
           {/* Profile Header */}
           <Card className="shadow-soft mb-8">
             <CardContent className="pt-6">
