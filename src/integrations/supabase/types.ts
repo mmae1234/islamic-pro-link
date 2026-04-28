@@ -208,13 +208,6 @@ export type Database = {
             referencedRelation: "business_accounts"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "fk_business_members_business"
-            columns: ["business_id"]
-            isOneToOne: false
-            referencedRelation: "business_directory_internal"
-            referencedColumns: ["id"]
-          },
         ]
       }
       conversations: {
@@ -505,13 +498,6 @@ export type Database = {
             referencedRelation: "business_accounts"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "fk_links_business"
-            columns: ["business_id"]
-            isOneToOne: false
-            referencedRelation: "business_directory_internal"
-            referencedColumns: ["id"]
-          },
         ]
       }
       professional_profiles: {
@@ -774,132 +760,6 @@ export type Database = {
       }
     }
     Views: {
-      business_directory_internal: {
-        Row: {
-          bio: string | null
-          city: string | null
-          country: string | null
-          cover_url: string | null
-          created_at: string | null
-          id: string | null
-          logo_url: string | null
-          name: string | null
-          sector: string | null
-          services: string | null
-          state: string | null
-          status: string | null
-          verified: boolean | null
-          website: string | null
-        }
-        Insert: {
-          bio?: string | null
-          city?: string | null
-          country?: string | null
-          cover_url?: string | null
-          created_at?: string | null
-          id?: string | null
-          logo_url?: string | null
-          name?: string | null
-          sector?: string | null
-          services?: string | null
-          state?: string | null
-          status?: string | null
-          verified?: boolean | null
-          website?: string | null
-        }
-        Update: {
-          bio?: string | null
-          city?: string | null
-          country?: string | null
-          cover_url?: string | null
-          created_at?: string | null
-          id?: string | null
-          logo_url?: string | null
-          name?: string | null
-          sector?: string | null
-          services?: string | null
-          state?: string | null
-          status?: string | null
-          verified?: boolean | null
-          website?: string | null
-        }
-        Relationships: []
-      }
-      professional_directory: {
-        Row: {
-          availability: string | null
-          avatar_url: string | null
-          bio: string | null
-          city: string | null
-          country: string | null
-          created_at: string | null
-          experience_years: number | null
-          first_name: string | null
-          id: string | null
-          is_mentor: boolean | null
-          is_seeking_mentor: boolean | null
-          last_name: string | null
-          occupation: string | null
-          sector: string | null
-          skills: string[] | null
-          state_province: string | null
-          user_id: string | null
-        }
-        Insert: {
-          availability?: string | null
-          avatar_url?: string | null
-          bio?: string | null
-          city?: string | null
-          country?: string | null
-          created_at?: string | null
-          experience_years?: number | null
-          first_name?: string | null
-          id?: string | null
-          is_mentor?: boolean | null
-          is_seeking_mentor?: boolean | null
-          last_name?: string | null
-          occupation?: string | null
-          sector?: string | null
-          skills?: string[] | null
-          state_province?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          availability?: string | null
-          avatar_url?: string | null
-          bio?: string | null
-          city?: string | null
-          country?: string | null
-          created_at?: string | null
-          experience_years?: number | null
-          first_name?: string | null
-          id?: string | null
-          is_mentor?: boolean | null
-          is_seeking_mentor?: boolean | null
-          last_name?: string | null
-          occupation?: string | null
-          sector?: string | null
-          skills?: string[] | null
-          state_province?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "professional_profiles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "professional_profiles_user_id_profiles_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
       public_guest_profiles: {
         Row: {
           avatar_url: string | null
@@ -925,10 +785,22 @@ export type Database = {
       }
       consolidate_conversations: { Args: never; Returns: undefined }
       delete_user_account: { Args: { user_id_param: string }; Returns: boolean }
+      get_business_owner_id: { Args: { _business_id: string }; Returns: string }
       get_business_sectors: {
         Args: never
         Returns: {
           sector: string
+        }[]
+      }
+      get_business_team: {
+        Args: { _business_id: string }
+        Returns: {
+          avatar_url: string
+          first_name: string
+          last_name: string
+          occupation: string
+          role_title: string
+          user_id: string
         }[]
       }
       get_or_create_conversation: {
@@ -978,6 +850,47 @@ export type Database = {
       is_business_team_member_safe: {
         Args: { _business_id: string; _user_id: string }
         Returns: boolean
+      }
+      list_professional_directory: {
+        Args: {
+          _city?: string
+          _country?: string
+          _is_mentor?: boolean
+          _is_seeking_mentor?: boolean
+          _limit?: number
+          _occupation?: string
+          _offset?: number
+          _search?: string
+          _sector?: string
+          _state_province?: string
+        }
+        Returns: {
+          avatar_url: string
+          city: string
+          country: string
+          experience_years: number
+          first_name: string
+          is_mentor: boolean
+          is_seeking_mentor: boolean
+          last_name: string
+          occupation: string
+          sector: string
+          state_province: string
+          user_id: string
+        }[]
+      }
+      lookup_profile_basic: {
+        Args: { _user_id: string }
+        Returns: {
+          avatar_url: string
+          city: string
+          country: string
+          first_name: string
+          last_name: string
+          occupation: string
+          sector: string
+          user_id: string
+        }[]
       }
       search_business_directory: {
         Args: {
