@@ -26,6 +26,7 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import ReportDialog from "@/components/ReportDialog";
 import BlockUserButton from "@/components/BlockUserButton";
+import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
 
 const Profile = () => {
   const { userId } = useParams();
@@ -38,6 +39,8 @@ const Profile = () => {
   const [isLimitedView, setIsLimitedView] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
+
+  useCanonicalUrl(userId ? `/profile/${userId}` : "/");
 
   // Anonymous users can't view profiles (RLS + lookup_profile_basic both require auth.uid()).
   // Bounce to auth-gate matching the directory privacy rule, preserving the deep link.
