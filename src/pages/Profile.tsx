@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { 
   User, 
@@ -34,6 +35,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
   const [professionalProfile, setProfessionalProfile] = useState<any>(null);
+  const [isLimitedView, setIsLimitedView] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
 
@@ -48,27 +50,44 @@ const Profile = () => {
 
   const loadProfile = async () => {
     try {
-      // Load basic profile
-      const { data: profileData, error: profileError } = await supabase
+      // Try the related-party full read first (works when can_view_profile passes)
+      const { data: profileData } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
         .maybeSingle();
 
-      if (profileError) throw profileError;
-      setProfile(profileData);
-
-      // Load professional profile
-      const { data: professionalData, error: professionalError } = await supabase
-        .from('professional_profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (professionalError && professionalError.code !== 'PGRST116') {
-        console.error('Error loading professional profile:', professionalError);
-      } else if (professionalData) {
-        setProfessionalProfile(professionalData);
+      if (profileData) {
+        setProfile(profileData);
+        const { data: professionalData } = await supabase
+          .from('professional_profiles')
+          .select('*')
+          .eq('user_id', userId)
+          .maybeSingle();
+        if (professionalData) setProfessionalProfile(professionalData);
+        setIsLimitedView(false);
+      } else {
+        // Fallback: limited public view via SECURITY DEFINER RPC
+        const { data: basic, error: basicErr } = await supabase
+          .rpc('lookup_profile_basic', { _user_id: userId });
+        if (basicErr) throw basicErr;
+        const row = Array.isArray(basic) ? basic[0] : basic;
+        if (row) {
+          setProfile({
+            user_id: row.user_id,
+            first_name: row.first_name,
+            last_name: row.last_name,
+            avatar_url: row.avatar_url,
+          });
+          setProfessionalProfile({
+            avatar_url: row.avatar_url,
+            occupation: row.occupation,
+            sector: row.sector,
+            city: row.city,
+            country: row.country,
+          });
+          setIsLimitedView(true);
+        }
       }
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -174,6 +193,13 @@ const Profile = () => {
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-4xl mx-auto">
+          {isLimitedView && !isOwnProfile && (
+            <Alert className="mb-6 border-primary/20 bg-primary/5">
+              <AlertDescription>
+                You're viewing a limited profile. <span className="font-medium">Connect with this professional</span> to see their full bio, skills, education, and contact preferences.
+              </AlertDescription>
+            </Alert>
+          )}
           {/* Profile Header */}
           <Card className="shadow-soft mb-8">
             <CardContent className="pt-6">

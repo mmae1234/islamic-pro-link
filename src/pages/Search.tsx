@@ -70,109 +70,63 @@ const Search = () => {
   const handleSearch = async (filters: any = {}) => {
     setIsLoading(true);
     try {
-      let query = supabase
-        .from('professional_profiles')
-        .select(`
-          *,
-          profiles!professional_profiles_user_id_profiles_fkey(first_name, last_name, avatar_url)
-        `);
-
-      if (filters.searchTerm) {
-        const term = filters.searchTerm;
-        query = query.or(
-          `first_name.ilike.%${term}%,last_name.ilike.%${term}%,occupation.ilike.%${term}%,bio.ilike.%${term}%,sector.ilike.%${term}%`
-        );
-      }
-
-      if (filters.country && filters.country !== 'all') {
-        query = query.eq('country', filters.country);
-      }
-
-      if (filters.stateProvince && filters.stateProvince !== 'all') {
-        query = query.eq('state_province', filters.stateProvince);
-      }
-
-      if (filters.sector && filters.sector !== 'all') {
-        query = query.eq('sector', filters.sector);
-      }
-
-      if (filters.occupation && filters.occupation !== 'all') {
-        query = query.eq('occupation', filters.occupation);
-      }
-
-      if (filters.isSeekingMentor) {
-        query = query.eq('is_seeking_mentor', true);
-      }
-
-      if (filters.isMentor) {
-        query = query.eq('is_mentor', true);
-      }
-
-      if (filters.experienceMin) {
-        query = query.gte('experience_years', parseInt(filters.experienceMin));
-      }
-
-      if (filters.experienceMax) {
-        query = query.lte('experience_years', parseInt(filters.experienceMax));
-      }
-
-      if (filters.skills && filters.skills.length > 0) {
-        query = query.overlaps('skills', filters.skills);
-      }
-
-      if (filters.universities && filters.universities.length > 0) {
-        query = query.in('university', filters.universities);
-      }
-
-      if (filters.languages && filters.languages.length > 0) {
-        query = query.overlaps('languages', filters.languages);
-      }
-
-      if (filters.gender && filters.gender !== 'all') {
-        query = query.eq('gender', filters.gender);
-      }
-
-      // Exclude current user
-      if (user) {
-        query = query.neq('user_id', user.id);
-      }
-
-      // Apply sorting
-      if (sortBy === 'name') {
-        query = query.order('first_name', { ascending: sortOrder === 'asc' });
-      } else {
-        query = query.order(sortBy, { ascending: sortOrder === 'asc' });
-      }
-
-      query = query.limit(50);
-
-      const { data, error } = await query;
+      const { data, error } = await supabase.rpc('list_professional_directory', {
+        _country: filters.country && filters.country !== 'all' ? filters.country : null,
+        _state_province: filters.stateProvince && filters.stateProvince !== 'all' ? filters.stateProvince : null,
+        _city: filters.city && filters.city !== 'all' ? filters.city : null,
+        _sector: filters.sector && filters.sector !== 'all' ? filters.sector : null,
+        _occupation: filters.occupation && filters.occupation !== 'all' ? filters.occupation : null,
+        _is_mentor: filters.isMentor ? true : null,
+        _is_seeking_mentor: filters.isSeekingMentor ? true : null,
+        _search: filters.searchTerm || null,
+        _limit: 50,
+        _offset: 0,
+      });
 
       if (error) {
-        console.error('Supabase error:', error);
+        console.error('Directory RPC error:', error);
         setProfessionals([]);
-        
-        if (error.code === '42P17') {
-          toast({
-            title: "Search temporarily unavailable",
-            description: "We're fixing a technical issue. Please try again in a moment.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Unable to load profiles",
-            description: "Please try refreshing the page or contact support.",
-            variant: "destructive",
-          });
-        }
+        toast({
+          title: "Unable to load profiles",
+          description: "Please try refreshing the page or contact support.",
+          variant: "destructive",
+        });
         return;
       }
 
-      setProfessionals(data || []);
+      // Shape rows to match ProfessionalCard expectations (it reads professional.profiles.first_name/last_name/avatar_url)
+      let rows = (data || []).map((r: any) => ({
+        ...r,
+        profiles: {
+          first_name: r.first_name,
+          last_name: r.last_name,
+          avatar_url: r.avatar_url,
+        },
+      }));
+
+      // Client-side post-filters that the RPC doesn't expose yet
+      if (filters.experienceMin) {
+        const min = parseInt(filters.experienceMin);
+        rows = rows.filter((r: any) => (r.experience_years ?? 0) >= min);
+      }
+      if (filters.experienceMax) {
+        const max = parseInt(filters.experienceMax);
+        rows = rows.filter((r: any) => (r.experience_years ?? 0) <= max);
+      }
+
+      // Apply client-side sort
+      if (sortBy === 'name') {
+        rows.sort((a: any, b: any) => {
+          const an = `${a.first_name || ''} ${a.last_name || ''}`.trim();
+          const bn = `${b.first_name || ''} ${b.last_name || ''}`.trim();
+          return sortOrder === 'asc' ? an.localeCompare(bn) : bn.localeCompare(an);
+        });
+      }
+
+      setProfessionals(rows);
     } catch (error: any) {
       console.error('Error searching professionals:', error);
       setProfessionals([]);
-      
       toast({
         title: "Search failed",
         description: "Unable to load professional profiles. Please try again later.",

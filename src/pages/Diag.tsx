@@ -137,9 +137,7 @@ const Diag = () => {
     try {
       const dbStart = Date.now();
       const { data, error } = await supabase
-        .from('professional_directory')
-        .select('id')
-        .limit(1);
+        .rpc('list_professional_directory', { _limit: 1 });
       const dbDuration = Date.now() - dbStart;
       
       if (error) {
