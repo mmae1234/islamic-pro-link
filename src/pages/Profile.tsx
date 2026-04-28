@@ -29,7 +29,7 @@ import BlockUserButton from "@/components/BlockUserButton";
 
 const Profile = () => {
   const { userId } = useParams();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -39,10 +39,18 @@ const Profile = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
 
+  // Anonymous users can't view profiles (RLS + lookup_profile_basic both require auth.uid()).
+  // Bounce to auth-gate matching the directory privacy rule, preserving the deep link.
   useEffect(() => {
-    if (userId) {
+    if (!authLoading && !user && userId) {
+      navigate(`/auth-gate?redirect=${encodeURIComponent(`/profile/${userId}`)}`, { replace: true });
+    }
+  }, [authLoading, user, userId, navigate]);
+
+  useEffect(() => {
+    if (userId && user) {
       loadProfile();
-      if (user && user.id !== userId) {
+      if (user.id !== userId) {
         checkFavoriteStatus();
       }
     }

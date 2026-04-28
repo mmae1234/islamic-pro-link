@@ -61,19 +61,32 @@ const MentorshipRequests = () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
-        .from('mentorship_requests')
-        .select(`
+      // Split cross-column .or() into two parallel queries (iOS-safe).
+      const reqSelect = `
           *,
           mentor_profile:profiles!mentorship_requests_mentor_id_fkey(first_name, last_name, role),
           mentee_profile:profiles!mentorship_requests_mentee_id_fkey(first_name, last_name, role)
-        `)
-        .or(`mentor_id.eq.${user.id},mentee_id.eq.${user.id}`)
-        .order('created_at', { ascending: false });
+        `;
+      const [{ data: asMentor, error: errMentor }, { data: asMentee, error: errMentee }] = await Promise.all([
+        supabase
+          .from('mentorship_requests')
+          .select(reqSelect)
+          .eq('mentor_id', user.id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('mentorship_requests')
+          .select(reqSelect)
+          .eq('mentee_id', user.id)
+          .order('created_at', { ascending: false }),
+      ]);
 
-      if (error) throw error;
+      if (errMentor) throw errMentor;
+      if (errMentee) throw errMentee;
 
-      setRequests(data || []);
+      const data = [...(asMentor || []), ...(asMentee || [])]
+        .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+
+      setRequests(data);
     } catch (error: any) {
       console.error('Error loading requests:', error);
       toast({

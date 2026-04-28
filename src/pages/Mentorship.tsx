@@ -138,14 +138,25 @@ const Mentorship = () => {
 
   const loadRequests = async () => {
     try {
-      // Get requests
-      const { data: requestsData, error: requestsError } = await supabase
-        .from('mentorship_requests')
-        .select('*')
-        .or(`mentor_id.eq.${user?.id},mentee_id.eq.${user?.id}`)
-        .order('created_at', { ascending: false });
+      // Split cross-column .or() into two parallel queries (iOS-safe).
+      const [{ data: asMentor, error: errMentor }, { data: asMentee, error: errMentee }] = await Promise.all([
+        supabase
+          .from('mentorship_requests')
+          .select('*')
+          .eq('mentor_id', user?.id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('mentorship_requests')
+          .select('*')
+          .eq('mentee_id', user?.id)
+          .order('created_at', { ascending: false }),
+      ]);
 
-      if (requestsError) throw requestsError;
+      if (errMentor) throw errMentor;
+      if (errMentee) throw errMentee;
+
+      const requestsData = [...(asMentor || []), ...(asMentee || [])]
+        .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
 
       if (!requestsData || requestsData.length === 0) {
         setRequests([]);
