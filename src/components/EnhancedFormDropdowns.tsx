@@ -301,15 +301,22 @@ export const StateProvinceSelect = ({ value, onValueChange, country, placeholder
     if (!country) { setStates([]); return; }
     let mounted = true;
     setLoading(true);
-    Promise.all([loadCountry(), loadState()]).then(([CountryMod, StateMod]) => {
-      if (!mounted) return;
-      const countryData = CountryMod.getAllCountries().find(c => c.name === country);
-      if (!countryData) { setStates([]); setLoading(false); return; }
-      const list = StateMod.getStatesOfCountry(countryData.isoCode)
-        .slice().sort((a, b) => a.name.localeCompare(b.name));
-      setStates(list);
-      setLoading(false);
-    });
+    Promise.all([loadCountry(), loadState()])
+      .then(([CountryMod, StateMod]) => {
+        if (!mounted) return;
+        const countryData = CountryMod.getAllCountries().find(c => c.name === country);
+        if (!countryData) { setStates([]); setLoading(false); return; }
+        const list = StateMod.getStatesOfCountry(countryData.isoCode)
+          .slice().sort((a, b) => a.name.localeCompare(b.name));
+        setStates(list);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (!mounted) return;
+        console.error("Failed to load state list:", err);
+        setStates([]);
+        setLoading(false);
+      });
     return () => { mounted = false; };
   }, [country]);
 
