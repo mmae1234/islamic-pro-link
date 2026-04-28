@@ -975,6 +975,14 @@ export type Database = {
           website: string
         }[]
       }
+      send_message: {
+        Args: { _content: string; _recipient_id: string }
+        Returns: string
+      }
+      update_conversation_status: {
+        Args: { _conversation_id: string; _new_status: string }
+        Returns: boolean
+      }
     }
     Enums: {
       business_member_role: "admin" | "editor" | "viewer"
