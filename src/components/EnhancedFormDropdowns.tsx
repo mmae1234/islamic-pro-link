@@ -252,14 +252,24 @@ interface CountrySelectProps {
 }
 
 export const CountrySelect = ({ value, onValueChange, placeholder = "Select country" }: CountrySelectProps) => {
-  const countries = useMemo(() => {
-    return Country.getAllCountries().sort((a, b) => a.name.localeCompare(b.name));
+  const [countries, setCountries] = useState<CountryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    loadCountry().then((mod) => {
+      if (!mounted) return;
+      const list = mod.getAllCountries().slice().sort((a, b) => a.name.localeCompare(b.name));
+      setCountries(list);
+      setLoading(false);
+    });
+    return () => { mounted = false; };
   }, []);
 
   return (
     <Select value={value} onValueChange={onValueChange}>
       <SelectTrigger>
-        <SelectValue placeholder={placeholder} />
+        <SelectValue placeholder={loading ? "Loading countries…" : placeholder} />
       </SelectTrigger>
       <SelectContent className="max-h-60 overflow-y-auto">
         {countries.map(country => (
@@ -278,21 +288,33 @@ interface StateProvinceSelectProps {
 }
 
 export const StateProvinceSelect = ({ value, onValueChange, country, placeholder = "Select state/province" }: StateProvinceSelectProps) => {
-  const states = useMemo(() => {
-    if (!country) return [];
-    const countryData = Country.getAllCountries().find(c => c.name === country);
-    if (!countryData) return [];
-    return State.getStatesOfCountry(countryData.isoCode).sort((a, b) => a.name.localeCompare(b.name));
+  const [states, setStates] = useState<StateItem[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!country) { setStates([]); return; }
+    let mounted = true;
+    setLoading(true);
+    Promise.all([loadCountry(), loadState()]).then(([CountryMod, StateMod]) => {
+      if (!mounted) return;
+      const countryData = CountryMod.getAllCountries().find(c => c.name === country);
+      if (!countryData) { setStates([]); setLoading(false); return; }
+      const list = StateMod.getStatesOfCountry(countryData.isoCode)
+        .slice().sort((a, b) => a.name.localeCompare(b.name));
+      setStates(list);
+      setLoading(false);
+    });
+    return () => { mounted = false; };
   }, [country]);
 
-  if (!country || states.length === 0) {
+  if (!country || (states.length === 0 && !loading)) {
     return (
       <Select disabled>
         <SelectTrigger>
-          <SelectValue placeholder="Select country first" />
+          <SelectValue placeholder={country ? "No states available" : "Select country first"} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="none">Select country first</SelectItem>
+          <SelectItem value="none">{country ? "No states available" : "Select country first"}</SelectItem>
         </SelectContent>
       </Select>
     );
@@ -301,7 +323,7 @@ export const StateProvinceSelect = ({ value, onValueChange, country, placeholder
   return (
     <Select value={value} onValueChange={onValueChange}>
       <SelectTrigger>
-        <SelectValue placeholder={placeholder} />
+        <SelectValue placeholder={loading ? "Loading states…" : placeholder} />
       </SelectTrigger>
       <SelectContent className="max-h-60 overflow-y-auto">
         {states.map(state => (
@@ -321,23 +343,35 @@ interface CitySelectProps {
 }
 
 export const CitySelect = ({ value, onValueChange, country, stateProvince, placeholder = "Select city" }: CitySelectProps) => {
-  const cities = useMemo(() => {
-    if (!country || !stateProvince) return [];
-    const countryData = Country.getAllCountries().find(c => c.name === country);
-    if (!countryData) return [];
-    const stateData = State.getStatesOfCountry(countryData.isoCode).find(s => s.name === stateProvince);
-    if (!stateData) return [];
-    return City.getCitiesOfState(countryData.isoCode, stateData.isoCode).sort((a, b) => a.name.localeCompare(b.name));
+  const [cities, setCities] = useState<CityItem[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!country || !stateProvince) { setCities([]); return; }
+    let mounted = true;
+    setLoading(true);
+    Promise.all([loadCountry(), loadState(), loadCity()]).then(([CountryMod, StateMod, CityMod]) => {
+      if (!mounted) return;
+      const countryData = CountryMod.getAllCountries().find(c => c.name === country);
+      if (!countryData) { setCities([]); setLoading(false); return; }
+      const stateData = StateMod.getStatesOfCountry(countryData.isoCode).find(s => s.name === stateProvince);
+      if (!stateData) { setCities([]); setLoading(false); return; }
+      const list = CityMod.getCitiesOfState(countryData.isoCode, stateData.isoCode)
+        .slice().sort((a, b) => a.name.localeCompare(b.name));
+      setCities(list);
+      setLoading(false);
+    });
+    return () => { mounted = false; };
   }, [country, stateProvince]);
 
-  if (!country || !stateProvince || cities.length === 0) {
+  if (!country || !stateProvince || (cities.length === 0 && !loading)) {
     return (
       <Select disabled>
         <SelectTrigger>
-          <SelectValue placeholder="Select state/province first" />
+          <SelectValue placeholder={!country ? "Select country first" : !stateProvince ? "Select state/province first" : "No cities available"} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="none">Select state/province first</SelectItem>
+          <SelectItem value="none">{!country ? "Select country first" : !stateProvince ? "Select state/province first" : "No cities available"}</SelectItem>
         </SelectContent>
       </Select>
     );
@@ -346,24 +380,16 @@ export const CitySelect = ({ value, onValueChange, country, stateProvince, place
   return (
     <Select value={value} onValueChange={onValueChange}>
       <SelectTrigger>
-        <SelectValue placeholder={placeholder} />
+        <SelectValue placeholder={loading ? "Loading cities…" : placeholder} />
       </SelectTrigger>
       <SelectContent className="max-h-60 overflow-y-auto">
         {cities.map(city => (
-          <SelectItem key={city.name} value={city.name}>{city.name}</SelectItem>
+          <SelectItem key={`${city.stateCode}-${city.name}`} value={city.name}>{city.name}</SelectItem>
         ))}
       </SelectContent>
     </Select>
   );
 };
-
-interface UniversitySelectProps {
-  value: string;
-  onValueChange: (value: string) => void;
-  placeholder?: string;
-}
-
-export const UniversitySelect = ({ value, onValueChange, placeholder = "Select university" }: UniversitySelectProps) => {
   const [showOtherInput, setShowOtherInput] = useState(false);
   const [otherValue, setOtherValue] = useState('');
 
