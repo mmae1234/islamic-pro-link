@@ -122,20 +122,15 @@ const [favoriteBusinessIds, setFavoriteBusinessIds] = useState<string[]>([]);
         
         if (biz) setBusiness(biz as unknown as BusinessAccount);
 
-        // Load approved team links
-        const { data: links } = await supabase
-          .from('professional_business_links')
-          .select('professional_user_id')
-          .eq('business_id', id)
-          .eq('status', 'approved');
-
-        const memberIds = (links ?? []).map((l: any) => l.professional_user_id);
-        if (memberIds.length > 0) {
-          const { data: profiles } = await supabase
-            .from('profiles')
-            .select('user_id, first_name, last_name, avatar_url')
-            .in('user_id', memberIds);
-          setTeam((profiles ?? []) as TeamMemberProfile[]);
+        // Load approved team via SECURITY DEFINER RPC (single call, RLS-safe)
+        const { data: teamRows } = await supabase.rpc('get_business_team', { _business_id: id });
+        if (teamRows && teamRows.length > 0) {
+          setTeam(teamRows.map((t: any) => ({
+            user_id: t.user_id,
+            first_name: t.first_name,
+            last_name: t.last_name,
+            avatar_url: t.avatar_url,
+          })) as TeamMemberProfile[]);
         } else {
           setTeam([]);
         }
