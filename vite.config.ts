@@ -29,6 +29,18 @@ export default defineConfig(({ mode }) => ({
   build: {
     // Keep JS output conservative for mobile Safari.
     target: "es2015",
+    rollupOptions: {
+      output: {
+        // Split the heavy country-state-city dataset into its own chunks so the
+        // 8 MB city dataset only loads when a city dropdown is opened.
+        manualChunks(id) {
+          if (id.includes("country-state-city/lib/city")) return "csc-city";
+          if (id.includes("country-state-city/lib/state")) return "csc-state";
+          if (id.includes("country-state-city/lib/country")) return "csc-country";
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1500,
   },
 }));
 
