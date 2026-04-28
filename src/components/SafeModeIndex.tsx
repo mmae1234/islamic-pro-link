@@ -89,15 +89,15 @@ const SafeModeIndex = ({ errorInfo }: SafeModeIndexProps) => {
         {/* Error notification if any */}
         {errorInfo && (
           <div className="mb-6 sm:mb-8 mx-auto max-w-2xl">
-            <Card className="border-orange-200 bg-orange-50">
+            <Card className="border-warning/40 bg-warning/10">
               <CardContent className="p-3 sm:p-4">
                 <div className="flex items-start gap-2 sm:gap-3">
-                  <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+                  <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-warning mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm text-orange-800 font-medium">
+                    <p className="text-xs sm:text-sm text-foreground font-medium">
                       We're experiencing some technical issues. The site is running in safe mode.
                     </p>
-                    <p className="text-xs text-orange-700 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       All core features are still available. We're working to resolve this quickly.
                     </p>
                   </div>
