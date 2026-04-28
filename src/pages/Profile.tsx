@@ -259,7 +259,7 @@ const Profile = () => {
                           size="sm"
                           onClick={toggleFavorite}
                         >
-                          <Heart className={`w-4 h-4 mr-2 ${isFavorite ? 'fill-current text-red-500' : ''}`} />
+                          <Heart className={`w-4 h-4 mr-2 ${isFavorite ? 'fill-current text-favorite' : ''}`} />
                           {isFavorite ? 'Unfavorite' : 'Favorite'}
                         </Button>
                         <Button 

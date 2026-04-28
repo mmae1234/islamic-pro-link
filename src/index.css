@@ -44,6 +44,7 @@
   --success-foreground: 0 0% 98%;
   --warning: 38 92% 50%;
   --warning-foreground: 0 0% 3.9%;
+  --favorite: 350 89% 60%; /* Heart-fill red, for favorite/like states */
 
   /* Chart colors */
   --chart-1: 210 40% 20%;

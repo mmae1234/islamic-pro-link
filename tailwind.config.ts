@@ -68,7 +68,8 @@ export default {
 				warning: {
 					DEFAULT: 'hsl(var(--warning))',
 					foreground: 'hsl(var(--warning-foreground))'
-				}
+				},
+				favorite: 'hsl(var(--favorite))'
 			},
 			backgroundImage: {
 				'gradient-primary': 'var(--gradient-primary)',
