@@ -103,10 +103,9 @@ const Messages = () => {
       setSentMessages(sentData || []);
       setInboxMessages(inboxData || []);
 
-      // Build conversations from the conversations table
-      const { data: conversationsData, error: conversationsError } = await supabase
-        .from('conversations')
-        .select(`
+      // Build conversations from the conversations table.
+      // Avoid cross-column .or() filters (iOS Safari stack overflows) — split into two parallel queries.
+      const conversationSelect = `
           id,
           user_a,
           user_b,
@@ -114,12 +113,27 @@ const Messages = () => {
           updated_at,
           profiles_a:profiles!conversations_user_a_fkey(first_name, last_name),
           profiles_b:profiles!conversations_user_b_fkey(first_name, last_name)
-        `)
-        .or(`user_a.eq.${user.id},user_b.eq.${user.id}`)
-        .neq('status', 'blocked')
-        .order('updated_at', { ascending: false });
+        `;
+      const [{ data: convAData, error: convAError }, { data: convBData, error: convBError }] = await Promise.all([
+        supabase
+          .from('conversations')
+          .select(conversationSelect)
+          .eq('user_a', user.id)
+          .neq('status', 'blocked')
+          .order('updated_at', { ascending: false }),
+        supabase
+          .from('conversations')
+          .select(conversationSelect)
+          .eq('user_b', user.id)
+          .neq('status', 'blocked')
+          .order('updated_at', { ascending: false }),
+      ]);
 
-      if (conversationsError) throw conversationsError;
+      if (convAError) throw convAError;
+      if (convBError) throw convBError;
+
+      const conversationsData = [...(convAData || []), ...(convBData || [])]
+        .sort((a, b) => +new Date(b.updated_at) - +new Date(a.updated_at));
 
       const conversationsList = (conversationsData || []).map(conv => {
         const isUserA = conv.user_a === user.id;
@@ -188,20 +202,31 @@ const Messages = () => {
 
       setConversations(conversationsList);
 
-      // Load archived messages (deleted, declined, or archived)
-      const { data: archivedData, error: archivedError } = await supabase
-        .from('messages')
-        .select(`
+      // Load archived messages — split cross-column .or() into two parallel queries (iOS-safe).
+      const archivedSelect = `
           *,
           sender_profile:profiles!messages_sender_id_fkey(first_name, last_name),
           recipient_profile:profiles!messages_recipient_id_fkey(first_name, last_name)
-        `)
-        .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
-        .not('deleted_at', 'is', null)
-        .order('created_at', { ascending: false });
+        `;
+      const [{ data: archSent }, { data: archReceived, error: archivedError }] = await Promise.all([
+        supabase
+          .from('messages')
+          .select(archivedSelect)
+          .eq('sender_id', user.id)
+          .not('deleted_at', 'is', null)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('messages')
+          .select(archivedSelect)
+          .eq('recipient_id', user.id)
+          .not('deleted_at', 'is', null)
+          .order('created_at', { ascending: false }),
+      ]);
 
       if (!archivedError) {
-        setArchivedMessages(archivedData || []);
+        const archivedData = [...(archSent || []), ...(archReceived || [])]
+          .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+        setArchivedMessages(archivedData);
       }
     } catch (error) {
       console.error('Error loading messages:', error);
@@ -284,12 +309,15 @@ const Messages = () => {
   };
 
   const markAsRead = async (messageId: string) => {
+    if (!user) return;
     try {
+      // Scope by recipient_id to avoid no-op writes that RLS would reject for non-recipients.
       await supabase
         .from('messages')
         .update({ read_at: new Date().toISOString() })
-        .eq('id', messageId);
-      
+        .eq('id', messageId)
+        .eq('recipient_id', user.id);
+
       loadMessages();
     } catch (error) {
       console.error('Error marking message as read:', error);
@@ -319,26 +347,40 @@ const Messages = () => {
   };
 
   const deleteConversation = async (partnerId: string) => {
+    if (!user) return;
     try {
       console.log('Deleting conversation with partner:', partnerId);
-      
-      // First delete the conversation record
+
+      // Conversations are stored with user_a < user_b (enforced by send_message/get_or_create_conversation),
+      // so the pair lookup collapses to a single ordered .eq().eq() — no .or() needed.
+      const [orderedA, orderedB] = [user.id, partnerId].sort();
       const { error: conversationError } = await supabase
         .from('conversations')
         .delete()
-        .or(`and(user_a.eq.${user?.id},user_b.eq.${partnerId}),and(user_a.eq.${partnerId},user_b.eq.${user?.id})`);
-      
+        .eq('user_a', orderedA)
+        .eq('user_b', orderedB);
+
       if (conversationError) {
         console.error('Error deleting conversation:', conversationError);
         throw conversationError;
       }
 
-      // Then mark all messages in this conversation as deleted
-      const { error: messageError } = await supabase
-        .from('messages')
-        .update({ deleted_at: new Date().toISOString() })
-        .or(`and(sender_id.eq.${user?.id},recipient_id.eq.${partnerId}),and(sender_id.eq.${partnerId},recipient_id.eq.${user?.id})`);
-      
+      // Messages between two users — split into two parallel writes (iOS-safe, disjoint by construction).
+      const nowIso = new Date().toISOString();
+      const [outRes, inRes] = await Promise.all([
+        supabase
+          .from('messages')
+          .update({ deleted_at: nowIso })
+          .eq('sender_id', user.id)
+          .eq('recipient_id', partnerId),
+        supabase
+          .from('messages')
+          .update({ deleted_at: nowIso })
+          .eq('sender_id', partnerId)
+          .eq('recipient_id', user.id),
+      ]);
+
+      const messageError = outRes.error || inRes.error;
       if (messageError) {
         console.error('Error deleting messages:', messageError);
         throw messageError;
