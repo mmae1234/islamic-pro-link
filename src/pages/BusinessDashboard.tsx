@@ -62,9 +62,9 @@ const BusinessDashboard = () => {
           .maybeSingle()
       ]);
       if ((bizRes as any).data) setAccount((bizRes as any).data as BusinessAccount);
-      const metaType = (user as any)?.user_metadata?.account_type;
+      // SECURITY: profiles.role is the only authoritative source.
       const role = (profRes as any).data?.role;
-      setIsBusinessUser(role === 'business' || metaType === 'business');
+      setIsBusinessUser(role === 'business');
       setLoading(false);
     };
     load();
