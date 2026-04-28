@@ -215,7 +215,7 @@ const Profile = () => {
                   <Avatar className="w-24 h-24">
                    <AvatarImage src={professionalProfile?.avatar_url || profile?.avatar_url} />
                    <AvatarFallback className="text-2xl">
-                     {`${profile?.first_name || ''}${profile?.last_name || ''}`.charAt(0).toUpperCase() || 'U'}
+                     {`${(profile?.first_name || '').charAt(0)}${(profile?.last_name || '').charAt(0)}`.toUpperCase() || 'U'}
                    </AvatarFallback>
                  </Avatar>
                 
