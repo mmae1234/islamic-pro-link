@@ -53,27 +53,20 @@
   --chart-5: 300 60% 50%;
 
   --radius: 0.75rem;
-}
 
-.dark {
-  --background: 240 10% 3.9%;
-  --foreground: 0 0% 98%;
-  --card: 240 10% 3.9%;
-  --card-foreground: 0 0% 98%;
-  --popover: 240 10% 3.9%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 155 60% 50%;
-  --primary-foreground: 240 10% 3.9%;
-  --primary-glow: 155 70% 60%;
-  --accent: 51 100% 55%;
-  --accent-foreground: 240 10% 3.9%;
-  --muted: 240 3.7% 15.9%;
-  --muted-foreground: 240 5% 64.9%;
-  --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
-  --ring: 155 60% 50%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
+  /* Gradients (consumed via tailwind.config.ts backgroundImage) */
+  --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+  --gradient-hero: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 50%, hsl(var(--accent)) 100%);
+  --gradient-card: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--muted)) 100%);
+
+  /* Shadows (consumed via tailwind.config.ts boxShadow) */
+  --shadow-soft: 0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.06);
+  --shadow-elegant: 0 10px 25px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -2px hsl(0 0% 0% / 0.05);
+  --shadow-glow: 0 0 20px hsl(var(--primary) / 0.3);
+
+  /* Transition easings (consumed via tailwind.config.ts transitionTimingFunction) */
+  --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 * {
@@ -173,11 +166,6 @@ p, span, h1, h2, h3, h4, h5, h6, a, li {
   }
 }
 
-/* Add extra small breakpoint */
-@screen xs {
-  min-width: 475px;
-}
-
 /* Root element fixes for mobile */
 #root {
   min-height: 100vh;
@@ -185,35 +173,18 @@ p, span, h1, h2, h3, h4, h5, h6, a, li {
   overflow-x: hidden;
 }
 
-/* Custom gradient backgrounds */
+/* Custom gradient backgrounds (kept as utility aliases for legacy class consumers) */
 .bg-gradient-primary {
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-}
-
-:root {
-  --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+  background: var(--gradient-primary);
 }
 
 .bg-gradient-card {
-  background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--muted)) 100%);
-}
-
-/* Custom shadows */
-.shadow-soft {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-.shadow-elegant {
-  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-.shadow-glow {
-  box-shadow: 0 0 20px rgba(45, 93, 47, 0.3);
+  background: var(--gradient-card);
 }
 
 /* Smooth transitions */
 .transition-smooth {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s var(--transition-smooth);
 }
 
 /* Global link styling using brand accent */
@@ -275,7 +246,7 @@ a:hover {
   }
   
   .hover\:shadow-elegant:hover {
-    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-elegant);
   }
   
   /* Improve button press feedback on mobile */
@@ -319,14 +290,4 @@ select:focus-visible,
 a:focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
-}
-
-/* Performance optimizations for iOS */
-.animate-fade-in,
-.animate-slide-in-right,
-.animate-scale-in {
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  -webkit-perspective: 1000;
-  perspective: 1000;
 }
