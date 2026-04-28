@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,7 @@ const COMMUNICATION_OPTIONS = [
 const Settings = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -295,12 +297,12 @@ const Settings = () => {
 
   const handleDeleteAccount = async () => {
     if (!user || deleteConfirmation !== 'delete') return;
-    
+
     setDeleting(true);
     try {
       // Get the current session to pass the JWT token
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (!session?.access_token) {
         throw new Error('No valid session found');
       }
@@ -314,29 +316,42 @@ const Settings = () => {
         },
       });
 
-      const result = await response.json();
+      // Robust parse: a 5xx with HTML body would otherwise throw a confusing JSON parse error.
+      let result: { error?: string } = {};
+      try {
+        result = await response.json();
+      } catch {
+        // Non-JSON response — fall through to the response.ok check below.
+      }
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to delete account');
+        throw new Error(result.error || `Failed to delete account (status ${response.status})`);
       }
-      
+
       toast({
         title: "Account deleted",
         description: "Your account and all data have been permanently deleted.",
       });
-      
-      // Sign out after successful deletion
-      signOut();
+
+      // Close dialog before sign-out cascade renders.
+      setShowDeleteDialog(false);
+      setDeleteConfirmation('');
+
+      // Best-effort sign-out — the auth.users row is already gone, so any error
+      // here is irrelevant. Goal: clear local state and bounce off /settings
+      // before any component issues a request with the now-orphaned JWT.
+      await signOut().catch(() => {});
+      navigate('/', { replace: true });
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Failed to delete account.",
         variant: "destructive",
       });
-    } finally {
-      setDeleting(false);
       setShowDeleteDialog(false);
       setDeleteConfirmation('');
+    } finally {
+      setDeleting(false);
     }
   };
 
