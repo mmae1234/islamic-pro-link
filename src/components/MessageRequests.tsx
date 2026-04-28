@@ -51,21 +51,35 @@ export default function MessageRequests({ onAcceptRequest }: MessageRequestsProp
     if (!user) return;
 
     try {
-      const { data: conversations, error } = await supabase
-        .from("conversations")
-        .select(`
+      // Split cross-column .or() into two parallel queries (iOS-safe).
+      const reqSelect = `
           id,
           user_a,
           user_b,
           status,
           created_at,
           messages(content, created_at)
-        `)
-        .eq("status", "request")
-        .or(`user_a.eq.${user.id},user_b.eq.${user.id}`)
-        .order("created_at", { ascending: false });
+        `;
+      const [{ data: convA, error: errA }, { data: convB, error: errB }] = await Promise.all([
+        supabase
+          .from('conversations')
+          .select(reqSelect)
+          .eq('status', 'request')
+          .eq('user_a', user.id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('conversations')
+          .select(reqSelect)
+          .eq('status', 'request')
+          .eq('user_b', user.id)
+          .order('created_at', { ascending: false }),
+      ]);
 
-      if (error) throw error;
+      if (errA) throw errA;
+      if (errB) throw errB;
+
+      const conversations = [...(convA || []), ...(convB || [])]
+        .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
 
       // Get sender profiles and professional profiles
       const requestsWithSenders = await Promise.all(
@@ -136,11 +150,11 @@ export default function MessageRequests({ onAcceptRequest }: MessageRequestsProp
       // Remove from requests list
       setRequests(prev => prev.filter(req => req.id !== conversationId));
       onAcceptRequest(conversationId);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error accepting request:", error);
       toast({
         title: "Error",
-        description: "Failed to accept message request",
+        description: error?.message || "Failed to accept message request",
         variant: "destructive",
       });
     } finally {
@@ -171,11 +185,11 @@ export default function MessageRequests({ onAcceptRequest }: MessageRequestsProp
       });
 
       setRequests(prev => prev.filter(req => req.id !== conversationId));
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error declining request:", error);
       toast({
         title: "Error",
-        description: "Failed to decline message request",
+        description: error?.message || "Failed to decline message request",
         variant: "destructive",
       });
     } finally {
