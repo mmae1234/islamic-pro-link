@@ -50,7 +50,8 @@ const Header = () => {
         setBusinessId(null);
         setBusinessName(null);
       }
-      setIsBusiness(((profRes as any).data)?.role === 'business' || (user as any)?.user_metadata?.account_type === 'business');
+      // SECURITY: Only trust server-side profiles.role; user_metadata is user-mutable.
+      setIsBusiness(((profRes as any).data)?.role === 'business');
     });
     return () => { isMounted = false; };
   }, [user]);
