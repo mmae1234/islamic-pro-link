@@ -42,6 +42,7 @@ const TYPE_MAP: Record<string, string> = {
 };
 
 const handler = async (req: Request): Promise<Response> => {
+  const corsHeaders = buildCorsHeaders(req);
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
