@@ -6,40 +6,47 @@
  * load each dataset on-demand and cache the result for the rest of the
  * session.
  *
- * Usage:
- *   const Country = await loadCountry();
- *   const all = Country.getAllCountries();
+ * Each submodule is normalized so callers always use the same call signatures.
  */
-
-type CountryModule = typeof import("country-state-city/lib/country");
-type StateModule = typeof import("country-state-city/lib/state");
-type CityModule = typeof import("country-state-city/lib/city");
-
-let countryPromise: Promise<CountryModule> | null = null;
-let statePromise: Promise<StateModule> | null = null;
-let cityPromise: Promise<CityModule> | null = null;
-
-export const loadCountry = (): Promise<CountryModule> => {
-  if (!countryPromise) {
-    countryPromise = import("country-state-city/lib/country");
-  }
-  return countryPromise;
-};
-
-export const loadState = (): Promise<StateModule> => {
-  if (!statePromise) {
-    statePromise = import("country-state-city/lib/state");
-  }
-  return statePromise;
-};
-
-export const loadCity = (): Promise<CityModule> => {
-  if (!cityPromise) {
-    cityPromise = import("country-state-city/lib/city");
-  }
-  return cityPromise;
-};
 
 export type CountryItem = { name: string; isoCode: string };
 export type StateItem = { name: string; isoCode: string; countryCode: string };
 export type CityItem = { name: string; countryCode: string; stateCode: string };
+
+export type CountryApi = { getAllCountries: () => CountryItem[] };
+export type StateApi = { getStatesOfCountry: (countryCode: string) => StateItem[] };
+export type CityApi = { getCitiesOfState: (countryCode: string, stateCode: string) => CityItem[] };
+
+let countryPromise: Promise<CountryApi> | null = null;
+let statePromise: Promise<StateApi> | null = null;
+let cityPromise: Promise<CityApi> | null = null;
+
+export const loadCountry = (): Promise<CountryApi> => {
+  if (!countryPromise) {
+    countryPromise = import("country-state-city/lib/country").then((mod: any) => {
+      const api = mod.default ?? mod;
+      return { getAllCountries: () => api.getAllCountries() } as CountryApi;
+    });
+  }
+  return countryPromise;
+};
+
+export const loadState = (): Promise<StateApi> => {
+  if (!statePromise) {
+    statePromise = import("country-state-city/lib/state").then((mod: any) => {
+      const api = mod.default ?? mod;
+      return { getStatesOfCountry: (cc: string) => api.getStatesOfCountry(cc) } as StateApi;
+    });
+  }
+  return statePromise;
+};
+
+export const loadCity = (): Promise<CityApi> => {
+  if (!cityPromise) {
+    cityPromise = import("country-state-city/lib/city").then((mod: any) => {
+      const api = mod.default ?? mod;
+      return { getCitiesOfState: (cc: string, sc: string) => api.getCitiesOfState(cc, sc) } as CityApi;
+    });
+  }
+  return cityPromise;
+};
