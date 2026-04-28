@@ -257,12 +257,18 @@ export const CountrySelect = ({ value, onValueChange, placeholder = "Select coun
 
   useEffect(() => {
     let mounted = true;
-    loadCountry().then((mod) => {
-      if (!mounted) return;
-      const list = mod.getAllCountries().slice().sort((a, b) => a.name.localeCompare(b.name));
-      setCountries(list);
-      setLoading(false);
-    });
+    loadCountry()
+      .then((mod) => {
+        if (!mounted) return;
+        const list = mod.getAllCountries().slice().sort((a, b) => a.name.localeCompare(b.name));
+        setCountries(list);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (!mounted) return;
+        console.error("Failed to load country list:", err);
+        setLoading(false);
+      });
     return () => { mounted = false; };
   }, []);
 
