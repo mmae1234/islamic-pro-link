@@ -233,7 +233,7 @@ const MentorshipRequests = () => {
                               <>Request to {`${request.mentor_profile?.first_name || ''} ${request.mentor_profile?.last_name || ''}`.trim() || 'Unknown'}</>
                             )}
                           </h3>
-                          <Badge className={getStatusColor(request.status)}>
+                          <Badge variant={getStatusVariant(request.status)}>
                             {request.status}
                           </Badge>
                         </div>
