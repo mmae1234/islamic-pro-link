@@ -103,7 +103,7 @@ const StaticLandingFallback = () => {
       <footer className="bg-muted/50 py-8">
         <div className="container mx-auto px-4 text-center">
           <p className="text-muted-foreground text-sm">
-            © 2024 Muslim Professionals. Connecting the global Muslim community.
+            © {new Date().getFullYear()} Muslim Professionals Network. Connecting the global Muslim community.
           </p>
         </div>
       </footer>
