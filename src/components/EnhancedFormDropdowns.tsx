@@ -390,6 +390,14 @@ export const CitySelect = ({ value, onValueChange, country, stateProvince, place
     </Select>
   );
 };
+
+interface UniversitySelectProps {
+  value: string;
+  onValueChange: (value: string) => void;
+  placeholder?: string;
+}
+
+export const UniversitySelect = ({ value, onValueChange, placeholder = "Select university" }: UniversitySelectProps) => {
   const [showOtherInput, setShowOtherInput] = useState(false);
   const [otherValue, setOtherValue] = useState('');
 
