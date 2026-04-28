@@ -1,6 +1,13 @@
-import { useState, useMemo } from "react";
-import { Country, State, City } from 'country-state-city';
-import { 
+import { useState, useEffect } from "react";
+import {
+  loadCountry,
+  loadState,
+  loadCity,
+  type CountryItem,
+  type StateItem,
+  type CityItem,
+} from "@/lib/csc-lazy";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -9,7 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronDown } from "lucide-react";
+import { Check } from "lucide-react";
 
 // Comprehensive universities list from various global rankings
 const UNIVERSITIES = [
