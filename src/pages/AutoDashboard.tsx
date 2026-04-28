@@ -30,8 +30,9 @@ const AutoDashboard = () => {
         const isPendingBusiness = pendingType === 'business';
         const hasBiz = !!(bizRes as any).data;
         const role = (profRes as any).data?.role;
-        const userMetaType = (userData.user?.user_metadata as any)?.account_type;
-        const isBusiness = isPendingBusiness || hasBiz || role === 'business' || userMetaType === 'business';
+        // SECURITY: Trust only server-side profiles.role (immutable) and owned businesses.
+        // Never read account_type from auth.user_metadata — it is user-mutable.
+        const isBusiness = isPendingBusiness || hasBiz || role === 'business';
 
         if (isBusiness) {
           navigate('/dashboard/business', { replace: true });
