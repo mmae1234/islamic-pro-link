@@ -18,8 +18,11 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        hero: "bg-gradient-primary text-primary-foreground hover:shadow-glow transform hover:scale-105 transition-bounce border-0 font-semibold",
+        hero: "bg-gradient-primary text-primary-foreground hover:shadow-glow transform hover:scale-105 ease-bounce border-0 font-semibold",
         elegant: "bg-card/80 text-card-foreground border border-border hover:shadow-elegant hover:bg-card backdrop-blur-sm",
+        // `accent` is currently visually identical to `default`. Kept as a semantic alias
+        // for primary brand-action CTAs across many consumers (search, dashboard, business pages).
+        // Diverging it from `default` later won't require touching the 17 call sites.
         accent: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-soft hover:shadow-elegant",
       },
       size: {

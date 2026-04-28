@@ -7,6 +7,10 @@
  * session.
  *
  * Each submodule is normalized so callers always use the same call signatures.
+ *
+ * On rejection (network error, chunk-load failure), the cached promise is
+ * cleared so the next call retries instead of returning the same poisoned
+ * promise forever.
  */
 
 export type CountryItem = { name: string; isoCode: string };
@@ -23,30 +27,45 @@ let cityPromise: Promise<CityApi> | null = null;
 
 export const loadCountry = (): Promise<CountryApi> => {
   if (!countryPromise) {
-    countryPromise = import("country-state-city/lib/country").then((mod: any) => {
-      const api = mod.default ?? mod;
-      return { getAllCountries: () => api.getAllCountries() } as CountryApi;
-    });
+    countryPromise = import("country-state-city/lib/country")
+      .then((mod: any) => {
+        const api = mod.default ?? mod;
+        return { getAllCountries: () => api.getAllCountries() } as CountryApi;
+      })
+      .catch((err) => {
+        countryPromise = null; // allow retry on next call
+        throw err;
+      });
   }
   return countryPromise;
 };
 
 export const loadState = (): Promise<StateApi> => {
   if (!statePromise) {
-    statePromise = import("country-state-city/lib/state").then((mod: any) => {
-      const api = mod.default ?? mod;
-      return { getStatesOfCountry: (cc: string) => api.getStatesOfCountry(cc) } as StateApi;
-    });
+    statePromise = import("country-state-city/lib/state")
+      .then((mod: any) => {
+        const api = mod.default ?? mod;
+        return { getStatesOfCountry: (cc: string) => api.getStatesOfCountry(cc) } as StateApi;
+      })
+      .catch((err) => {
+        statePromise = null;
+        throw err;
+      });
   }
   return statePromise;
 };
 
 export const loadCity = (): Promise<CityApi> => {
   if (!cityPromise) {
-    cityPromise = import("country-state-city/lib/city").then((mod: any) => {
-      const api = mod.default ?? mod;
-      return { getCitiesOfState: (cc: string, sc: string) => api.getCitiesOfState(cc, sc) } as CityApi;
-    });
+    cityPromise = import("country-state-city/lib/city")
+      .then((mod: any) => {
+        const api = mod.default ?? mod;
+        return { getCitiesOfState: (cc: string, sc: string) => api.getCitiesOfState(cc, sc) } as CityApi;
+      })
+      .catch((err) => {
+        cityPromise = null;
+        throw err;
+      });
   }
   return cityPromise;
 };
