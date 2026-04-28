@@ -175,8 +175,8 @@ useEffect(() => {
           {mode === 'signup' && signupSuccess ? (
             <div className="text-center space-y-6">
               <div className="flex justify-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                  <CheckCircle className="w-8 h-8 text-green-600" />
+                <div className="w-16 h-16 bg-success/15 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-8 h-8 text-success" />
                 </div>
               </div>
               <div className="space-y-2">

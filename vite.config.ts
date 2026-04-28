@@ -29,6 +29,21 @@ export default defineConfig(({ mode }) => ({
   build: {
     // Keep JS output conservative for mobile Safari.
     target: "es2015",
+    // Hidden source maps: emitted but not referenced from bundles. Available
+    // to error-reporting tools without exposing source to casual viewers, and
+    // suppresses Lighthouse's valid-source-maps nag.
+    sourcemap: "hidden",
+    // Prevent Rollup from auto-injecting <link rel="modulepreload"> for the
+    // huge csc-city / csc-state / csc-country chunks whenever a parent chunk
+    // (EnhancedFormDropdowns) is preloaded. Without this, the 8 MB city
+    // dataset gets fetched on /businesses even though the dynamic import()
+    // inside csc-lazy.ts is never reached. We strip these chunks from the
+    // dependency list so they only load when the dynamic import actually
+    // resolves them.
+    modulePreload: {
+      resolveDependencies: (_filename, deps) =>
+        deps.filter((d) => !/csc-(city|state|country)/.test(d)),
+    },
     rollupOptions: {
       output: {
         // Split the heavy country-state-city dataset into its own chunks so the

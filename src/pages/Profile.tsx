@@ -26,6 +26,7 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import ReportDialog from "@/components/ReportDialog";
 import BlockUserButton from "@/components/BlockUserButton";
+import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
 
 const Profile = () => {
   const { userId } = useParams();
@@ -38,6 +39,8 @@ const Profile = () => {
   const [isLimitedView, setIsLimitedView] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
+
+  useCanonicalUrl(userId ? `/profile/${userId}` : "/");
 
   // Anonymous users can't view profiles (RLS + lookup_profile_basic both require auth.uid()).
   // Bounce to auth-gate matching the directory privacy rule, preserving the deep link.
@@ -215,7 +218,7 @@ const Profile = () => {
                   <Avatar className="w-24 h-24">
                    <AvatarImage src={professionalProfile?.avatar_url || profile?.avatar_url} />
                    <AvatarFallback className="text-2xl">
-                     {`${profile?.first_name || ''}${profile?.last_name || ''}`.charAt(0).toUpperCase() || 'U'}
+                     {`${(profile?.first_name || '').charAt(0)}${(profile?.last_name || '').charAt(0)}`.toUpperCase() || 'U'}
                    </AvatarFallback>
                  </Avatar>
                 
@@ -256,7 +259,7 @@ const Profile = () => {
                           size="sm"
                           onClick={toggleFavorite}
                         >
-                          <Heart className={`w-4 h-4 mr-2 ${isFavorite ? 'fill-current text-red-500' : ''}`} />
+                          <Heart className={`w-4 h-4 mr-2 ${isFavorite ? 'fill-current text-favorite' : ''}`} />
                           {isFavorite ? 'Unfavorite' : 'Favorite'}
                         </Button>
                         <Button 

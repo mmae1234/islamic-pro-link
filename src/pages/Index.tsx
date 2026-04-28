@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import SafeModeIndex from "@/components/SafeModeIndex";
 import { Loader2 } from "lucide-react";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
 
 // Simple loading component
 const LoadingFallback = () => (
@@ -57,6 +58,8 @@ const IOSFallback = () => (
 const Index = () => {
   const [showSafeMode, setShowSafeMode] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+
+  useCanonicalUrl("/");
 
   // Note: we no longer force iOS into “safe mode” by default.
   // Safe mode is now only triggered by real runtime errors (see global listeners below).

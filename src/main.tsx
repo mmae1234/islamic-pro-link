@@ -25,17 +25,17 @@ console.log('Device info:', { isIOS, isWebKit, isIOSPrivate });
 const createIOSFallback = () => `
   <div style="padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; text-align: center; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #f7fafc;">
     <div style="max-width: 400px; background: white; padding: 32px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-      <h1 style="color: #1a365d; margin-bottom: 16px; font-size: 28px; font-weight: bold;">Muslim Professionals Network</h1>
+      <h1 style="color: #006B3F; margin-bottom: 16px; font-size: 28px; font-weight: bold;">Muslim Professionals Network</h1>
       <p style="color: #4a5568; margin-bottom: 16px; line-height: 1.5;">Connect with Muslim professionals worldwide</p>
       ${isIOS ? `
-        <div style="background: #fef5e7; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f6d55c;">
+        <div style="background: #fef5e7; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #E9C46A;">
           <p style="color: #92400e; font-size: 14px; font-weight: 500;">iOS detected</p>
           <p style="color: #92400e; font-size: 12px;">For best experience, try Chrome or disable private mode</p>
         </div>
       ` : ''}
       <div style="margin: 24px 0;">
-        <a href="/search" style="display: block; width: 100%; padding: 14px; background: #38a169; color: white; text-decoration: none; border-radius: 8px; margin-bottom: 12px; font-size: 16px; font-weight: 500; box-sizing: border-box;">Find Professionals</a>
-        <a href="/login" style="display: block; width: 100%; padding: 14px; background: #3182ce; color: white; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 500; box-sizing: border-box;">Join Community</a>
+        <a href="/search" style="display: block; width: 100%; padding: 14px; background: #006B3F; color: white; text-decoration: none; border-radius: 8px; margin-bottom: 12px; font-size: 16px; font-weight: 500; box-sizing: border-box;">Find Professionals</a>
+        <a href="/login" style="display: block; width: 100%; padding: 14px; background: #E9C46A; color: #0B3D2E; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 500; box-sizing: border-box;">Join Community</a>
       </div>
       <p style="color: #718096; font-size: 14px; margin-top: 20px;">Having trouble? Try refreshing the page or switching browsers.</p>
     </div>
