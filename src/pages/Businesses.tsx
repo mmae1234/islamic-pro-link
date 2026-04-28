@@ -172,18 +172,14 @@ const Businesses = () => {
     setMessageBusinessName(b.name || 'Business');
     setMessageContent('');
     try {
-      const { data, error } = await supabase
-        .from('business_accounts')
-        .select('owner_id')
-        .eq('id', b.id)
-        .maybeSingle();
+      const { data, error } = await supabase.rpc('get_business_owner_id', { _business_id: b.id });
       if (error) throw error;
-      if (!data?.owner_id) {
+      if (!data) {
         toast({ title: 'Contact unavailable', description: 'Unable to contact this business at the moment.' });
         setMessageOpen(false);
         return;
       }
-      setMessageRecipientId(data.owner_id);
+      setMessageRecipientId(data as unknown as string);
     } catch (e: any) {
       console.error('Failed to load business owner', e);
       toast({ title: 'Error', description: 'Could not open message box.', variant: 'destructive' });
