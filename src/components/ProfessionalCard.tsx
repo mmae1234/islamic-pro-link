@@ -239,13 +239,13 @@ const ProfessionalCard = ({
                   </Link>
                   <div className="flex flex-wrap gap-2">
                     {professional.is_mentor && (
-                      <Badge className="text-xs bg-green-100 text-green-800 border-green-200 hover:bg-green-200">
+                      <Badge variant="success" className="text-xs">
                         <Users className="w-3 h-3 mr-1" />
                         Mentor Available
                       </Badge>
                     )}
                     {professional.is_seeking_mentor && (
-                      <Badge className="text-xs bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200">
+                      <Badge variant="info" className="text-xs">
                         <Star className="w-3 h-3 mr-1" />
                         Seeking Mentor
                       </Badge>
