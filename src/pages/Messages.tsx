@@ -66,9 +66,9 @@ const Messages = () => {
     if (user) {
       loadMessages();
       loadProfessionals();
-      setupRealtimeSubscription();
+      return setupRealtimeSubscription();
     }
-  }, [user]);
+  }, [user?.id]);
 
   const loadMessages = async () => {
     if (!user) return;
@@ -260,7 +260,7 @@ const Messages = () => {
     if (!user) return;
 
     const channel = supabase
-      .channel(`messages-page-${user.id}`)
+      .channel(`messages-page-${user.id}-${Date.now()}-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {

@@ -41,9 +41,9 @@ const NotificationCenter = () => {
   useEffect(() => {
     if (user) {
       loadNotifications();
-      setupRealtimeSubscriptions();
+      return setupRealtimeSubscriptions();
     }
-  }, [user]);
+  }, [user?.id]);
 
   const loadNotifications = async () => {
     if (!user) return;
@@ -133,11 +133,13 @@ const NotificationCenter = () => {
   const setupRealtimeSubscriptions = () => {
     if (!user) return;
 
+    const subscriptionId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
     // Subscribe to new messages — channel name MUST be unique per component
     // instance, otherwise a second `.subscribe()` on the same channel name
     // throws "cannot add postgres_changes callbacks after subscribe()".
     const messagesChannel = supabase
-      .channel(`notifications-messages-${user.id}`)
+      .channel(`notifications-messages-${user.id}-${subscriptionId}`)
       .on(
         'postgres_changes',
         {
@@ -161,7 +163,7 @@ const NotificationCenter = () => {
 
     // Subscribe to mentorship requests
     const requestsChannel = supabase
-      .channel(`notifications-requests-${user.id}`)
+      .channel(`notifications-requests-${user.id}-${subscriptionId}`)
       .on(
         'postgres_changes',
         {
