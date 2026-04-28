@@ -72,7 +72,7 @@ const ReportDialog = ({
 
     setSubmitting(true);
     try {
-      const { error } = await supabase
+      const { data: insertedReport, error } = await supabase
         .from('abuse_reports')
         .insert({
           reporter_id: user.id,
@@ -80,18 +80,17 @@ const ReportDialog = ({
           reason: selectedReason,
           details: details.trim() || null,
           conversation_id: conversationId || null
-        });
+        })
+        .select('id')
+        .single();
 
       if (error) throw error;
 
-      // Send admin notification email
+      // Send admin notification email (server looks up names from the report id)
       try {
         await supabase.functions.invoke('send-report-notification', {
           body: {
-            reporterName: user.user_metadata?.first_name || user.email || 'Anonymous',
-            accusedName: accusedName,
-            reason: selectedReason,
-            details: details.trim() || undefined,
+            reportId: insertedReport.id,
             reportType: reportType
           }
         });
