@@ -225,14 +225,10 @@ const MessageCenter = ({ requestId, recipientId, recipientName }: MessageCenterP
     if (!newMessage.trim() || !selectedConversation) return;
 
     try {
-      const { error } = await supabase
-        .from('messages')
-        .insert({
-          sender_id: user?.id,
-          recipient_id: selectedConversation,
-          content: newMessage.trim(),
-          request_id: requestId
-        });
+      const { error } = await supabase.rpc('send_message', {
+        _recipient_id: selectedConversation,
+        _content: newMessage.trim(),
+      });
 
       if (error) throw error;
 

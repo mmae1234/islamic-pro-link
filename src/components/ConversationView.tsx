@@ -182,13 +182,10 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
     setMessageError('');
     setSending(true);
     try {
-      const { error } = await supabase
-        .from('messages')
-        .insert({
-          sender_id: user.id,
-          recipient_id: partnerId,
-          content: messageValidation.sanitized
-        });
+      const { error } = await supabase.rpc('send_message', {
+        _recipient_id: partnerId,
+        _content: messageValidation.sanitized,
+      });
 
       if (error) throw error;
 

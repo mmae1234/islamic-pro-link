@@ -121,10 +121,10 @@ export default function MessageRequests({ onAcceptRequest }: MessageRequestsProp
     setProcessingRequests(prev => new Set(prev).add(conversationId));
     
     try {
-      const { error } = await supabase
-        .from("conversations")
-        .update({ status: "active" })
-        .eq("id", conversationId);
+      const { error } = await supabase.rpc('update_conversation_status', {
+        _conversation_id: conversationId,
+        _new_status: 'active',
+      });
 
       if (error) throw error;
 
@@ -156,27 +156,14 @@ export default function MessageRequests({ onAcceptRequest }: MessageRequestsProp
     setProcessingRequests(prev => new Set(prev).add(conversationId));
     
     try {
-      const { error } = await supabase
-        .from("conversations")
-        .update({ status: "blocked" })
-        .eq("id", conversationId);
+      const { error } = await supabase.rpc('update_conversation_status', {
+        _conversation_id: conversationId,
+        _new_status: 'blocked',
+      });
 
       if (error) throw error;
-
-      // Update rate limiting
-      const request = requests.find(req => req.id === conversationId);
-      if (request) {
-        const senderId = request.user_a === user?.id ? request.user_b : request.user_a;
-        
-        // Update declined count in user_message_limits
-        await supabase
-          .from("user_message_limits")
-          .upsert({
-            user_id: senderId,
-            date: new Date().toISOString().split('T')[0],
-            requests_declined: 1,
-          }, { onConflict: "user_id,date" });
-      }
+      // Note: requests_declined counter is now managed server-side; users
+      // can no longer self-edit their rate-limit row.
 
       toast({
         title: "Request declined",

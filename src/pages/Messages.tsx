@@ -259,13 +259,10 @@ const Messages = () => {
     if (!selectedRecipient || !newMessage.trim()) return;
 
     try {
-      const { error } = await supabase
-        .from('messages')
-        .insert({
-          sender_id: user?.id,
-          recipient_id: selectedRecipient.user_id,
-          content: newMessage.trim()
-        });
+      const { error } = await supabase.rpc('send_message', {
+        _recipient_id: selectedRecipient.user_id,
+        _content: newMessage.trim(),
+      });
 
       if (error) throw error;
 
