@@ -195,9 +195,10 @@ const Businesses = () => {
     if (!user || !messageRecipientId || !messageContent.trim()) return;
     setSending(true);
     try {
-      const { error } = await supabase
-        .from('messages')
-        .insert({ sender_id: user.id, recipient_id: messageRecipientId, content: messageContent.trim() });
+      const { error } = await supabase.rpc('send_message', {
+        _recipient_id: messageRecipientId,
+        _content: messageContent.trim(),
+      });
       if (error) throw error;
       toast({ title: 'Message sent!', description: `Your message was sent to ${messageBusinessName}.` });
       setMessageOpen(false);

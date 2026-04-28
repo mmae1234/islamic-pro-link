@@ -127,13 +127,10 @@ const ProfessionalCard = ({
 
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('messages')
-        .insert({
-          sender_id: user.id,
-          recipient_id: professional.user_id,
-          content: messageContent
-        });
+      const { error } = await supabase.rpc('send_message', {
+        _recipient_id: professional.user_id,
+        _content: messageContent,
+      });
 
       if (error) throw error;
 
