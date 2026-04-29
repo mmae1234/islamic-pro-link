@@ -67,6 +67,7 @@ const Businesses = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [favoriteBusinessIds, setFavoriteBusinessIds] = useState<string[]>([]);
   const [messageOpen, setMessageOpen] = useState(false);
   const [messageRecipientId, setMessageRecipientId] = useState<string | null>(null);
@@ -194,7 +195,7 @@ const Businesses = () => {
 
   const openMessageDialog = async (b: BusinessAccount) => {
     if (!user) {
-      window.location.href = `/login?redirect=/businesses`;
+      navigate('/login?redirect=/businesses');
       return;
     }
     setMessageOpen(true);
