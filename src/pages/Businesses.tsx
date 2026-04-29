@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Building2, Search, Heart, MessageCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { CountrySelect, CitySelect as CitySelectEF, SectorSelect } from "@/components/EnhancedFormDropdowns";
 import { StateProvinceSelect } from "@/components/StateProvinceSelect";
 import { useToast } from "@/hooks/use-toast";
