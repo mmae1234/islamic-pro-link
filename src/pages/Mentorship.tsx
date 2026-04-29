@@ -7,6 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -75,6 +79,8 @@ const Mentorship = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMentor, setSelectedMentor] = useState<MentorProfile | null>(null);
   const [requestMessage, setRequestMessage] = useState("");
+  const [sendingRequest, setSendingRequest] = useState(false);
+  const [disconnectTarget, setDisconnectTarget] = useState<{ id: string; name: string } | null>(null);
 
   // Redirect to auth gate if not authenticated
   useEffect(() => {
@@ -202,39 +208,43 @@ const Mentorship = () => {
   };
 
   const sendMentorshipRequest = async () => {
-    if (!selectedMentor || !requestMessage.trim()) return;
+    if (!selectedMentor || !requestMessage.trim() || sendingRequest) return;
+    if (requestMessage.trim().length < 30) {
+      toast({
+        title: "Message too short",
+        description: "Please write at least 30 characters introducing yourself.",
+        variant: "destructive",
+      });
+      return;
+    }
 
+    setSendingRequest(true);
     try {
-      const { error } = await supabase
-        .from('mentorship_requests')
-        .insert({
-          mentor_id: selectedMentor.user_id,
-          mentee_id: user?.id,
-          message: requestMessage,
-          skills_requested: [],
-        });
+      const { error } = await supabase.rpc('request_mentorship', {
+        _mentor_id: selectedMentor.user_id,
+        _message: requestMessage.trim(),
+        _skills_requested: [],
+      });
 
       if (error) throw error;
 
-      if (toast) {
-        toast({
-          title: "Request sent!",
-          description: "Your mentorship request has been sent successfully.",
-        });
-      }
+      toast({
+        title: "Request sent!",
+        description: "Your mentorship request has been sent successfully.",
+      });
 
       setSelectedMentor(null);
       setRequestMessage("");
       await loadRequests();
-      await loadMentors(); // Refresh mentors list to remove requested mentor
+      await loadMentors();
     } catch (error: any) {
-      if (toast) {
-        toast({
-          title: "Error",
-          description: error.message || "Failed to send request.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Could not send request",
+        description: error.message || "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingRequest(false);
     }
   };
 
@@ -296,12 +306,9 @@ const Mentorship = () => {
     }
   };
 
-  const disconnectFromMentor = async (requestId: string, mentorName: string) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to disconnect from ${mentorName}? This action cannot be undone.`
-    );
-    
-    if (!confirmed) return;
+  const performDisconnect = async () => {
+    if (!disconnectTarget) return;
+    const { id: requestId, name: mentorName } = disconnectTarget;
 
     try {
       const { error } = await supabase
@@ -314,24 +321,26 @@ const Mentorship = () => {
 
       if (error) throw error;
 
-      if (toast) {
-        toast({
-          title: "Disconnected successfully",
-          description: `You have disconnected from ${mentorName}.`,
-        });
-      }
+      toast({
+        title: "Disconnected successfully",
+        description: `You have disconnected from ${mentorName}.`,
+      });
 
       await loadRequests();
       await loadMentors();
     } catch (error: any) {
-      if (toast) {
-        toast({
-          title: "Error",
-          description: error.message || "Failed to disconnect from mentor.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Error",
+        description: error.message || "Failed to disconnect from mentor.",
+        variant: "destructive",
+      });
+    } finally {
+      setDisconnectTarget(null);
     }
+  };
+
+  const disconnectFromMentor = (requestId: string, mentorName: string) => {
+    setDisconnectTarget({ id: requestId, name: mentorName });
   };
 
   const handleMentorSearch = (filters: any) => {
