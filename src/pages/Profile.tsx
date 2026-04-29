@@ -265,7 +265,10 @@ const Profile = () => {
                         <Button 
                           variant="secondary" 
                           size="sm"
-                          onClick={() => navigate(`/messages?userId=${userId}`)}
+                          onClick={() => {
+                            const partnerName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'Conversation';
+                            navigate(`/messages?recipient=${userId}&name=${encodeURIComponent(partnerName)}`);
+                          }}
                         >
                           <MessageCircle className="w-4 h-4 mr-2" />
                           Message
