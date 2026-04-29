@@ -38,9 +38,10 @@ interface MessageRequest {
 
 interface MessageRequestsProps {
   onAcceptRequest: (conversationId: string) => void;
+  onRequestCountChange?: (count: number) => void;
 }
 
-export default function MessageRequests({ onAcceptRequest }: MessageRequestsProps) {
+export default function MessageRequests({ onAcceptRequest, onRequestCountChange }: MessageRequestsProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [requests, setRequests] = useState<MessageRequest[]>([]);
@@ -90,13 +91,13 @@ export default function MessageRequests({ onAcceptRequest }: MessageRequestsProp
             .from("profiles")
             .select("id, first_name, last_name, avatar_url")
             .eq("user_id", senderId)
-            .single();
+            .maybeSingle();
 
           const { data: professionalProfile } = await supabase
             .from("professional_profiles")
             .select("occupation, sector, city, state_province, country")
             .eq("user_id", senderId)
-            .single();
+            .maybeSingle();
 
           const latestMessage = conv.messages?.[0];
 
@@ -119,6 +120,7 @@ export default function MessageRequests({ onAcceptRequest }: MessageRequestsProp
       );
 
       setRequests(requestsWithSenders);
+      onRequestCountChange?.(requestsWithSenders.length);
     } catch (error) {
       console.error("Error loading message requests:", error);
       toast({
@@ -148,7 +150,11 @@ export default function MessageRequests({ onAcceptRequest }: MessageRequestsProp
       });
 
       // Remove from requests list
-      setRequests(prev => prev.filter(req => req.id !== conversationId));
+      setRequests(prev => {
+        const next = prev.filter(req => req.id !== conversationId);
+        onRequestCountChange?.(next.length);
+        return next;
+      });
       onAcceptRequest(conversationId);
     } catch (error: any) {
       console.error("Error accepting request:", error);
@@ -184,7 +190,11 @@ export default function MessageRequests({ onAcceptRequest }: MessageRequestsProp
         description: "This conversation has been blocked",
       });
 
-      setRequests(prev => prev.filter(req => req.id !== conversationId));
+      setRequests(prev => {
+        const next = prev.filter(req => req.id !== conversationId);
+        onRequestCountChange?.(next.length);
+        return next;
+      });
     } catch (error: any) {
       console.error("Error declining request:", error);
       toast({

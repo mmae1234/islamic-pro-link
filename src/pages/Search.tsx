@@ -267,7 +267,7 @@ const Search = () => {
                    <div 
                      key={professional.id}
                      className="animate-fade-in-up"
-                     style={{ animationDelay: `${index * 0.1}s` }}
+                     style={{ animationDelay: `${Math.min(index * 0.05, 0.3)}s` }}
                       onClick={() => {
                         // Track profile view
                         (async () => {

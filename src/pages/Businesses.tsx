@@ -109,26 +109,9 @@ const Businesses = () => {
   }, [user]);
 
   useEffect(() => {
-    const loadFavorites = async () => {
-      if (!user) {
-        setFavoriteBusinessIds([]);
-        return;
-      }
-      try {
-        const { data, error } = await supabase
-          .from('favorites')
-          .select('business_id')
-          .eq('user_id', user.id)
-          .not('business_id', 'is', null);
-        if (error) throw error;
-        setFavoriteBusinessIds((data || []).map((r: any) => r.business_id).filter(Boolean));
-      } catch (e) {
-        console.error('Failed to load business favorites', e);
-        setFavoriteBusinessIds([]);
-      }
-    };
-    loadFavorites();
-  }, [user]);
+    const raw = localStorage.getItem('favorite_business_ids');
+    setFavoriteBusinessIds(raw ? JSON.parse(raw) : []);
+  }, []);
 
   const handleSearch = async () => {
     if (!user) {
@@ -160,34 +143,22 @@ const Businesses = () => {
       setLoading(false);
     }
   };
-  const handleFavorite = async (id: string, name?: string | null) => {
-    if (!user) {
-      navigate('/login?redirect=/businesses');
-      return;
-    }
-    const isFav = favoriteBusinessIds.includes(id);
-    // Optimistic update
-    setFavoriteBusinessIds(prev => isFav ? prev.filter(x => x !== id) : [...prev, id]);
+  const handleFavorite = (id: string, name?: string | null) => {
     try {
-      if (isFav) {
-        const { error } = await supabase
-          .from('favorites')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('business_id', id);
-        if (error) throw error;
-        toast({ title: 'Removed from favorites', description: name ? `${name} removed from your favorites.` : 'Business removed.' });
-      } else {
-        const { error } = await supabase
-          .from('favorites')
-          .insert({ user_id: user.id, business_id: id });
-        if (error) throw error;
+      const key = 'favorite_business_ids';
+      const arr = [...favoriteBusinessIds];
+      const index = arr.indexOf(id);
+      if (index === -1) {
+        arr.push(id);
         toast({ title: 'Added to favorites', description: name ? `${name} saved to your favorites.` : 'Business saved.' });
+      } else {
+        arr.splice(index, 1);
+        toast({ title: 'Removed from favorites', description: name ? `${name} removed from your favorites.` : 'Business removed.' });
       }
-    } catch (e: any) {
-      // Roll back optimistic update
-      setFavoriteBusinessIds(prev => isFav ? [...prev, id] : prev.filter(x => x !== id));
-      toast({ title: 'Could not update favorite', description: e?.message || 'Please try again later.', variant: 'destructive' });
+      localStorage.setItem(key, JSON.stringify(arr));
+      setFavoriteBusinessIds(arr);
+    } catch {
+      toast({ title: 'Could not update favorite', description: 'Please try again later.', variant: 'destructive' });
     }
   };
 
@@ -195,7 +166,7 @@ const Businesses = () => {
 
   const openMessageDialog = async (b: BusinessAccount) => {
     if (!user) {
-      navigate('/login?redirect=/businesses');
+      navigate(`/login?redirect=/businesses`);
       return;
     }
     setMessageOpen(true);

@@ -4,6 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import AuthForm from "@/components/AuthForm";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Info } from "lucide-react";
 
 const Login = () => {
   const [searchParams] = useSearchParams();
@@ -12,6 +14,7 @@ const Login = () => {
   const [mode, setMode] = useState<'login' | 'signup'>(() => {
     return searchParams.get('mode') === 'signup' ? 'signup' : 'login';
   });
+  const message = searchParams.get('message');
 
   // Redirect if already logged in
   useEffect(() => {
@@ -53,7 +56,13 @@ const Login = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
       <main className="flex-1 flex items-center justify-center py-8 px-4">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-md space-y-4">
+          {message && (
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription>{message}</AlertDescription>
+            </Alert>
+          )}
           <AuthForm mode={mode} onToggleMode={toggleMode} />
         </div>
       </main>

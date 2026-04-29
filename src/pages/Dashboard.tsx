@@ -489,7 +489,7 @@ const Dashboard = () => {
                       <div className="text-sm text-muted-foreground">
                         <p>Complete your profile to get discovered by more professionals!</p>
                         <Button asChild size="sm" className="mt-2" variant="outline">
-                          <Link to="/profile/edit">Complete Profile</Link>
+                          <Link to="/edit-profile">Complete Profile</Link>
                         </Button>
                       </div>
                     )}

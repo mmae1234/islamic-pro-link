@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,6 +23,7 @@ interface Notification {
 const NotificationCenter = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -275,12 +277,12 @@ const NotificationCenter = () => {
                       key={notification.id}
                       className="p-4 border-b last:border-b-0 hover:bg-muted/50 cursor-pointer"
                       onClick={() => {
-                        if (notification.type === 'message') {
-                          window.location.href = '/messages';
-                        } else if (notification.type === 'mentorship_request') {
-                          window.location.href = '/mentorship';
-                        }
                         setShowNotifications(false);
+                        if (notification.type === 'message') {
+                          navigate('/messages');
+                        } else if (notification.type === 'mentorship_request') {
+                          navigate('/mentorship');
+                        }
                       }}
                     >
                       <div className="flex items-start gap-3">

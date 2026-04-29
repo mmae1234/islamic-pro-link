@@ -102,14 +102,6 @@ body {
   min-height: 100vh;
   /* iOS-specific touch improvements */
   -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-/* Allow text selection on specific elements */
-p, span, h1, h2, h3, h4, h5, h6, a, li {
-  -webkit-user-select: text;
-  user-select: text;
 }
 
 /* iOS Safari specific fixes */

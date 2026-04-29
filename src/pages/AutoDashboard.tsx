@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 // Lightweight router that sends the user to the right dashboard
 // - If they are (or intend to be) a business, go to /dashboard/business
@@ -26,13 +27,11 @@ const AutoDashboard = () => {
 
         if (!isMounted) return;
 
-        const pendingType = localStorage.getItem('pending_account_type');
-        const isPendingBusiness = pendingType === 'business';
         const hasBiz = !!(bizRes as any).data;
         const role = (profRes as any).data?.role;
         // SECURITY: Trust only server-side profiles.role (immutable) and owned businesses.
-        // Never read account_type from auth.user_metadata — it is user-mutable.
-        const isBusiness = isPendingBusiness || hasBiz || role === 'business';
+        // Never read account_type from auth.user_metadata or localStorage — both are user-mutable.
+        const isBusiness = hasBiz || role === 'business';
 
         if (isBusiness) {
           navigate('/dashboard/business', { replace: true });
@@ -47,7 +46,11 @@ const AutoDashboard = () => {
     return () => { isMounted = false; };
   }, [navigate]);
 
-  return null;
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+    </div>
+  );
 };
 
 export default AutoDashboard;

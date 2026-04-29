@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { validateMessage } from '@/lib/security';
@@ -43,6 +43,7 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [reportType, setReportType] = useState<'message' | 'conversation'>('message');
   const [reportMessageId, setReportMessageId] = useState<string | null>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (user && partnerId) {
@@ -50,6 +51,41 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
       markAllAsRead();
     }
   }, [user, partnerId]);
+
+  // Scroll to the latest message whenever the list updates.
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Realtime: refresh when a new message arrives in this conversation.
+  useEffect(() => {
+    if (!user || !partnerId) return;
+
+    const subscriptionId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const channel = supabase
+      .channel(`conv-${user.id}-${partnerId}-${subscriptionId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `recipient_id=eq.${user.id}`,
+        },
+        (payload) => {
+          // Only refresh if the new message is from our current partner.
+          if ((payload.new as any)?.sender_id === partnerId) {
+            loadConversation();
+            markAllAsRead();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, partnerId]);
 
   const loadConversation = async () => {
     if (!user) return;
@@ -205,12 +241,7 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
       if (error) throw error;
 
       setNewMessage('');
-      loadConversation();
-      
-      toast({
-        title: "Message sent!",
-        description: "Your message has been sent successfully.",
-      });
+      await loadConversation();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -403,6 +434,7 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
                 </div>
               ))
             )}
+            <div ref={bottomRef} />
           </div>
         </ScrollArea>
 

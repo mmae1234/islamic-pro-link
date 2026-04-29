@@ -11,11 +11,12 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ConversationView from "@/components/ConversationView";
 import MessageRequests from "@/components/MessageRequests";
-import { 
-  MessageCircle, 
-  Send, 
-  Inbox, 
+import {
+  MessageCircle,
+  Send,
+  Inbox,
   SendIcon,
+  Archive,
   User,
   Search,
   Plus,
@@ -61,6 +62,7 @@ const Messages = () => {
   const [professionals, setProfessionals] = useState<any[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<{partnerId: string, partnerName: string} | null>(null);
   const [archivedMessages, setArchivedMessages] = useState<Message[]>([]);
+  const [requestCount, setRequestCount] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -247,7 +249,8 @@ const Messages = () => {
           sector,
           profiles!professional_profiles_user_id_fkey(first_name, last_name)
         `)
-        .neq('user_id', user?.id);
+        .neq('user_id', user?.id)
+      .limit(100);
 
       if (error) throw error;
       setProfessionals(data || []);
@@ -482,13 +485,18 @@ const Messages = () => {
               <TabsTrigger value="requests" className="flex items-center gap-2">
                 <Shield className="w-4 h-4" />
                 Requests
+                {requestCount > 0 && (
+                  <Badge variant="destructive" className="h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs ml-1">
+                    {requestCount > 9 ? '9+' : requestCount}
+                  </Badge>
+                )}
               </TabsTrigger>
               <TabsTrigger value="sent" className="flex items-center gap-2">
                 <SendIcon className="w-4 h-4" />
                 Sent
               </TabsTrigger>
               <TabsTrigger value="archived" className="flex items-center gap-2">
-                <SendIcon className="w-4 h-4" />
+                <Archive className="w-4 h-4" />
                 Archived
               </TabsTrigger>
               <TabsTrigger value="compose" className="flex items-center gap-2">
@@ -581,10 +589,12 @@ const Messages = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <MessageRequests onAcceptRequest={() => {
-                    // Reload messages when a request is accepted
-                    loadMessages();
-                  }} />
+                  <MessageRequests
+                    onAcceptRequest={() => {
+                      loadMessages();
+                    }}
+                    onRequestCountChange={setRequestCount}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>
