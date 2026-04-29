@@ -22,26 +22,90 @@ const ResetPassword = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if we have the required parameters
-    const access_token = searchParams.get('access_token');
-    const refresh_token = searchParams.get('refresh_token');
-    
-    if (access_token && refresh_token) {
-      // Set the session with the tokens from the URL
-      supabase.auth.setSession({
-        access_token,
-        refresh_token,
-      }).then(({ error }) => {
+    let cancelled = false;
+
+    // Listen for PASSWORD_RECOVERY event — fires when Supabase exchanges the
+    // recovery code/token from the email link and creates a recovery session.
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (cancelled) return;
+      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
+        setValidToken(true);
+      }
+    });
+
+    const init = async () => {
+      // 1) PKCE flow: email link contains ?code=... — exchange it for a session.
+      const code = searchParams.get('code');
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (cancelled) return;
+        if (error) {
+          console.error('Error exchanging recovery code:', error);
+          setValidToken(false);
+        } else {
+          setValidToken(true);
+        }
+        return;
+      }
+
+      // 2) Legacy implicit flow: tokens in URL hash (#access_token=...&type=recovery)
+      const hash = window.location.hash.startsWith('#')
+        ? window.location.hash.substring(1)
+        : '';
+      const hashParams = new URLSearchParams(hash);
+      const hashAccess = hashParams.get('access_token');
+      const hashRefresh = hashParams.get('refresh_token');
+      const hashType = hashParams.get('type');
+      if (hashAccess && hashRefresh && (hashType === 'recovery' || !hashType)) {
+        const { error } = await supabase.auth.setSession({
+          access_token: hashAccess,
+          refresh_token: hashRefresh,
+        });
+        if (cancelled) return;
+        if (error) {
+          console.error('Error setting session from hash:', error);
+          setValidToken(false);
+        } else {
+          setValidToken(true);
+        }
+        return;
+      }
+
+      // 3) Query-param tokens (older flow)
+      const access_token = searchParams.get('access_token');
+      const refresh_token = searchParams.get('refresh_token');
+      if (access_token && refresh_token) {
+        const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+        if (cancelled) return;
         if (error) {
           console.error('Error setting session:', error);
           setValidToken(false);
         } else {
           setValidToken(true);
         }
-      });
-    } else {
-      setValidToken(false);
-    }
+        return;
+      }
+
+      // 4) Fallback: maybe Supabase already auto-exchanged via detectSessionInUrl.
+      // Give the auth listener a brief moment to fire PASSWORD_RECOVERY.
+      setTimeout(async () => {
+        if (cancelled) return;
+        const { data } = await supabase.auth.getSession();
+        if (cancelled) return;
+        if (data.session) {
+          setValidToken(true);
+        } else {
+          setValidToken(false);
+        }
+      }, 1500);
+    };
+
+    init();
+
+    return () => {
+      cancelled = true;
+      authListener.subscription.unsubscribe();
+    };
   }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
