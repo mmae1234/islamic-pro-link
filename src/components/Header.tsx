@@ -82,6 +82,13 @@ const Header = () => {
               Muslim Professionals Network
             </span>
             <span className="text-lg font-bold text-foreground xs:hidden">MP</span>
+            <span
+              className="ml-1 inline-flex items-center rounded-full border border-accent/40 bg-accent/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent"
+              aria-label="Beta version"
+              title="This site is in beta — we'd love your feedback"
+            >
+              Beta
+            </span>
           </Link>
 
           {/* Desktop Navigation - Hidden on mobile */}
@@ -137,6 +144,9 @@ const Header = () => {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/donations" className="text-foreground text-sm">Support Our Mission</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/feedback" className="text-foreground text-sm">Share Feedback</Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -396,6 +406,13 @@ const Header = () => {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Support Our Mission
+                  </Link>
+                  <Link 
+                    to="/feedback" 
+                    className="block text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-3 py-2 rounded-lg text-sm"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Share Feedback
                   </Link>
                 </div>
               </div>
