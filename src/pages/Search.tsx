@@ -268,25 +268,10 @@ const Search = () => {
                      key={professional.id}
                      className="animate-fade-in-up"
                      style={{ animationDelay: `${Math.min(index * 0.05, 0.3)}s` }}
-                      onClick={() => {
-                        // Track profile view
-                        (async () => {
-                          try {
-                            await supabase
-                              .from('profile_views')
-                              .insert({
-                                viewer_id: user?.id || null,
-                                viewed_profile_id: professional.user_id,
-                                ip_address: null,
-                                user_agent: navigator.userAgent
-                              });
-                            console.log('Profile view tracked');
-                          } catch (err) {
-                            console.error('Failed to track profile view:', err);
-                          }
-                        })();
-                      }}
                    >
+                      {/* Profile-view tracking moved to /profile/:userId mount —
+                          tracking on card click inflated metrics from accidental clicks
+                          and the wrapping div catching hover events. */}
                       <ProfessionalCard
                         professional={professional}
                         showMentorshipButton={false}

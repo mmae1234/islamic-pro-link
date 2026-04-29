@@ -58,13 +58,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const ios = isIOS();
 
     // Hard timeout: never leave the app stuck on a "Loading…" screen.
-    // iOS gets a much shorter budget because slow storage = blank screen risk.
+    // iOS gets a moderate budget — 200ms was too aggressive on cold cellular
+    // connections and caused logged-in users to flicker to logged-out state.
     const failsafe = setTimeout(() => {
       if (mounted) {
         setLoading(false);
         setUser(null);
       }
-    }, ios ? 200 : 800);
+    }, ios ? 800 : 1500);
 
     // Auth state listener — set up before getSession() per Supabase guidance.
     let subscription: { unsubscribe: () => void } | undefined;

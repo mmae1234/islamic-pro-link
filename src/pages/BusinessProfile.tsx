@@ -112,17 +112,13 @@ const [favoriteBusinessIds, setFavoriteBusinessIds] = useState<string[]>([]);
       try {
         let biz: any = null;
         
-        // Use RPC function for all users - it returns public business data safely
-        const { data: rpcResult } = await supabase.rpc('search_business_directory', {
-          search_term: null,
-          filter_country: null,
-          filter_state: null,
-          filter_city: null,
-          filter_sector: null,
-          verified_only: false,
-          result_limit: 1000
-        });
-        biz = rpcResult?.find((b: any) => b.id === id) || null;
+        // Single-row lookup via SECURITY DEFINER RPC (returns safe public fields only)
+        const { data: rpcResult, error: rpcErr } = await supabase.rpc('get_business_by_id', { _id: id });
+        if (rpcErr) {
+          console.error('Business lookup error', rpcErr);
+        }
+        const row = Array.isArray(rpcResult) ? rpcResult[0] : rpcResult;
+        if (row) biz = row;
         
         // If user is logged in, try to get additional details (contact info) if they have permission
         if (user && biz) {
