@@ -697,7 +697,7 @@ const Mentorship = () => {
 
                             {request.status === 'accepted' && (
                               <div className="flex gap-2 ml-4">
-                                <Button size="sm" variant="outline">
+                                <Button size="sm" variant="outline" onClick={() => setScheduleTarget(request)}>
                                   <Calendar className="w-4 h-4 mr-2" />
                                   Schedule Session
                                 </Button>
