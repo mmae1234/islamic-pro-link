@@ -145,12 +145,22 @@ const Help = () => {
                   <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
                     <li>Your personal contact information is never shared publicly</li>
                     <li>You control what information appears on your profile</li>
-                    <li>All messages are encrypted and secure</li>
+                    <li>Messages are private and transmitted over secure (TLS) connections</li>
+                    <li>Uploaded profile and business images are automatically screened for inappropriate content</li>
                   </ul>
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-2">Reporting Issues</h3>
-                  <p className="text-muted-foreground">If you encounter inappropriate behavior, use the report function on profiles or messages. Our team investigates all reports promptly.</p>
+                  <h3 className="font-semibold mb-2">Blocking & Reporting</h3>
+                  <p className="text-muted-foreground mb-2">You have tools to keep your experience safe:</p>
+                  <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                    <li>Block any user from their profile or from professional cards (three-dot menu)</li>
+                    <li>Report fake profiles or abusive messages — our moderation team reviews all reports</li>
+                    <li>Manage blocked users in Settings → Privacy</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-2">Deleting Your Account</h3>
+                  <p className="text-muted-foreground">You can permanently delete your account and personal data anytime from Settings → Delete Account.</p>
                 </div>
               </div>
             </CardContent>
@@ -212,8 +222,8 @@ const Help = () => {
                 <AccordionItem value="item-2f">
                   <AccordionTrigger>How do I add social media links to my profile?</AccordionTrigger>
                   <AccordionContent>
+                    Professionals: open Edit Profile and add your Facebook, Instagram, and LinkedIn URLs.
                     Businesses: open the Business Dashboard and use the Social Links section to add Facebook, Instagram, LinkedIn, X, YouTube, TikTok, WhatsApp, or Telegram.
-                    Professionals: social links will be available on the Edit Profile page shortly.
                   </AccordionContent>
                 </AccordionItem>
 
@@ -250,9 +260,18 @@ const Help = () => {
                 <AccordionItem value="item-5">
                   <AccordionTrigger>Is my information secure?</AccordionTrigger>
                   <AccordionContent>
-                    Yes, we take privacy and security seriously. All personal information is encrypted and 
-                    protected. You control what information is visible on your public profile. 
-                    Read our Privacy Policy for more details.
+                    We take privacy and security seriously. Data is transmitted over secure (TLS) connections,
+                    access to your data is governed by row-level security policies, and you control what
+                    appears on your public profile. Uploaded images are automatically screened for
+                    inappropriate content. Read our Privacy Policy for full details.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-8">
+                  <AccordionTrigger>How do I support the platform?</AccordionTrigger>
+                  <AccordionContent>
+                    Visit the "Support Our Mission" page (linked in the header) to make a donation via PayPal.
+                    Donations help us keep the platform free for the community.
                   </AccordionContent>
                 </AccordionItem>
 
