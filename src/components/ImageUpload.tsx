@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Upload, X, Loader2 } from 'lucide-react';
+import { compressImage } from '@/lib/image-compress';
 
 interface ImageUploadProps {
   currentImageUrl?: string;
