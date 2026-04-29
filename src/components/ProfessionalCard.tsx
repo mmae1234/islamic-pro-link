@@ -364,9 +364,12 @@ const ProfessionalCard = ({
                                 id="request-message"
                                 value={requestMessage}
                                 onChange={(e) => setRequestMessage(e.target.value)}
-                                placeholder="Explain why you're interested in this mentorship and what you hope to achieve..."
+                                placeholder="Explain why you're interested in this mentorship and what you hope to achieve (at least 30 characters)..."
                                 rows={4}
                               />
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {requestMessage.trim().length}/30 characters minimum
+                              </p>
                             </div>
                             <div className="flex gap-2">
                               <Button 
@@ -420,7 +423,7 @@ const ProfessionalCard = ({
                         key={skill} 
                         variant="outline" 
                         className="text-xs hover:bg-primary/10 hover:border-primary/30 transition-colors"
-                        style={{ animationDelay: `${index * 0.1}s` }}
+                        style={{ animationDelay: `${Math.min(index * 0.05, 0.3)}s` }}
                       >
                         {skill}
                       </Badge>
@@ -436,105 +439,7 @@ const ProfessionalCard = ({
             </div>
           </div>
 
-          {/* Action Buttons */}
-          {false && !isOwnProfile && (
-            <div className="flex flex-col sm:flex-row lg:flex-col gap-3 lg:min-w-fit lg:w-40">
-              <Dialog open={isMessageDialogOpen} onOpenChange={setIsMessageDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="flex items-center gap-2 hover:shadow-soft lg:w-full">
-                    <MessageCircle className="w-4 h-4" />
-                    Send Message
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Send Message</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="message">Message</Label>
-                      <Textarea
-                        id="message"
-                        value={messageContent}
-                        onChange={(e) => setMessageContent(e.target.value)}
-                        placeholder="Write your message..."
-                        rows={4}
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        onClick={sendMessage} 
-                        disabled={!messageContent.trim() || loading}
-                        className="flex-1"
-                      >
-                        {loading ? 'Sending...' : 'Send Message'}
-                      </Button>
-                      <Button variant="outline" onClick={() => setIsMessageDialogOpen(false)}>
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-
-              {showFavoriteButton && (
-                <Button 
-                  variant={isFavorited ? "default" : "outline"} 
-                  size="sm" 
-                  onClick={toggleFavorite}
-                  disabled={loading}
-                  className="flex items-center gap-2 lg:w-full"
-                >
-                  <Heart className={`w-4 h-4 ${isFavorited ? 'fill-current' : ''}`} />
-                  {isFavorited ? 'Favorited' : 'Add to Favorites'}
-                </Button>
-              )}
-
-              <Button variant="outline" size="sm" asChild className="lg:w-full">
-                <Link to={`/profile/${professional.user_id}`}>View Profile</Link>
-              </Button>
-
-              {showMentorshipButton && professional.is_mentor && (
-                <Dialog open={isRequestDialogOpen} onOpenChange={setIsRequestDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="accent" size="sm" className="flex items-center gap-2 hover:shadow-glow lg:w-full">
-                      <Calendar className="w-4 h-4" />
-                      Request Mentorship
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Request Mentorship</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="request-message">Why would you like this person as a mentor?</Label>
-                        <Textarea
-                          id="request-message"
-                          value={requestMessage}
-                          onChange={(e) => setRequestMessage(e.target.value)}
-                          placeholder="Explain why you're interested in this mentorship and what you hope to achieve..."
-                          rows={4}
-                        />
-                      </div>
-                      <div className="flex gap-2">
-                        <Button 
-                          onClick={sendMentorshipRequest} 
-                          disabled={!requestMessage.trim() || loading}
-                          className="flex-1"
-                        >
-                          {loading ? 'Sending...' : 'Send Request'}
-                        </Button>
-                        <Button variant="outline" onClick={() => setIsRequestDialogOpen(false)}>
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              )}
-            </div>
-          )}
+          {/* Legacy action column removed (was wrapped in `{false && ...}`) */}
         </div>
       </CardContent>
 
