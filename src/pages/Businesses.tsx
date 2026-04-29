@@ -16,20 +16,14 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
-
-interface BusinessAccount {
-  id: string;
-  name: string | null;
-  sector: string | null;
-  bio: string | null;
-  country: string | null;
-  state: string | null;
-  city: string | null;
-  email: string | null;
-  website: string | null;
-  verified: boolean;
-  logo_url: string | null;
-}
+import {
+  useBusinesses,
+  useFavoriteBusinessIds,
+  useToggleBusinessFavorite,
+  useSendMessage,
+  type BusinessAccount,
+  type BusinessFilters,
+} from "@/hooks/queries";
 
 const setSeo = (title: string, description?: string, canonicalUrl?: string) => {
   document.title = title;
@@ -53,8 +47,19 @@ const setSeo = (title: string, description?: string, canonicalUrl?: string) => {
   }
 };
 
+type FormFilters = {
+  searchTerm: string;
+  country: string;
+  state: string;
+  city: string;
+  sector: string;
+  verifiedOnly: boolean;
+};
+
 const Businesses = () => {
-  const [filters, setFilters] = useState({
+  // The form state is what the user is editing; `appliedFilters` is what we've
+  // committed to the React Query cache via the Search button.
+  const [formFilters, setFormFilters] = useState<FormFilters>({
     searchTerm: "",
     country: "",
     state: "",
@@ -62,135 +67,81 @@ const Businesses = () => {
     sector: "",
     verifiedOnly: false,
   });
-  const [sectors, setSectors] = useState<string[]>([]);
-  const [results, setResults] = useState<BusinessAccount[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [appliedFilters, setAppliedFilters] = useState<BusinessFilters>({
+    verifiedOnly: false,
+  });
+
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [favoriteBusinessIds, setFavoriteBusinessIds] = useState<string[]>([]);
   const [messageOpen, setMessageOpen] = useState(false);
   const [messageRecipientId, setMessageRecipientId] = useState<string | null>(null);
   const [messageBusinessName, setMessageBusinessName] = useState<string>("");
   const [messageContent, setMessageContent] = useState("");
-  const [sending, setSending] = useState(false);
   const canonical = useMemo(() => `${window.location.origin}/businesses`, []);
 
   useEffect(() => {
-    setSeo("Find Businesses – Muslim Pros", "Search Muslim-owned and Muslim-friendly businesses by sector and location.", canonical);
+    setSeo(
+      "Find Businesses – Muslim Pros",
+      "Search Muslim-owned and Muslim-friendly businesses by sector and location.",
+      canonical,
+    );
   }, [canonical]);
 
-  useEffect(() => {
-    const loadSectors = async () => {
-      if (!user) {
-        setSectors([]);
-        return;
-      }
-      try {
-        // Use RPC function which only exposes safe public fields
-        const { data, error } = await supabase.rpc('get_business_sectors');
-        if (error) throw error;
-        setSectors((data || []).map((d: any) => d.sector).filter(Boolean));
-      } catch (error) {
-        console.error('Failed to load sectors:', error);
-        setSectors([]);
-      }
-    };
-    
-    loadSectors();
-  }, [user]);
+  const businessesQuery = useBusinesses(user?.id, appliedFilters);
+  const favIdsQuery = useFavoriteBusinessIds(user?.id);
+  const toggleFavorite = useToggleBusinessFavorite(user?.id);
+  const sendMessage = useSendMessage(user?.id);
 
-  useEffect(() => {
-    if (user) {
-      handleSearch();
-    } else {
-      setResults([]);
-    }
-  }, [user]);
+  const results: BusinessAccount[] = businessesQuery.data ?? [];
+  const favoriteBusinessIds: string[] = favIdsQuery.data ?? [];
+  const loading = businessesQuery.isFetching;
 
-  useEffect(() => {
-    const loadFavs = async () => {
-      if (!user) {
-        setFavoriteBusinessIds([]);
-        return;
-      }
-      const { data, error } = await supabase
-        .from('favorites')
-        .select('business_id')
-        .eq('user_id', user.id)
-        .not('business_id', 'is', null);
-      if (error) {
-        console.error('Failed to load business favorites:', error);
-        return;
-      }
-      setFavoriteBusinessIds((data || []).map((r: any) => r.business_id).filter(Boolean));
-    };
-    loadFavs();
-  }, [user]);
-
-  const handleSearch = async () => {
-    if (!user) {
-      setResults([]);
-      return;
-    }
-    setLoading(true);
-    try {
-      // Use RPC function which only exposes safe public fields (no contact info)
-      const { data, error } = await supabase.rpc('search_business_directory', {
-        search_term: filters.searchTerm || null,
-        filter_country: filters.country || null,
-        filter_state: filters.state || null,
-        filter_city: filters.city || null,
-        filter_sector: filters.sector || null,
-        verified_only: filters.verifiedOnly,
-        result_limit: 50
-      });
-
-      if (error) {
-        console.error('Query error:', error);
-        throw error;
-      }
-      setResults((data || []) as any);
-    } catch (e) {
-      console.error('Business search error', e);
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
+  const handleSearch = () => {
+    setAppliedFilters({
+      searchTerm: formFilters.searchTerm || undefined,
+      country: formFilters.country || undefined,
+      state: formFilters.state || undefined,
+      city: formFilters.city || undefined,
+      sector: formFilters.sector || undefined,
+      verifiedOnly: formFilters.verifiedOnly,
+    });
   };
 
-  const handleFavorite = async (id: string, name?: string | null) => {
+  const handleFavorite = (id: string, name?: string | null) => {
     if (!user) {
       navigate(`/login?redirect=/businesses`);
       return;
     }
     const wasFav = favoriteBusinessIds.includes(id);
-    // Optimistic update
-    setFavoriteBusinessIds(prev => wasFav ? prev.filter(x => x !== id) : [...prev, id]);
-    try {
-      if (wasFav) {
-        const { error } = await supabase
-          .from('favorites')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('business_id', id);
-        if (error) throw error;
-        toast({ title: 'Removed from favorites', description: name ? `${name} removed from your favorites.` : 'Business removed.' });
-      } else {
-        const { error } = await supabase
-          .from('favorites')
-          .insert({ user_id: user.id, business_id: id });
-        if (error) throw error;
-        toast({ title: 'Added to favorites', description: name ? `${name} saved to your favorites.` : 'Business saved.' });
-      }
-    } catch (e: any) {
-      // Roll back optimistic update
-      setFavoriteBusinessIds(prev => wasFav ? [...prev, id] : prev.filter(x => x !== id));
-      toast({ title: 'Could not update favorite', description: e?.message || 'Please try again later.', variant: 'destructive' });
-    }
+    toggleFavorite.mutate(
+      { businessId: id, currentlyFavorited: wasFav },
+      {
+        onSuccess: () => {
+          toast({
+            title: wasFav ? "Removed from favorites" : "Added to favorites",
+            description: name
+              ? wasFav
+                ? `${name} removed from your favorites.`
+                : `${name} saved to your favorites.`
+              : wasFav
+              ? "Business removed."
+              : "Business saved.",
+          });
+        },
+        onError: (e: any) => {
+          toast({
+            title: "Could not update favorite",
+            description: e?.message || "Please try again later.",
+            variant: "destructive",
+          });
+        },
+      },
+    );
   };
 
-  const fullLocation = (b: BusinessAccount) => [b.city, b.state, b.country].filter(Boolean).join(', ');
+  const fullLocation = (b: BusinessAccount) =>
+    [b.city, b.state, b.country].filter(Boolean).join(", ");
 
   const openMessageDialog = async (b: BusinessAccount) => {
     if (!user) {
@@ -198,42 +149,57 @@ const Businesses = () => {
       return;
     }
     setMessageOpen(true);
-    setMessageBusinessName(b.name || 'Business');
-    setMessageContent('');
+    setMessageBusinessName(b.name || "Business");
+    setMessageContent("");
     try {
-      const { data, error } = await supabase.rpc('get_business_owner_id', { _business_id: b.id });
+      const { data, error } = await supabase.rpc("get_business_owner_id", {
+        _business_id: b.id,
+      });
       if (error) throw error;
       if (!data) {
-        toast({ title: 'Contact unavailable', description: 'Unable to contact this business at the moment.' });
+        toast({
+          title: "Contact unavailable",
+          description: "Unable to contact this business at the moment.",
+        });
         setMessageOpen(false);
         return;
       }
       setMessageRecipientId(data as unknown as string);
-    } catch (e: any) {
-      console.error('Failed to load business owner', e);
-      toast({ title: 'Error', description: 'Could not open message box.', variant: 'destructive' });
+    } catch (e) {
+      console.error("Failed to load business owner", e);
+      toast({
+        title: "Error",
+        description: "Could not open message box.",
+        variant: "destructive",
+      });
       setMessageOpen(false);
     }
   };
 
-  const sendMessageToBusiness = async () => {
+  const sendMessageToBusiness = () => {
     if (!user || !messageRecipientId || !messageContent.trim()) return;
-    setSending(true);
-    try {
-      const { error } = await supabase.rpc('send_message', {
-        _recipient_id: messageRecipientId,
-        _content: messageContent.trim(),
-      });
-      if (error) throw error;
-      toast({ title: 'Message sent!', description: `Your message was sent to ${messageBusinessName}.` });
-      setMessageOpen(false);
-      setMessageContent('');
-    } catch (e: any) {
-      toast({ title: 'Error', description: e.message || 'Failed to send message.', variant: 'destructive' });
-    } finally {
-      setSending(false);
-    }
+    sendMessage.mutate(
+      { recipientId: messageRecipientId, content: messageContent.trim() },
+      {
+        onSuccess: () => {
+          toast({
+            title: "Message sent!",
+            description: `Your message was sent to ${messageBusinessName}.`,
+          });
+          setMessageOpen(false);
+          setMessageContent("");
+        },
+        onError: (e: any) => {
+          toast({
+            title: "Error",
+            description: e?.message || "Failed to send message.",
+            variant: "destructive",
+          });
+        },
+      },
+    );
   };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -252,46 +218,46 @@ const Businesses = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="q">Search</Label>
-                  <Input id="q" placeholder="Name, sector, or keywords" value={filters.searchTerm} onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })} />
+                  <Input id="q" placeholder="Name, sector, or keywords" value={formFilters.searchTerm} onChange={(e) => setFormFilters({ ...formFilters, searchTerm: e.target.value })} />
                 </div>
                 <div>
                   <Label htmlFor="country">Country</Label>
                   <CountrySelect
-                    value={filters.country}
-                    onValueChange={(value) => setFilters({ ...filters, country: value, state: "", city: "" })}
+                    value={formFilters.country}
+                    onValueChange={(value) => setFormFilters({ ...formFilters, country: value, state: "", city: "" })}
                   />
                 </div>
                 <div>
                   <Label htmlFor="state">State/Province</Label>
                   <StateProvinceSelect
-                    value={filters.state}
-                    onValueChange={(value) => setFilters({ ...filters, state: value, city: "" })}
-                    country={filters.country}
-                    disabled={!filters.country}
+                    value={formFilters.state}
+                    onValueChange={(value) => setFormFilters({ ...formFilters, state: value, city: "" })}
+                    country={formFilters.country}
+                    disabled={!formFilters.country}
                     placeholder="All States"
                   />
                 </div>
                 <div>
                   <Label htmlFor="city">City</Label>
                   <CitySelectEF
-                    value={filters.city}
-                    onValueChange={(value) => setFilters({ ...filters, city: value })}
-                    country={filters.country}
-                    stateProvince={filters.state}
+                    value={formFilters.city}
+                    onValueChange={(value) => setFormFilters({ ...formFilters, city: value })}
+                    country={formFilters.country}
+                    stateProvince={formFilters.state}
                     placeholder="All Cities"
                   />
                 </div>
                 <div>
                   <Label htmlFor="sector">Sector</Label>
                   <SectorSelect
-                    value={filters.sector}
-                    onValueChange={(value) => setFilters({ ...filters, sector: value })}
+                    value={formFilters.sector}
+                    onValueChange={(value) => setFormFilters({ ...formFilters, sector: value })}
                     placeholder="All Sectors"
                   />
                 </div>
                 <div className="flex items-end gap-2">
                   <div className="flex items-center gap-2">
-                    <Checkbox id="verified" checked={filters.verifiedOnly} onCheckedChange={(v) => setFilters({ ...filters, verifiedOnly: !!v })} />
+                    <Checkbox id="verified" checked={formFilters.verifiedOnly} onCheckedChange={(v) => setFormFilters({ ...formFilters, verifiedOnly: !!v })} />
                     <Label htmlFor="verified">Verified only</Label>
                   </div>
                 </div>
@@ -328,39 +294,37 @@ const Businesses = () => {
             </Card>
           )}
 
-          {user && results.map((b) => (
-            <Card key={b.id} className="shadow-soft">
-              <CardContent className="p-6">
-                <div>
-                  <div className="flex items-center gap-3">
-                    <Building2 className="w-5 h-5 text-primary" />
-                    <Link to={`/business/${b.id}`} className="text-xl font-semibold text-foreground hover:text-primary transition-smooth">
-                      {b.name || 'Unnamed Business'}
-                    </Link>
-                    {b.verified && <Badge variant="secondary">Verified</Badge>}
-                  </div>
-                  <p className="text-muted-foreground mt-1">{[b.sector, fullLocation(b)].filter(Boolean).join(' • ')}</p>
+          {user && results.map((b) => {
+            const isFav = favoriteBusinessIds.includes(b.id);
+            return (
+              <Card key={b.id} className="shadow-soft">
+                <CardContent className="p-6">
+                  <div>
+                    <div className="flex items-center gap-3">
+                      <Building2 className="w-5 h-5 text-primary" />
+                      <Link to={`/business/${b.id}`} className="text-xl font-semibold text-foreground hover:text-primary transition-smooth">
+                        {b.name || 'Unnamed Business'}
+                      </Link>
+                      {b.verified && <Badge variant="secondary">Verified</Badge>}
+                    </div>
+                    <p className="text-muted-foreground mt-1">{[b.sector, fullLocation(b)].filter(Boolean).join(' • ')}</p>
 
-                  {(() => {
-                    const isFav = favoriteBusinessIds.includes(b.id);
-                    return (
-                      <div className="actions flex flex-wrap items-center justify-end gap-3 md:gap-4 mt-2">
-                        <Button variant={isFav ? "default" : "outline"} onClick={() => handleFavorite(b.id, b.name)} aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}>
-                          <Heart className={`w-4 h-4 mr-2 ${isFav ? 'fill-current' : ''}`} /> {isFav ? 'Favorited' : 'Favorite'}
-                        </Button>
-                        <Button variant="outline" onClick={() => openMessageDialog(b)} aria-label="Message business">
-                          <MessageCircle className="w-4 h-4 mr-2" /> Message
-                        </Button>
-                        <Button variant="outline" asChild aria-label="View profile">
-                          <Link to={`/business/${b.id}`}>View Profile</Link>
-                        </Button>
-                      </div>
-                    );
-                  })()}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                    <div className="actions flex flex-wrap items-center justify-end gap-3 md:gap-4 mt-2">
+                      <Button variant={isFav ? "default" : "outline"} onClick={() => handleFavorite(b.id, b.name)} aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}>
+                        <Heart className={`w-4 h-4 mr-2 ${isFav ? 'fill-current' : ''}`} /> {isFav ? 'Favorited' : 'Favorite'}
+                      </Button>
+                      <Button variant="outline" onClick={() => openMessageDialog(b)} aria-label="Message business">
+                        <MessageCircle className="w-4 h-4 mr-2" /> Message
+                      </Button>
+                      <Button variant="outline" asChild aria-label="View profile">
+                        <Link to={`/business/${b.id}`}>View Profile</Link>
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </section>
 
         <Dialog open={messageOpen} onOpenChange={setMessageOpen}>
@@ -374,7 +338,7 @@ const Businesses = () => {
                 <Textarea id="biz-message" rows={4} value={messageContent} onChange={(e) => setMessageContent(e.target.value)} placeholder="Write your message..." />
               </div>
               <div className="flex gap-2 justify-end">
-                <Button onClick={sendMessageToBusiness} disabled={!messageContent.trim() || sending}>Send</Button>
+                <Button onClick={sendMessageToBusiness} disabled={!messageContent.trim() || sendMessage.isPending}>Send</Button>
                 <Button variant="outline" onClick={() => setMessageOpen(false)}>Cancel</Button>
               </div>
             </div>

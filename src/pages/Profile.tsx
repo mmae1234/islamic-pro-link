@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,34 +10,35 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  User, 
-  Star, 
-  Users, 
-  Briefcase, 
-  Calendar, 
-  GraduationCap, 
-  MapPin, 
+import {
+  User,
+  Star,
+  Users,
+  Briefcase,
+  Calendar,
+  GraduationCap,
+  MapPin,
   Heart,
   MessageCircle,
   MoreVertical,
-  Flag
+  Flag,
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import ReportDialog from "@/components/ReportDialog";
 import BlockUserButton from "@/components/BlockUserButton";
+import { useState } from "react";
 import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
+import {
+  useProfile,
+  useFavoriteStatus,
+  useToggleProfessionalFavorite,
+} from "@/hooks/queries";
 
 const Profile = () => {
   const { userId } = useParams();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<any>(null);
-  const [professionalProfile, setProfessionalProfile] = useState<any>(null);
-  const [isLimitedView, setIsLimitedView] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
 
   useCanonicalUrl(userId ? `/profile/${userId}` : "/");
@@ -50,137 +51,68 @@ const Profile = () => {
     }
   }, [authLoading, user, userId, navigate]);
 
+  const profileQuery = useProfile(userId, user?.id);
+  const profile = profileQuery.data?.profile ?? null;
+  const professionalProfile = profileQuery.data?.professionalProfile ?? null;
+  const isLimitedView = profileQuery.data?.isLimitedView ?? false;
+  const loading = profileQuery.isLoading;
+
+  const isOwnProfile = user?.id === userId;
+
+  const favoriteStatus = useFavoriteStatus(user?.id, userId, {
+    enabled: !!user && !!userId && !isOwnProfile,
+  });
+  const toggleFavorite = useToggleProfessionalFavorite(user?.id);
+
+  // Track profile view on mount (replaces card-click tracking).
   useEffect(() => {
-    if (userId && user) {
-      loadProfile();
-      if (user.id !== userId) {
-        checkFavoriteStatus();
-        // Track profile view on actual profile page mount (not on card click)
-        (async () => {
-          try {
-            await supabase
-              .from('profile_views')
-              .insert({
-                viewer_id: user.id,
-                viewed_profile_id: userId,
-                user_agent: navigator.userAgent,
-              });
-          } catch (err) {
-            console.error('Failed to track profile view:', err);
-          }
-        })();
+    if (!user || !userId || user.id === userId) return;
+    (async () => {
+      try {
+        await supabase.from("profile_views").insert({
+          viewer_id: user.id,
+          viewed_profile_id: userId,
+          user_agent: navigator.userAgent,
+        });
+      } catch (err) {
+        console.error("Failed to track profile view:", err);
       }
-    }
-  }, [userId, user]);
+    })();
+  }, [user, userId]);
 
-  const loadProfile = async () => {
-    try {
-      // Try the related-party full read first (works when can_view_profile passes)
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (profileData) {
-        setProfile(profileData);
-        const { data: professionalData } = await supabase
-          .from('professional_profiles')
-          .select('*')
-          .eq('user_id', userId)
-          .maybeSingle();
-        if (professionalData) setProfessionalProfile(professionalData);
-        setIsLimitedView(false);
-      } else {
-        // Fallback: limited public view via SECURITY DEFINER RPC
-        const { data: basic, error: basicErr } = await supabase
-          .rpc('lookup_profile_basic', { _user_id: userId });
-        if (basicErr) throw basicErr;
-        const row = Array.isArray(basic) ? basic[0] : basic;
-        if (row) {
-          setProfile({
-            user_id: row.user_id,
-            first_name: row.first_name,
-            last_name: row.last_name,
-            avatar_url: row.avatar_url,
-          });
-          setProfessionalProfile({
-            avatar_url: row.avatar_url,
-            occupation: row.occupation,
-            sector: row.sector,
-            city: row.city,
-            country: row.country,
-          });
-          setIsLimitedView(true);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading profile:', error);
+  // Surface load error.
+  useEffect(() => {
+    if (profileQuery.error) {
       toast({
         title: "Error",
         description: "Failed to load profile.",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [profileQuery.error, toast]);
 
-  const checkFavoriteStatus = async () => {
-    try {
-      const { data } = await supabase
-        .from('favorites')
-        .select('id')
-        .eq('user_id', user?.id)
-        .eq('professional_id', userId)
-        .maybeSingle();
-      
-      setIsFavorite(!!data);
-    } catch (error) {
-      console.error('Error checking favorite status:', error);
-    }
-  };
+  const isFavorite = favoriteStatus.data ?? false;
 
-  const toggleFavorite = async () => {
-    if (!user) return;
-
-    try {
-      if (isFavorite) {
-        const { error } = await supabase
-          .from('favorites')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('professional_id', userId);
-        
-        if (error) throw error;
-        setIsFavorite(false);
-        toast({
-          title: "Removed from favorites",
-          description: "This professional has been removed from your favorites.",
-        });
-      } else {
-        const { error } = await supabase
-          .from('favorites')
-          .insert({
-            user_id: user.id,
-            professional_id: userId,
-          });
-        
-        if (error) throw error;
-        setIsFavorite(true);
-        toast({
-          title: "Added to favorites",
-          description: "This professional has been added to your favorites.",
-        });
-      }
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update favorites.",
-        variant: "destructive",
-      });
-    }
+  const handleToggleFavorite = () => {
+    if (!user || !userId) return;
+    toggleFavorite.mutate(
+      { professionalUserId: userId, currentlyFavorited: isFavorite },
+      {
+        onSuccess: () =>
+          toast({
+            title: isFavorite ? "Removed from favorites" : "Added to favorites",
+            description: isFavorite
+              ? "This professional has been removed from your favorites."
+              : "This professional has been added to your favorites.",
+          }),
+        onError: (err: any) =>
+          toast({
+            title: "Error",
+            description: err?.message || "Failed to update favorites.",
+            variant: "destructive",
+          }),
+      },
+    );
   };
 
   if (loading) {
@@ -210,12 +142,10 @@ const Profile = () => {
     );
   }
 
-  const isOwnProfile = user?.id === userId;
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-4xl mx-auto">
           {isLimitedView && !isOwnProfile && (
@@ -229,26 +159,26 @@ const Profile = () => {
           <Card className="shadow-soft mb-8">
             <CardContent className="pt-6">
               <div className="flex flex-col md:flex-row items-start gap-6">
-                  <Avatar className="w-24 h-24">
-                   <AvatarImage src={professionalProfile?.avatar_url || profile?.avatar_url} />
-                   <AvatarFallback className="text-2xl">
-                     {`${(profile?.first_name || '').charAt(0)}${(profile?.last_name || '').charAt(0)}`.toUpperCase() || 'U'}
-                   </AvatarFallback>
-                 </Avatar>
-                
+                <Avatar className="w-24 h-24">
+                  <AvatarImage src={(professionalProfile?.avatar_url ?? profile?.avatar_url) || undefined} />
+                  <AvatarFallback className="text-2xl">
+                    {`${(profile?.first_name || '').charAt(0)}${(profile?.last_name || '').charAt(0)}`.toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+
                 <div className="flex-1">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
-                       <div className="flex items-center gap-4">
-                         <h1 className="text-3xl font-bold text-foreground mb-2">
-                           {`${profile?.first_name || ''} ${profile?.last_name || ''}`.trim()}
-                         </h1>
-                         {isOwnProfile && (
-                           <Button variant="outline" size="sm" asChild>
-                             <Link to="/edit-profile">Edit Profile</Link>
-                           </Button>
-                         )}
-                       </div>
+                      <div className="flex items-center gap-4">
+                        <h1 className="text-3xl font-bold text-foreground mb-2">
+                          {`${profile?.first_name || ''} ${profile?.last_name || ''}`.trim()}
+                        </h1>
+                        {isOwnProfile && (
+                          <Button variant="outline" size="sm" asChild>
+                            <Link to="/edit-profile">Edit Profile</Link>
+                          </Button>
+                        )}
+                      </div>
                       {professionalProfile?.occupation && professionalProfile?.sector && (
                         <p className="text-lg text-muted-foreground mb-2">
                           {professionalProfile.occupation} • {professionalProfile.sector}
@@ -265,19 +195,20 @@ const Profile = () => {
                         </div>
                       )}
                     </div>
-                    
+
                     {!isOwnProfile && user && (
                       <div className="flex gap-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={toggleFavorite}
+                          onClick={handleToggleFavorite}
+                          disabled={toggleFavorite.isPending}
                         >
                           <Heart className={`w-4 h-4 mr-2 ${isFavorite ? 'fill-current text-favorite' : ''}`} />
                           {isFavorite ? 'Unfavorite' : 'Favorite'}
                         </Button>
-                        <Button 
-                          variant="secondary" 
+                        <Button
+                          variant="secondary"
                           size="sm"
                           onClick={() => {
                             const partnerName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'Conversation';
@@ -294,7 +225,7 @@ const Profile = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => setShowReportDialog(true)}
                               className="text-destructive"
                             >
@@ -303,7 +234,7 @@ const Profile = () => {
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
                               <div className="w-full">
-                                <BlockUserButton 
+                                <BlockUserButton
                                   targetUserId={userId!}
                                   targetUserName={`${profile?.first_name || ''} ${profile?.last_name || ''}`.trim()}
                                   variant="ghost"
@@ -455,7 +386,7 @@ const Profile = () => {
                       </p>
                     </div>
                   )}
-                  
+
                   {professionalProfile?.university && (
                     <div>
                       <div className="flex items-center text-muted-foreground mb-1">
@@ -473,7 +404,7 @@ const Profile = () => {
           </div>
         </div>
       </main>
-      
+
       <ReportDialog
         open={showReportDialog}
         onOpenChange={setShowReportDialog}
@@ -481,7 +412,7 @@ const Profile = () => {
         accusedName={`${profile?.first_name || ''} ${profile?.last_name || ''}`.trim()}
         reportType="profile"
       />
-      
+
       <Footer />
     </div>
   );

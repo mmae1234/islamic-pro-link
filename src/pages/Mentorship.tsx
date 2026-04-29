@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,200 +14,159 @@ import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MentorshipSearchFilters from "@/components/MentorshipSearchFilters";
-import { 
-  Search, 
-  Users, 
-  MessageCircle, 
+import {
+  Search,
+  Users,
+  MessageCircle,
   Calendar,
   CheckCircle,
   Clock,
-  XCircle
+  XCircle,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import {
+  useMentors,
+  useMentorshipRequests,
+  useRequestMentorship,
+  useUpdateMentorshipRequestStatus,
+  useCancelMentorshipRequest,
+  useDisconnectFromMentor,
+  type MentorProfile,
+} from "@/hooks/queries";
 
-interface MentorProfile {
-  user_id: string;
-  profiles: {
-    first_name: string;
-    last_name: string;
-  };
-  sector: string;
-  occupation: string;
-  country: string;
-  state_province?: string;
-  city: string;
-  bio: string;
-  skills: string[];
-  availability: string;
-  experience_years: number;
-  university?: string;
+type AdvancedFilters = {
+  searchTerm?: string;
+  country?: string;
+  stateProvince?: string;
+  sector?: string;
+  occupation?: string;
+  experienceMin?: string;
+  experienceMax?: string;
+  skills?: string[];
+  universities?: string[];
   languages?: string[];
   gender?: string;
-}
-
-interface MentorshipRequest {
-  id: string;
-  status: string;
-  message: string;
-  skills_requested: string[];
-  created_at: string;
-  mentor_id: string;
-  mentee_id: string;
-  profiles: {
-    first_name: string;
-    last_name: string;
-  };
-  mentor_profile?: {
-    profiles: {
-      first_name: string;
-      last_name: string;
-    };
-    sector: string;
-    occupation: string;
-  };
-}
+};
 
 const Mentorship = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [mentors, setMentors] = useState<MentorProfile[]>([]);
-  const [allMentors, setAllMentors] = useState<MentorProfile[]>([]);
-  const [requests, setRequests] = useState<MentorshipRequest[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+
   const [searchTerm, setSearchTerm] = useState("");
+  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>({});
   const [selectedMentor, setSelectedMentor] = useState<MentorProfile | null>(null);
   const [requestMessage, setRequestMessage] = useState("");
-  const [sendingRequest, setSendingRequest] = useState(false);
   const [disconnectTarget, setDisconnectTarget] = useState<{ id: string; name: string } | null>(null);
 
-  // Redirect to auth gate if not authenticated
+  // Redirect to auth gate if not authenticated.
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/auth-gate?redirect=/mentorship', { replace: true });
+      navigate("/auth-gate?redirect=/mentorship", { replace: true });
     }
   }, [user, authLoading, navigate]);
 
+  const mentorsQuery = useMentors(user?.id);
+  const requestsQuery = useMentorshipRequests(user?.id);
+
+  const requestMentorship = useRequestMentorship(user?.id);
+  const updateStatus = useUpdateMentorshipRequestStatus(user?.id);
+  const cancelRequest = useCancelMentorshipRequest(user?.id);
+  const disconnect = useDisconnectFromMentor(user?.id);
+
+  // Surface load failures (matches old behavior).
   useEffect(() => {
-    if (user) {
-      loadMentors();
-      loadRequests();
-    }
-  }, [user]);
-
-  const loadMentors = async () => {
-    try {
-      // Use SECURITY DEFINER RPC — returns only safe directory fields and respects blocks
-      const { data: mentorsData, error: mentorsError } = await supabase.rpc('list_professional_directory', {
-        _is_mentor: true,
-        _limit: 100,
+    if (mentorsQuery.error) {
+      toast({
+        title: "Failed to load mentors",
+        description: "Please refresh the page and try again.",
+        variant: "destructive",
       });
-
-      if (mentorsError) {
-        console.error('Error loading mentors:', mentorsError);
-        if (toast) {
-          toast({
-            title: "Failed to load mentors",
-            description: "Please refresh the page and try again.",
-            variant: "destructive",
-          });
-        }
-        setMentors([]);
-        setAllMentors([]);
-        return;
-      }
-
-      // Filter out mentors already requested
-      const { data: existingRequests } = await supabase
-        .from('mentorship_requests')
-        .select('mentor_id, status')
-        .eq('mentee_id', user?.id);
-
-      const excludedMentorIds = existingRequests
-        ?.filter(req => req.status === 'accepted' || req.status === 'pending')
-        .map(req => req.mentor_id) || [];
-
-      const mentorsWithProfiles = (mentorsData || [])
-        .filter((m: any) => !excludedMentorIds.includes(m.user_id))
-        .map((m: any) => ({
-          ...m,
-          profiles: { first_name: m.first_name, last_name: m.last_name },
-        }));
-
-      setMentors(mentorsWithProfiles);
-      setAllMentors(mentorsWithProfiles);
-    } catch (error) {
-      console.error('Error loading mentors:', error);
     }
-  };
+  }, [mentorsQuery.error, toast]);
 
-  const loadRequests = async () => {
-    try {
-      // Split cross-column .or() into two parallel queries (iOS-safe).
-      const [{ data: asMentor, error: errMentor }, { data: asMentee, error: errMentee }] = await Promise.all([
-        supabase
-          .from('mentorship_requests')
-          .select('*')
-          .eq('mentor_id', user?.id)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('mentorship_requests')
-          .select('*')
-          .eq('mentee_id', user?.id)
-          .order('created_at', { ascending: false }),
-      ]);
+  // Apply search term + advanced filters client-side over the cached mentors.
+  const filteredMentors = useMemo(() => {
+    let mentors: MentorProfile[] = mentorsQuery.data ?? [];
 
-      if (errMentor) throw errMentor;
-      if (errMentee) throw errMentee;
-
-      const requestsData = [...(asMentor || []), ...(asMentee || [])]
-        .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
-
-      if (!requestsData || requestsData.length === 0) {
-        setRequests([]);
-        setIsLoading(false);
-        return;
-      }
-
-      // Get mentee profiles
-      const menteeIds = requestsData.map(r => r.mentee_id);
-      const { data: menteesData } = await supabase
-        .from('profiles')
-        .select('user_id, first_name, last_name')
-        .in('user_id', menteeIds);
-
-      // Get mentor profiles
-      const mentorIds = requestsData.map(r => r.mentor_id);
-      const { data: mentorsData } = await supabase
-        .from('professional_profiles')
-        .select('user_id, sector, occupation')
-        .in('user_id', mentorIds);
-
-      const { data: mentorNamesData } = await supabase
-        .from('profiles')
-        .select('user_id, first_name, last_name')
-        .in('user_id', mentorIds);
-
-      // Combine the data
-      const requestsWithProfiles = requestsData.map(request => ({
-        ...request,
-        profiles: menteesData?.find(m => m.user_id === request.mentee_id) || { first_name: 'Unknown', last_name: '' },
-        mentor_profile: {
-          profiles: mentorNamesData?.find(m => m.user_id === request.mentor_id) || { first_name: 'Unknown', last_name: '' },
-          ...mentorsData?.find(m => m.user_id === request.mentor_id) || { sector: '', occupation: '' }
-        }
-      }));
-
-      setRequests(requestsWithProfiles);
-    } catch (error) {
-      console.error('Error loading requests:', error);
-    } finally {
-      setIsLoading(false);
+    if (searchTerm) {
+      const q = searchTerm.toLowerCase();
+      mentors = mentors.filter((mentor) => {
+        const fullName = `${mentor.profiles.first_name || ""} ${mentor.profiles.last_name || ""}`.trim().toLowerCase();
+        return (
+          fullName.includes(q) ||
+          mentor.sector?.toLowerCase().includes(q) ||
+          mentor.occupation?.toLowerCase().includes(q) ||
+          mentor.skills?.some((s) => s.toLowerCase().includes(q))
+        );
+      });
     }
-  };
 
-  const sendMentorshipRequest = async () => {
-    if (!selectedMentor || !requestMessage.trim() || sendingRequest) return;
+    const f = advancedFilters;
+
+    if (f.searchTerm) {
+      const q = f.searchTerm.toLowerCase();
+      mentors = mentors.filter((mentor) => {
+        const fullName = `${mentor.profiles.first_name || ""} ${mentor.profiles.last_name || ""}`.trim().toLowerCase();
+        return (
+          fullName.includes(q) ||
+          mentor.sector?.toLowerCase().includes(q) ||
+          mentor.occupation?.toLowerCase().includes(q) ||
+          mentor.bio?.toLowerCase().includes(q) ||
+          mentor.skills?.some((s) => s.toLowerCase().includes(q))
+        );
+      });
+    }
+    if (f.country && f.country !== "all") {
+      mentors = mentors.filter((m) => m.country === f.country);
+    }
+    if (f.stateProvince && f.stateProvince !== "all") {
+      mentors = mentors.filter((m) => m.state_province === f.stateProvince);
+    }
+    if (f.sector && f.sector !== "all") {
+      mentors = mentors.filter((m) => m.sector === f.sector);
+    }
+    if (f.occupation && f.occupation !== "all") {
+      mentors = mentors.filter((m) => m.occupation === f.occupation);
+    }
+    if (f.experienceMin) {
+      const min = parseInt(f.experienceMin, 10);
+      if (!Number.isNaN(min)) {
+        mentors = mentors.filter((m) => (m.experience_years ?? 0) >= min);
+      }
+    }
+    if (f.experienceMax) {
+      const max = parseInt(f.experienceMax, 10);
+      if (!Number.isNaN(max)) {
+        mentors = mentors.filter((m) => (m.experience_years ?? 0) <= max);
+      }
+    }
+    if (f.skills && f.skills.length > 0) {
+      mentors = mentors.filter((m) =>
+        m.skills?.some((s) => f.skills!.includes(s)),
+      );
+    }
+    if (f.universities && f.universities.length > 0) {
+      mentors = mentors.filter((m) =>
+        f.universities!.includes(m.university ?? ""),
+      );
+    }
+    if (f.languages && f.languages.length > 0) {
+      mentors = mentors.filter((m) =>
+        m.languages?.some((l) => f.languages!.includes(l)),
+      );
+    }
+    if (f.gender && f.gender !== "all") {
+      mentors = mentors.filter((m) => m.gender === f.gender);
+    }
+
+    return mentors;
+  }, [mentorsQuery.data, searchTerm, advancedFilters]);
+
+  const requests = requestsQuery.data ?? [];
+  const isLoading = mentorsQuery.isLoading || requestsQuery.isLoading;
+
+  const sendMentorshipRequest = () => {
+    if (!selectedMentor || !requestMessage.trim() || requestMentorship.isPending) return;
     if (requestMessage.trim().length < 30) {
       toast({
         title: "Message too short",
@@ -217,225 +175,91 @@ const Mentorship = () => {
       });
       return;
     }
-
-    setSendingRequest(true);
-    try {
-      const { error } = await supabase.rpc('request_mentorship', {
-        _mentor_id: selectedMentor.user_id,
-        _message: requestMessage.trim(),
-        _skills_requested: [],
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Request sent!",
-        description: "Your mentorship request has been sent successfully.",
-      });
-
-      setSelectedMentor(null);
-      setRequestMessage("");
-      await loadRequests();
-      await loadMentors();
-    } catch (error: any) {
-      toast({
-        title: "Could not send request",
-        description: error.message || "Please try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setSendingRequest(false);
-    }
+    requestMentorship.mutate(
+      {
+        mentorUserId: selectedMentor.user_id,
+        message: requestMessage.trim(),
+        skillsRequested: [],
+      },
+      {
+        onSuccess: () => {
+          toast({
+            title: "Request sent!",
+            description: "Your mentorship request has been sent successfully.",
+          });
+          setSelectedMentor(null);
+          setRequestMessage("");
+        },
+        onError: (error: any) =>
+          toast({
+            title: "Could not send request",
+            description: error?.message || "Please try again later.",
+            variant: "destructive",
+          }),
+      },
+    );
   };
 
-  const updateRequestStatus = async (requestId: string, status: string) => {
-    try {
-      const { error } = await supabase
-        .from('mentorship_requests')
-        .update({ status })
-        .eq('id', requestId);
+  const handleUpdateStatus = (requestId: string, status: string) =>
+    updateStatus.mutate(
+      { requestId, status },
+      {
+        onSuccess: () =>
+          toast({
+            title: "Request updated",
+            description: `Request ${status} successfully.`,
+          }),
+        onError: (err: any) =>
+          toast({
+            title: "Error",
+            description: err?.message || "Failed to update request.",
+            variant: "destructive",
+          }),
+      },
+    );
 
-      if (error) throw error;
-
-      if (toast) {
-        toast({
-          title: "Request updated",
-          description: `Request ${status} successfully.`,
-        });
-      }
-
-      await loadRequests();
-      await loadMentors(); // Refresh mentors list to show available mentors again if declined
-    } catch (error: any) {
-      if (toast) {
-        toast({
-          title: "Error",
-          description: error.message || "Failed to update request.",
-          variant: "destructive",
-        });
-      }
-    }
-  };
-
-  const cancelMentorshipRequest = async (requestId: string) => {
-    try {
-      const { error } = await supabase
-        .from('mentorship_requests')
-        .update({ status: 'cancelled' })
-        .eq('id', requestId);
-
-      if (error) throw error;
-
-      if (toast) {
+  const handleCancelRequest = (requestId: string) =>
+    cancelRequest.mutate(requestId, {
+      onSuccess: () =>
         toast({
           title: "Request cancelled",
           description: "Your mentorship request has been cancelled successfully.",
-        });
-      }
-
-      await loadRequests();
-      await loadMentors(); // Refresh mentors list to show available mentors again
-    } catch (error: any) {
-      if (toast) {
+        }),
+      onError: (err: any) =>
         toast({
           title: "Error",
-          description: error.message || "Failed to cancel request.",
+          description: err?.message || "Failed to cancel request.",
           variant: "destructive",
-        });
-      }
-    }
-  };
+        }),
+    });
 
-  const performDisconnect = async () => {
+  const performDisconnect = () => {
     if (!disconnectTarget) return;
     const { id: requestId, name: mentorName } = disconnectTarget;
-
-    try {
-      const { error } = await supabase
-        .from('mentorship_requests')
-        .update({ 
-          status: 'disconnected',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', requestId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Disconnected successfully",
-        description: `You have disconnected from ${mentorName}.`,
-      });
-
-      await loadRequests();
-      await loadMentors();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to disconnect from mentor.",
-        variant: "destructive",
-      });
-    } finally {
-      setDisconnectTarget(null);
-    }
+    disconnect.mutate(requestId, {
+      onSuccess: () =>
+        toast({
+          title: "Disconnected successfully",
+          description: `You have disconnected from ${mentorName}.`,
+        }),
+      onError: (err: any) =>
+        toast({
+          title: "Error",
+          description: err?.message || "Failed to disconnect from mentor.",
+          variant: "destructive",
+        }),
+      onSettled: () => setDisconnectTarget(null),
+    });
   };
 
-  const disconnectFromMentor = (requestId: string, mentorName: string) => {
+  const disconnectFromMentor = (requestId: string, mentorName: string) =>
     setDisconnectTarget({ id: requestId, name: mentorName });
-  };
-
-  const handleMentorSearch = (filters: any) => {
-    let filteredMentors = [...allMentors];
-
-    // Apply search term filter (from the search input)
-    if (searchTerm) {
-      filteredMentors = filteredMentors.filter(mentor => {
-        const fullName = `${mentor.profiles.first_name || ''} ${mentor.profiles.last_name || ''}`.trim();
-        return fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          mentor.sector.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          mentor.occupation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          mentor.skills?.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
-      });
-    }
-
-    // Apply advanced filters
-    if (filters.searchTerm) {
-      filteredMentors = filteredMentors.filter(mentor => {
-        const fullName = `${mentor.profiles.first_name || ''} ${mentor.profiles.last_name || ''}`.trim();
-        return fullName.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-          mentor.sector.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-          mentor.occupation.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-          mentor.bio?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-          mentor.skills?.some(skill => skill.toLowerCase().includes(filters.searchTerm.toLowerCase()));
-      });
-    }
-
-    if (filters.country && filters.country !== 'all') {
-      filteredMentors = filteredMentors.filter(mentor => mentor.country === filters.country);
-    }
-
-    if (filters.stateProvince && filters.stateProvince !== 'all') {
-      filteredMentors = filteredMentors.filter(mentor => mentor.state_province === filters.stateProvince);
-    }
-
-    if (filters.sector && filters.sector !== 'all') {
-      filteredMentors = filteredMentors.filter(mentor => mentor.sector === filters.sector);
-    }
-
-    if (filters.occupation && filters.occupation !== 'all') {
-      filteredMentors = filteredMentors.filter(mentor => mentor.occupation === filters.occupation);
-    }
-
-    if (filters.experienceMin) {
-      const min = parseInt(filters.experienceMin);
-      filteredMentors = filteredMentors.filter(mentor => 
-        (mentor.experience_years ?? 0) >= min
-      );
-    }
-
-    if (filters.experienceMax) {
-      const max = parseInt(filters.experienceMax);
-      filteredMentors = filteredMentors.filter(mentor => 
-        (mentor.experience_years ?? 0) <= max
-      );
-    }
-
-    if (filters.skills && filters.skills.length > 0) {
-      filteredMentors = filteredMentors.filter(mentor =>
-        mentor.skills?.some(skill => filters.skills.includes(skill))
-      );
-    }
-
-    if (filters.universities && filters.universities.length > 0) {
-      filteredMentors = filteredMentors.filter(mentor =>
-        filters.universities.includes(mentor.university)
-      );
-    }
-
-    if (filters.languages && filters.languages.length > 0) {
-      filteredMentors = filteredMentors.filter(mentor =>
-        mentor.languages?.some(lang => filters.languages.includes(lang))
-      );
-    }
-
-    if (filters.gender && filters.gender !== 'all') {
-      filteredMentors = filteredMentors.filter(mentor => mentor.gender === filters.gender);
-    }
-
-    setMentors(filteredMentors);
-  };
-
-  // Apply search term filtering when searchTerm changes
-  useEffect(() => {
-    handleMentorSearch({});
-  }, [searchTerm, allMentors]);
-
-  const filteredMentors = mentors;
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'accepted':
+      case "accepted":
         return <CheckCircle className="w-4 h-4 text-success" />;
-      case 'declined':
+      case "declined":
         return <XCircle className="w-4 h-4 text-destructive" />;
       default:
         return <Clock className="w-4 h-4 text-warning" />;
@@ -456,7 +280,7 @@ const Mentorship = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
@@ -497,7 +321,7 @@ const Mentorship = () => {
               </Card>
 
               {/* Advanced Filters */}
-              <MentorshipSearchFilters onSearch={handleMentorSearch} loading={false} />
+              <MentorshipSearchFilters onSearch={setAdvancedFilters} loading={false} />
 
               <Card>
                 <CardContent>
@@ -557,7 +381,7 @@ const Mentorship = () => {
                             </p>
                           )}
 
-                          <Button 
+                          <Button
                             className="w-full"
                             onClick={() => setSelectedMentor(mentor)}
                           >
@@ -597,14 +421,14 @@ const Mentorship = () => {
                               <div className="flex items-center gap-2 mb-2">
                                 {getStatusIcon(request.status)}
                                 <h3 className="font-medium">
-                                  {request.mentor_id === user?.id 
+                                  {request.mentor_id === user?.id
                                     ? `Request from ${`${request.profiles.first_name || ''} ${request.profiles.last_name || ''}`.trim() || 'Unknown'}`
                                     : `Request to ${`${request.mentor_profile?.profiles.first_name || ''} ${request.mentor_profile?.profiles.last_name || ''}`.trim() || 'Unknown'}`
                                   }
                                 </h3>
                                 <Badge variant={
-                                  request.status === 'accepted' ? 'default' : 
-                                  request.status === 'declined' ? 'destructive' : 
+                                  request.status === 'accepted' ? 'default' :
+                                  request.status === 'declined' ? 'destructive' :
                                   'secondary'
                                 }>
                                   {request.status}
@@ -628,16 +452,18 @@ const Mentorship = () => {
 
                             {request.mentor_id === user?.id && request.status === 'pending' && (
                               <div className="flex gap-2 ml-4">
-                                <Button 
-                                  size="sm" 
-                                  onClick={() => updateRequestStatus(request.id, 'accepted')}
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleUpdateStatus(request.id, 'accepted')}
+                                  disabled={updateStatus.isPending}
                                 >
                                   Accept
                                 </Button>
-                                <Button 
-                                  size="sm" 
+                                <Button
+                                  size="sm"
                                   variant="outline"
-                                  onClick={() => updateRequestStatus(request.id, 'declined')}
+                                  onClick={() => handleUpdateStatus(request.id, 'declined')}
+                                  disabled={updateStatus.isPending}
                                 >
                                   Decline
                                 </Button>
@@ -646,10 +472,11 @@ const Mentorship = () => {
 
                             {request.mentee_id === user?.id && request.status === 'pending' && (
                               <div className="flex gap-2 ml-4">
-                                <Button 
-                                  size="sm" 
+                                <Button
+                                  size="sm"
                                   variant="destructive"
-                                  onClick={() => cancelMentorshipRequest(request.id)}
+                                  onClick={() => handleCancelRequest(request.id)}
+                                  disabled={cancelRequest.isPending}
                                 >
                                   <XCircle className="w-4 h-4 mr-2" />
                                   Cancel Request
@@ -663,12 +490,12 @@ const Mentorship = () => {
                                   <Calendar className="w-4 h-4 mr-2" />
                                   Schedule Session
                                 </Button>
-                                <Button 
-                                  size="sm" 
+                                <Button
+                                  size="sm"
                                   variant="destructive"
                                   onClick={() => disconnectFromMentor(
-                                    request.id, 
-                                    request.mentor_id === user?.id 
+                                    request.id,
+                                    request.mentor_id === user?.id
                                       ? `${request.profiles.first_name || ''} ${request.profiles.last_name || ''}`.trim() || 'Unknown'
                                       : `${request.mentor_profile?.profiles.first_name || ''} ${request.mentor_profile?.profiles.last_name || ''}`.trim() || 'Unknown'
                                   )}
@@ -699,7 +526,7 @@ const Mentorship = () => {
         </div>
       </main>
 
-      {/* Request Mentorship Dialog (proper a11y, focus trap, escape-to-close) */}
+      {/* Request Mentorship Dialog */}
       <Dialog
         open={!!selectedMentor}
         onOpenChange={(open) => {
@@ -739,15 +566,15 @@ const Mentorship = () => {
                   setSelectedMentor(null);
                   setRequestMessage("");
                 }}
-                disabled={sendingRequest}
+                disabled={requestMentorship.isPending}
               >
                 Cancel
               </Button>
               <Button
                 onClick={sendMentorshipRequest}
-                disabled={requestMessage.trim().length < 30 || sendingRequest}
+                disabled={requestMessage.trim().length < 30 || requestMentorship.isPending}
               >
-                {sendingRequest ? 'Sending…' : 'Send Request'}
+                {requestMentorship.isPending ? 'Sending…' : 'Send Request'}
               </Button>
             </div>
           </div>
