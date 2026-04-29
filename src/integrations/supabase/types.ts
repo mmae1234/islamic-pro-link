@@ -788,6 +788,23 @@ export type Database = {
       }
       consolidate_conversations: { Args: never; Returns: undefined }
       delete_user_account: { Args: { user_id_param: string }; Returns: boolean }
+      get_business_by_id: {
+        Args: { _id: string }
+        Returns: {
+          bio: string
+          city: string
+          country: string
+          created_at: string
+          id: string
+          logo_url: string
+          name: string
+          sector: string
+          services: string
+          state: string
+          verified: boolean
+          website: string
+        }[]
+      }
       get_business_owner_id: { Args: { _business_id: string }; Returns: string }
       get_business_sectors: {
         Args: never
@@ -894,6 +911,14 @@ export type Database = {
           sector: string
           user_id: string
         }[]
+      }
+      request_mentorship: {
+        Args: {
+          _mentor_id: string
+          _message: string
+          _skills_requested?: string[]
+        }
+        Returns: string
       }
       search_business_directory: {
         Args: {
