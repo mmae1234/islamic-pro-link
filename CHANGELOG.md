@@ -8,6 +8,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Added
 - Admin Release Notes page that renders this changelog for internal visibility.
 - Colocated React Query hooks (`src/hooks/queries/`) for the professional directory, business directory, profiles, favorites, conversations, and mentorship — unifying caching and invalidation across the app.
+- Sentry error tracking via `@sentry/react`, gated on `VITE_SENTRY_DSN` (no-op when unset). Captures uncaught render errors from `GlobalErrorBoundary`, `ErrorBoundary`, and `LazyRouteErrorBoundary` (each tagged with `boundary`); sets user context to id only on auth state change. Privacy defaults: `sendDefaultPii: false`, replay session sample 0%, replay-on-error 100%, beforeSend drops offline events and scrubs email-shaped strings.
+- Source-map upload via `@sentry/vite-plugin` at build time when `SENTRY_AUTH_TOKEN` is present; no-op otherwise.
 
 ### Changed
 - Six pages (Search, Businesses, Favorites, Profile, Mentorship, Messages) migrated from raw `useEffect + useState + supabase.from(...)` to the new query hooks. UI behavior unchanged; data layer only.
