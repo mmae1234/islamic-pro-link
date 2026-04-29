@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,7 @@ interface Conversation {
 const Messages = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [sentMessages, setSentMessages] = useState<Message[]>([]);
   const [inboxMessages, setInboxMessages] = useState<Message[]>([]);
@@ -71,6 +73,22 @@ const Messages = () => {
       return setupRealtimeSubscription();
     }
   }, [user?.id]);
+
+  // Open a conversation directly when arriving via ?recipient=… or ?userId=… deep link
+  useEffect(() => {
+    if (!user) return;
+    const partnerId = searchParams.get('recipient') || searchParams.get('userId');
+    const partnerName = searchParams.get('name') || 'Conversation';
+    if (partnerId && partnerId !== user.id) {
+      setSelectedConversation({ partnerId, partnerName: decodeURIComponent(partnerName) });
+      // Clean the URL so a refresh doesn't re-open
+      const next = new URLSearchParams(searchParams);
+      next.delete('recipient');
+      next.delete('userId');
+      next.delete('name');
+      setSearchParams(next, { replace: true });
+    }
+  }, [user?.id, searchParams, setSearchParams]);
 
   const loadMessages = async () => {
     if (!user) return;
