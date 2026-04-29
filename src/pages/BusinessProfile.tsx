@@ -161,20 +161,36 @@ if (user) {
   }, [id, user]);
 
   const isFavorited = business ? favoriteBusinessIds.includes(business.id) : false;
-  const toggleFavorite = () => {
+  const toggleFavorite = async () => {
     if (!business) return;
-    const key = 'favorite_business_ids';
-    const arr = [...favoriteBusinessIds];
-    const idx = arr.indexOf(business.id);
-    if (idx === -1) {
-      arr.push(business.id);
-      toast({ title: 'Added to favorites', description: business.name ? `${business.name} saved to your favorites.` : 'Business saved.' });
-    } else {
-      arr.splice(idx, 1);
-      toast({ title: 'Removed from favorites', description: business.name ? `${business.name} removed from your favorites.` : 'Business removed.' });
+    if (!user) {
+      toast({ title: 'Please sign in', description: 'You must be logged in to save favorites.', variant: 'destructive' });
+      return;
     }
-    localStorage.setItem(key, JSON.stringify(arr));
-    setFavoriteBusinessIds(arr);
+    const wasFav = isFavorited;
+    // Optimistic update
+    setFavoriteBusinessIds(prev => wasFav ? prev.filter(x => x !== business.id) : [...prev, business.id]);
+    try {
+      if (wasFav) {
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('business_id', business.id);
+        if (error) throw error;
+        toast({ title: 'Removed from favorites', description: business.name ? `${business.name} removed from your favorites.` : 'Business removed.' });
+      } else {
+        const { error } = await supabase
+          .from('favorites')
+          .insert({ user_id: user.id, business_id: business.id });
+        if (error) throw error;
+        toast({ title: 'Added to favorites', description: business.name ? `${business.name} saved to your favorites.` : 'Business saved.' });
+      }
+    } catch (e: any) {
+      // Roll back
+      setFavoriteBusinessIds(prev => wasFav ? [...prev, business.id] : prev.filter(x => x !== business.id));
+      toast({ title: 'Could not update favorite', description: e?.message || 'Please try again later.', variant: 'destructive' });
+    }
   };
 
 const handleRequestLink = async () => {
