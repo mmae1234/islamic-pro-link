@@ -89,17 +89,22 @@ const ProfessionalCard = ({
 
   const sendMentorshipRequest = async () => {
     if (!user || !requestMessage.trim()) return;
+    if (requestMessage.trim().length < 30) {
+      toast({
+        title: "Message too short",
+        description: "Please write at least 30 characters introducing yourself.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('mentorship_requests')
-        .insert({
-          mentor_id: professional.user_id,
-          mentee_id: user.id,
-          message: requestMessage,
-          skills_requested: professional.skills.slice(0, 3) // Include some relevant skills
-        });
+      const { error } = await supabase.rpc('request_mentorship', {
+        _mentor_id: professional.user_id,
+        _message: requestMessage.trim(),
+        _skills_requested: (professional.skills || []).slice(0, 3),
+      });
 
       if (error) throw error;
 
@@ -113,8 +118,8 @@ const ProfessionalCard = ({
       onRequestSent?.();
     } catch (error: any) {
       toast({
-        title: "Error sending request",
-        description: error.message,
+        title: "Could not send request",
+        description: error.message || "Please try again later.",
         variant: "destructive",
       });
     } finally {
