@@ -274,24 +274,46 @@ const Settings = () => {
     }
   };
 
-  const handleEmailChange = async (newEmail: string) => {
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [confirmEmail, setConfirmEmail] = useState('');
+  const [emailUpdating, setEmailUpdating] = useState(false);
+
+  const handleEmailChange = async () => {
+    const trimmed = newEmail.trim().toLowerCase();
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(trimmed)) {
+      toast({ title: "Invalid email", description: "Please enter a valid email address.", variant: "destructive" });
+      return;
+    }
+    if (trimmed !== confirmEmail.trim().toLowerCase()) {
+      toast({ title: "Emails don't match", description: "Please type the same email twice.", variant: "destructive" });
+      return;
+    }
+    if (trimmed === user?.email) {
+      toast({ title: "Same email", description: "That's already your current email address.", variant: "destructive" });
+      return;
+    }
+
+    setEmailUpdating(true);
     try {
-      const { error } = await supabase.auth.updateUser({
-        email: newEmail
-      });
-      
+      const { error } = await supabase.auth.updateUser({ email: trimmed });
       if (error) throw error;
-      
       toast({
         title: "Email update requested",
         description: "Check both your old and new email addresses for confirmation links.",
       });
+      setShowEmailDialog(false);
+      setNewEmail('');
+      setConfirmEmail('');
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Failed to update email.",
         variant: "destructive",
       });
+    } finally {
+      setEmailUpdating(false);
     }
   };
 
@@ -300,32 +322,17 @@ const Settings = () => {
 
     setDeleting(true);
     try {
-      // Get the current session to pass the JWT token
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (!session?.access_token) {
-        throw new Error('No valid session found');
-      }
-
-      // Call the Edge Function to properly delete the user account
-      const response = await fetch(`https://zhtfygjxnyxqsmeoipst.supabase.co/functions/v1/delete-user-account`, {
+      // Use supabase.functions.invoke — handles auth header automatically
+      // and works in any environment (preview, prod, staging) without hardcoding URLs.
+      const { data, error } = await supabase.functions.invoke('delete-user-account', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
       });
 
-      // Robust parse: a 5xx with HTML body would otherwise throw a confusing JSON parse error.
-      let result: { error?: string } = {};
-      try {
-        result = await response.json();
-      } catch {
-        // Non-JSON response — fall through to the response.ok check below.
+      if (error) {
+        throw new Error(error.message || 'Failed to delete account');
       }
-
-      if (!response.ok) {
-        throw new Error(result.error || `Failed to delete account (status ${response.status})`);
+      if (data && (data as any).error) {
+        throw new Error((data as any).error);
       }
 
       toast({
@@ -333,13 +340,9 @@ const Settings = () => {
         description: "Your account and all data have been permanently deleted.",
       });
 
-      // Close dialog before sign-out cascade renders.
       setShowDeleteDialog(false);
       setDeleteConfirmation('');
 
-      // Best-effort sign-out — the auth.users row is already gone, so any error
-      // here is irrelevant. Goal: clear local state and bounce off /settings
-      // before any component issues a request with the now-orphaned JWT.
       await signOut().catch(() => {});
       navigate('/', { replace: true });
     } catch (error: any) {
@@ -412,28 +415,19 @@ const Settings = () => {
                         size="sm" 
                         className="mt-2"
                         onClick={() => {
-                          const newEmail = prompt('Enter your new email address:');
-                          if (newEmail && newEmail !== user?.email) {
-                            handleEmailChange(newEmail);
-                          }
+                          setNewEmail('');
+                          setConfirmEmail('');
+                          setShowEmailDialog(true);
                         }}
                       >
                         Change Email
                       </Button>
                     </div>
                     
-                    <div>
-                      <Label htmlFor="account_type">Account Type</Label>
-                      <Select value={formData.role} onValueChange={(value) => setFormData(prev => ({ ...prev, role: value }))}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="professional">Professional</SelectItem>
-                          <SelectItem value="business">Business</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    {/* Account Type select removed — switching here did nothing
+                        useful (couldn't create a business_accounts row, no proper
+                        conversion flow). profiles.role is locked at the GRANT layer
+                        anyway, so the upsert was silently dropping the role change. */}
                   </div>
                   
                   <Button onClick={saveProfile} disabled={saving}>
@@ -474,70 +468,11 @@ const Settings = () => {
                     Email Notifications
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="email-messages">Message Notifications</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Receive email notifications for new messages
-                        </p>
-                      </div>
-                      <Switch id="email-messages" />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="email-mentorship">Mentorship Updates</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Receive email notifications for mentorship requests and updates
-                        </p>
-                      </div>
-                      <Switch id="email-mentorship" />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="email-profile">Profile Views</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Receive email notifications when someone views your profile
-                        </p>
-                      </div>
-                      <Switch id="email-profile" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Phone className="w-5 h-5" />
-                    Communication Preferences
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="sms-notifications">SMS Notifications</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Receive SMS notifications for urgent messages
-                        </p>
-                      </div>
-                      <Switch id="sms-notifications" />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="marketing-emails">Marketing Emails</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Receive updates about new features and platform news
-                        </p>
-                      </div>
-                      <Switch id="marketing-emails" />
-                    </div>
-                  </div>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    Granular notification preferences are coming soon. For now, you'll receive
+                    email notifications for direct messages and mentorship requests by default.
+                  </p>
                 </CardContent>
               </Card>
             </TabsContent>
