@@ -260,9 +260,18 @@ const Help = () => {
                 <AccordionItem value="item-5">
                   <AccordionTrigger>Is my information secure?</AccordionTrigger>
                   <AccordionContent>
-                    Yes, we take privacy and security seriously. All personal information is encrypted and 
-                    protected. You control what information is visible on your public profile. 
-                    Read our Privacy Policy for more details.
+                    We take privacy and security seriously. Data is transmitted over secure (TLS) connections,
+                    access to your data is governed by row-level security policies, and you control what
+                    appears on your public profile. Uploaded images are automatically screened for
+                    inappropriate content. Read our Privacy Policy for full details.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-8">
+                  <AccordionTrigger>How do I support the platform?</AccordionTrigger>
+                  <AccordionContent>
+                    Visit the "Support Our Mission" page (linked in the header) to make a donation via PayPal.
+                    Donations help us keep the platform free for the community.
                   </AccordionContent>
                 </AccordionItem>
 
