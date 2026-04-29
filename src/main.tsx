@@ -2,7 +2,12 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
+import { initSentry } from './lib/sentry'
 
+// Initialize Sentry as early as possible so failures during initial render
+// (e.g. iOS WebKit quirks below) are captured. Internally a no-op when
+// VITE_SENTRY_DSN is unset.
+initSentry();
 
 console.log("Starting app initialization...");
 

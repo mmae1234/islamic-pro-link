@@ -3,6 +3,7 @@ import { User, AuthError } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { isIOS, hasLocalStorage, withTimeout } from "@/lib/auth-storage";
+import { setSentryUser } from "@/lib/sentry";
 
 interface AuthContextType {
   user: User | null;
@@ -64,6 +65,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (mounted) {
         setLoading(false);
         setUser(null);
+        setSentryUser(null);
       }
     }, ios ? 800 : 1500);
 
@@ -72,7 +74,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const { data } = supabase.auth.onAuthStateChange((_event, session) => {
         if (!mounted) return;
-        setUser(session?.user ?? null);
+        const nextUser = session?.user ?? null;
+        setUser(nextUser);
+        // Tell Sentry who's logged in (id only — never email/name) so the
+        // next captured event is attributable. Pass null on sign-out.
+        setSentryUser(nextUser?.id ?? null);
         setLoading(false);
       });
       subscription = data.subscription;
@@ -101,8 +107,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (error) {
           console.log("AuthContext: session error, proceeding as guest:", error.message);
           setUser(null);
+          setSentryUser(null);
         } else {
-          setUser(data.session?.user ?? null);
+          const nextUser = data.session?.user ?? null;
+          setUser(nextUser);
+          setSentryUser(nextUser?.id ?? null);
         }
       } catch (error) {
         if (!mounted) return;

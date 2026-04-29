@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, RefreshCw, Home, Wifi } from 'lucide-react';
+import { captureException } from '@/lib/sentry';
 
 interface GlobalErrorBoundaryState {
   hasError: boolean;
@@ -32,7 +33,7 @@ class GlobalErrorBoundary extends React.Component<GlobalErrorBoundaryProps, Glob
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isWebKit = /WebKit/.test(navigator.userAgent);
     const isPrivateMode = !window.localStorage || !window.sessionStorage;
-    
+
     console.error('Device info:', {
       isIOS,
       isWebKit,
@@ -40,6 +41,18 @@ class GlobalErrorBoundary extends React.Component<GlobalErrorBoundaryProps, Glob
       userAgent: navigator.userAgent,
       error: error.message,
       stack: error.stack
+    });
+
+    // Forward to Sentry. The boundary tag lets us filter "uncaught render
+    // errors that escaped to the global catch" specifically. iOS context
+    // helps reproduce mobile-only bugs.
+    captureException(error, {
+      tags: { boundary: 'global', ios: String(isIOS) },
+      extra: {
+        componentStack: errorInfo.componentStack,
+        isWebKit,
+        isPrivateMode,
+      },
     });
   }
 
