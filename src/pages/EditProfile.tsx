@@ -175,6 +175,37 @@ const EditProfile = () => {
 
     setSaving(true);
     try {
+      // Validate all URL/phone fields up front. Return on first error so the
+      // user gets a clear toast instead of a cryptic DB constraint error.
+      const urlFields: Array<[string, string, (v: string) => void]> = [
+        ['Website', website, setWebsite],
+        ['Facebook', facebookUrl, setFacebookUrl],
+        ['Instagram', instagramUrl, setInstagramUrl],
+        ['LinkedIn', linkedinUrl, setLinkedinUrl],
+        ['X (Twitter)', twitterUrl, setTwitterUrl],
+        ['YouTube', youtubeUrl, setYoutubeUrl],
+        ['TikTok', tiktokUrl, setTiktokUrl],
+        ['Telegram', telegramUrl, setTelegramUrl],
+      ];
+      const sanitizedUrls: Record<string, string> = {};
+      for (const [label, value, setter] of urlFields) {
+        const r = validateHttpUrl(value);
+        if (!r.isValid) {
+          toast({ title: `${label} URL invalid`, description: r.error, variant: 'destructive' });
+          setSaving(false);
+          return;
+        }
+        sanitizedUrls[label] = r.sanitized;
+        if (r.sanitized !== value) setter(r.sanitized);
+      }
+      const phoneRes = validatePhoneNumber(whatsappNumber);
+      if (!phoneRes.isValid) {
+        toast({ title: 'WhatsApp number invalid', description: phoneRes.error, variant: 'destructive' });
+        setSaving(false);
+        return;
+      }
+      if (phoneRes.sanitized !== whatsappNumber) setWhatsappNumber(phoneRes.sanitized);
+
       // Update basic profile
       const { error: profileError } = await supabase
         .from('profiles')
