@@ -81,6 +81,44 @@ const Mentorship = () => {
   const [requestMessage, setRequestMessage] = useState("");
   const [sendingRequest, setSendingRequest] = useState(false);
   const [disconnectTarget, setDisconnectTarget] = useState<{ id: string; name: string } | null>(null);
+  const [scheduleTarget, setScheduleTarget] = useState<MentorshipRequest | null>(null);
+  const [scheduleDate, setScheduleDate] = useState("");
+  const [scheduleTime, setScheduleTime] = useState("");
+  const [scheduleDuration, setScheduleDuration] = useState("60");
+  const [scheduleMeetingLink, setScheduleMeetingLink] = useState("");
+  const [scheduleNotes, setScheduleNotes] = useState("");
+  const [schedulingSession, setSchedulingSession] = useState(false);
+
+  const submitScheduleSession = async () => {
+    if (!scheduleTarget || !scheduleDate || !scheduleTime) {
+      toast({ title: "Missing info", description: "Please pick a date and time.", variant: "destructive" });
+      return;
+    }
+    setSchedulingSession(true);
+    try {
+      const scheduledAt = new Date(`${scheduleDate}T${scheduleTime}`);
+      if (isNaN(scheduledAt.getTime())) throw new Error("Invalid date/time");
+      const { error } = await supabase.from('mentorship_sessions').insert({
+        request_id: scheduleTarget.id,
+        scheduled_at: scheduledAt.toISOString(),
+        duration_minutes: parseInt(scheduleDuration) || 60,
+        meeting_link: scheduleMeetingLink || null,
+        notes: scheduleNotes || null,
+      });
+      if (error) throw error;
+      toast({ title: "Session scheduled", description: "Your mentorship session has been scheduled." });
+      setScheduleTarget(null);
+      setScheduleDate("");
+      setScheduleTime("");
+      setScheduleDuration("60");
+      setScheduleMeetingLink("");
+      setScheduleNotes("");
+    } catch (error: any) {
+      toast({ title: "Error scheduling session", description: error.message, variant: "destructive" });
+    } finally {
+      setSchedulingSession(false);
+    }
+  };
 
   // Redirect to auth gate if not authenticated
   useEffect(() => {
@@ -659,7 +697,7 @@ const Mentorship = () => {
 
                             {request.status === 'accepted' && (
                               <div className="flex gap-2 ml-4">
-                                <Button size="sm" variant="outline">
+                                <Button size="sm" variant="outline" onClick={() => setScheduleTarget(request)}>
                                   <Calendar className="w-4 h-4 mr-2" />
                                   Schedule Session
                                 </Button>
@@ -748,6 +786,48 @@ const Mentorship = () => {
                 disabled={requestMessage.trim().length < 30 || sendingRequest}
               >
                 {sendingRequest ? 'Sending…' : 'Send Request'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Schedule session dialog */}
+      <Dialog open={!!scheduleTarget} onOpenChange={(open) => { if (!open) setScheduleTarget(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Schedule Mentorship Session</DialogTitle>
+            <DialogDescription>
+              Pick a date and time. You can optionally include a meeting link and notes.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="schedule-date">Date</Label>
+                <Input id="schedule-date" type="date" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="schedule-time">Time</Label>
+                <Input id="schedule-time" type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="schedule-duration">Duration (minutes)</Label>
+              <Input id="schedule-duration" type="number" min="15" step="15" value={scheduleDuration} onChange={(e) => setScheduleDuration(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="schedule-link">Meeting link (optional)</Label>
+              <Input id="schedule-link" placeholder="Zoom, Google Meet, etc." value={scheduleMeetingLink} onChange={(e) => setScheduleMeetingLink(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="schedule-notes">Notes (optional)</Label>
+              <Textarea id="schedule-notes" rows={3} value={scheduleNotes} onChange={(e) => setScheduleNotes(e.target.value)} />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setScheduleTarget(null)} disabled={schedulingSession}>Cancel</Button>
+              <Button onClick={submitScheduleSession} disabled={schedulingSession}>
+                {schedulingSession ? "Scheduling..." : "Schedule Session"}
               </Button>
             </div>
           </div>
