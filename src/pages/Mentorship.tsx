@@ -81,6 +81,44 @@ const Mentorship = () => {
   const [requestMessage, setRequestMessage] = useState("");
   const [sendingRequest, setSendingRequest] = useState(false);
   const [disconnectTarget, setDisconnectTarget] = useState<{ id: string; name: string } | null>(null);
+  const [scheduleTarget, setScheduleTarget] = useState<MentorshipRequest | null>(null);
+  const [scheduleDate, setScheduleDate] = useState("");
+  const [scheduleTime, setScheduleTime] = useState("");
+  const [scheduleDuration, setScheduleDuration] = useState("60");
+  const [scheduleMeetingLink, setScheduleMeetingLink] = useState("");
+  const [scheduleNotes, setScheduleNotes] = useState("");
+  const [schedulingSession, setSchedulingSession] = useState(false);
+
+  const submitScheduleSession = async () => {
+    if (!scheduleTarget || !scheduleDate || !scheduleTime) {
+      toast({ title: "Missing info", description: "Please pick a date and time.", variant: "destructive" });
+      return;
+    }
+    setSchedulingSession(true);
+    try {
+      const scheduledAt = new Date(`${scheduleDate}T${scheduleTime}`);
+      if (isNaN(scheduledAt.getTime())) throw new Error("Invalid date/time");
+      const { error } = await supabase.from('mentorship_sessions').insert({
+        request_id: scheduleTarget.id,
+        scheduled_at: scheduledAt.toISOString(),
+        duration_minutes: parseInt(scheduleDuration) || 60,
+        meeting_link: scheduleMeetingLink || null,
+        notes: scheduleNotes || null,
+      });
+      if (error) throw error;
+      toast({ title: "Session scheduled", description: "Your mentorship session has been scheduled." });
+      setScheduleTarget(null);
+      setScheduleDate("");
+      setScheduleTime("");
+      setScheduleDuration("60");
+      setScheduleMeetingLink("");
+      setScheduleNotes("");
+    } catch (error: any) {
+      toast({ title: "Error scheduling session", description: error.message, variant: "destructive" });
+    } finally {
+      setSchedulingSession(false);
+    }
+  };
 
   // Redirect to auth gate if not authenticated
   useEffect(() => {
