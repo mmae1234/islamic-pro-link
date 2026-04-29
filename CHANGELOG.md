@@ -7,15 +7,20 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ## [Unreleased]
 ### Added
 - Admin Release Notes page that renders this changelog for internal visibility.
+- Colocated React Query hooks (`src/hooks/queries/`) for the professional directory, business directory, profiles, favorites, conversations, and mentorship — unifying caching and invalidation across the app.
 
 ### Changed
-- N/A
+- Six pages (Search, Businesses, Favorites, Profile, Mentorship, Messages) migrated from raw `useEffect + useState + supabase.from(...)` to the new query hooks. UI behavior unchanged; data layer only.
+- Messages realtime subscription now invalidates query caches via `queryClient.invalidateQueries` instead of manually re-fetching.
 
 ### Fixed
 - N/A
 
 ### Removed
 - N/A
+
+### Build
+- `terser` added as a `devDependency` so `@vitejs/plugin-legacy` minification works on local builds without `--legacy-peer-deps` gymnastics.
 
 ## [1.4.1] - 2025-08-12
 ### Fixed
