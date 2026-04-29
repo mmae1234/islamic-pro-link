@@ -1,240 +1,91 @@
-import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { 
-  Heart, 
-  Users, 
-  MessageCircle, 
-  MapPin, 
+import {
+  Heart,
+  Users,
+  MessageCircle,
+  MapPin,
   Briefcase,
-  Trash2
+  Trash2,
 } from "lucide-react";
-
-interface FavoriteProfessional {
-  id: string;
-  professional_id: string;
-  created_at: string;
-  professional_profile: {
-    user_id: string;
-    occupation: string;
-    sector: string;
-    city: string;
-    country: string;
-    bio: string;
-    avatar_url: string;
-    skills: string[];
-    is_mentor: boolean;
-    availability: string;
-    profiles: {
-      first_name: string;
-      last_name: string;
-    };
-  };
-}
-
-interface FavoriteMentor {
-  id: string;
-  mentor_id: string;
-  mentee_id: string;
-  status: string;
-  created_at: string;
-  mentor_profile: {
-    user_id: string;
-    occupation: string;
-    sector: string;
-    city: string;
-    country: string;
-    bio: string;
-    avatar_url: string;
-    skills: string[];
-    availability: string;
-    profiles: {
-      first_name: string;
-      last_name: string;
-    };
-  };
-}
-
-interface FavoriteBusiness {
-  id: string;
-  name: string | null;
-  sector: string | null;
-  country: string | null;
-  state: string | null;
-  city: string | null;
-  verified: boolean | null;
-  logo_url: string | null;
-}
+import {
+  useFavoriteProfessionals,
+  useFavoriteBusinesses,
+  useFavoriteMentors,
+  useRemoveFavoriteProfessional,
+  useRemoveFavoriteBusiness,
+} from "@/hooks/queries";
 
 const Favorites = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [favoriteProfessionals, setFavoriteProfessionals] = useState<FavoriteProfessional[]>([]);
-  const [favoriteMentors, setFavoriteMentors] = useState<FavoriteMentor[]>([]);
-  const [favoriteBusinesses, setFavoriteBusinesses] = useState<FavoriteBusiness[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      loadFavorites();
-    }
-  }, [user]);
+  const professionalsQuery = useFavoriteProfessionals(user?.id);
+  const businessesQuery = useFavoriteBusinesses(user?.id);
+  const mentorsQuery = useFavoriteMentors(user?.id);
 
-  const loadFavorites = async () => {
-    if (!user) return;
+  const removeProfessional = useRemoveFavoriteProfessional(user?.id);
+  const removeBusiness = useRemoveFavoriteBusiness(user?.id);
 
-    try {
-      // Load favorite businesses from favorites table
-      const { data: favBizRows, error: favBizErr } = await supabase
-        .from('favorites')
-        .select('business_id')
-        .eq('user_id', user.id)
-        .not('business_id', 'is', null);
-      if (favBizErr) throw favBizErr;
-      const businessIds: string[] = (favBizRows || []).map((r: any) => r.business_id).filter(Boolean);
-      if (businessIds.length > 0) {
-        // Fetch each business via the single-row RPC (parallel) — much faster than scanning the whole directory
-        const businessResults = await Promise.all(
-          businessIds.map(async (bid) => {
-            const { data, error } = await supabase.rpc('get_business_by_id', { _id: bid });
-            if (error) return null;
-            const row = Array.isArray(data) ? data[0] : data;
-            return row || null;
-          })
-        );
-        const ordered = businessResults.filter(Boolean) as FavoriteBusiness[];
-        setFavoriteBusinesses(ordered);
-      } else {
-        setFavoriteBusinesses([]);
-      }
+  const favoriteProfessionals = professionalsQuery.data ?? [];
+  const favoriteBusinesses = businessesQuery.data ?? [];
+  const favoriteMentors = mentorsQuery.data ?? [];
 
-      // Load favorite professionals - using simpler query without join
-      const { data: favProfs, error: favProfsError } = await supabase
-        .from('favorites')
-        .select('*')
-        .eq('user_id', user.id);
+  const loading =
+    professionalsQuery.isLoading ||
+    businessesQuery.isLoading ||
+    mentorsQuery.isLoading;
 
-      if (favProfsError) throw favProfsError;
+  // Surface load failures.
+  const anyError =
+    professionalsQuery.error || businessesQuery.error || mentorsQuery.error;
+  if (anyError) {
+    console.error("Error loading favorites:", anyError);
+  }
 
-      // Load professional profiles separately
-      if (favProfs && favProfs.length > 0) {
-        const professionalIds = favProfs.map(fav => fav.professional_id);
-        const { data: professionals, error: profError } = await supabase
-          .from('professional_profiles')
-          .select(`
-            *,
-            profiles!professional_profiles_user_id_fkey(first_name, last_name)
-          `)
-          .in('user_id', professionalIds);
+  const handleRemoveProfessional = (favoriteId: string) =>
+    removeProfessional.mutate(favoriteId, {
+      onSuccess: () =>
+        toast({
+          title: "Removed from favorites",
+          description: "Professional removed from your favorites.",
+        }),
+      onError: (err: any) =>
+        toast({
+          title: "Error",
+          description: err?.message || "Failed to remove favorite.",
+          variant: "destructive",
+        }),
+    });
 
-        if (profError) throw profError;
-
-        // Combine favorites with professional data
-        const combinedFavorites = favProfs.map(fav => ({
-          ...fav,
-          professional_profile: professionals?.find(prof => prof.user_id === fav.professional_id) || null
-        })).filter(fav => (fav as any).professional_profile);
-
-        setFavoriteProfessionals(combinedFavorites as any);
-      } else {
-        setFavoriteProfessionals([]);
-      }
-
-      // Load mentorship requests (as favorite mentors)
-      const { data: mentorRequests, error: mentorError } = await supabase
-        .from('mentorship_requests')
-        .select('*')
-        .eq('mentee_id', user.id);
-
-      if (mentorError) throw mentorError;
-
-      // Load mentor profiles separately if there are requests
-      if (mentorRequests && mentorRequests.length > 0) {
-        const mentorIds = mentorRequests.map(req => req.mentor_id);
-        const { data: mentorProfiles, error: mentorProfError } = await supabase
-          .from('professional_profiles')
-          .select(`
-            *,
-            profiles!professional_profiles_user_id_fkey(first_name, last_name)
-          `)
-          .in('user_id', mentorIds);
-
-        if (mentorProfError) throw mentorProfError;
-
-        // Combine requests with mentor data
-        const combinedMentors = mentorRequests.map(req => ({
-          ...req,
-          mentor_profile: mentorProfiles?.find(prof => prof.user_id === req.mentor_id) || null
-        })).filter(req => (req as any).mentor_profile);
-
-        setFavoriteMentors(combinedMentors as any);
-      } else {
-        setFavoriteMentors([]);
-      }
-    } catch (error: any) {
-      console.error('Error loading favorites:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load your favorites.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const removeFavoriteProfessional = async (favoriteId: string) => {
-    try {
-      const { error } = await supabase
-        .from('favorites')
-        .delete()
-        .eq('id', favoriteId);
-
-      if (error) throw error;
-
-      setFavoriteProfessionals(prev => prev.filter(fav => fav.id !== favoriteId));
-      toast({
-        title: "Removed from favorites",
-        description: "Professional removed from your favorites.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const removeFavoriteBusiness = async (businessId: string) => {
-    if (!user) return;
-    try {
-      const { error } = await supabase
-        .from('favorites')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('business_id', businessId);
-      if (error) throw error;
-      setFavoriteBusinesses(prev => prev.filter(b => b.id !== businessId));
-      toast({ title: 'Removed from favorites', description: 'Business removed from your favorites.' });
-    } catch (error: any) {
-      toast({ title: 'Error', description: error?.message || 'Could not remove favorite.', variant: 'destructive' });
-    }
-  };
+  const handleRemoveBusiness = (businessId: string) =>
+    removeBusiness.mutate(businessId, {
+      onSuccess: () =>
+        toast({
+          title: "Removed from favorites",
+          description: "Business removed from your favorites.",
+        }),
+      onError: (err: any) =>
+        toast({
+          title: "Error",
+          description: err?.message || "Could not remove favorite.",
+          variant: "destructive",
+        }),
+    });
 
   const sendMessage = (recipientId: string, recipientName: string) => {
     // SPA navigation — preserves session and avoids full reload
     navigate(`/messages?recipient=${recipientId}&name=${encodeURIComponent(recipientName)}`);
   };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -249,7 +100,7 @@ const Favorites = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
@@ -296,9 +147,9 @@ const Favorites = () => {
                         <div className="flex items-start space-x-4">
                           <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center flex-shrink-0">
                             {favorite.professional_profile.avatar_url ? (
-                              <img 
-                                src={favorite.professional_profile.avatar_url} 
-                                alt="Avatar" 
+                              <img
+                                src={favorite.professional_profile.avatar_url}
+                                alt="Avatar"
                                 className="w-16 h-16 rounded-full object-cover"
                               />
                             ) : (
@@ -307,7 +158,7 @@ const Favorites = () => {
                               </span>
                             )}
                           </div>
-                          
+
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
@@ -355,11 +206,11 @@ const Favorites = () => {
                                 )}
                               </div>
                             </div>
-                            
+
                             <div className="flex flex-wrap gap-2">
-                              <Button 
+                              <Button
                                 onClick={() => sendMessage(
-                                  favorite.professional_profile.user_id, 
+                                  favorite.professional_profile.user_id,
                                   `${favorite.professional_profile.profiles.first_name || ''} ${favorite.professional_profile.profiles.last_name || ''}`.trim() || 'Anonymous User'
                                 )}
                                 className="flex items-center gap-2"
@@ -367,9 +218,10 @@ const Favorites = () => {
                                 <MessageCircle className="w-4 h-4" />
                                 Send Message
                               </Button>
-                              <Button 
+                              <Button
                                 variant="outline"
-                                onClick={() => removeFavoriteProfessional(favorite.id)}
+                                onClick={() => handleRemoveProfessional(favorite.id)}
+                                disabled={removeProfessional.isPending}
                                 className="flex items-center gap-2"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -417,7 +269,7 @@ const Favorites = () => {
                                   <p className="text-lg text-primary font-medium">{biz.sector}</p>
                                 )}
                                 <div className="flex items-center text-muted-foreground text-sm mb-2">
-                                  { (biz.city || biz.state || biz.country) && (
+                                  {(biz.city || biz.state || biz.country) && (
                                     <>
                                       <MapPin className="w-4 h-4 mr-1" />
                                       <span>{[biz.city, biz.state, biz.country].filter(Boolean).join(', ')}</span>
@@ -430,7 +282,12 @@ const Favorites = () => {
                               <Button asChild variant="accent" className="flex items-center gap-2">
                                 <Link to={`/business/${biz.id}`}>View Business</Link>
                               </Button>
-                              <Button variant="outline" onClick={() => removeFavoriteBusiness(biz.id)} className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                onClick={() => handleRemoveBusiness(biz.id)}
+                                disabled={removeBusiness.isPending}
+                                className="flex items-center gap-2"
+                              >
                                 <Trash2 className="w-4 h-4" />
                                 Remove
                               </Button>
@@ -463,9 +320,9 @@ const Favorites = () => {
                         <div className="flex items-start space-x-4">
                           <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center flex-shrink-0">
                             {request.mentor_profile.avatar_url ? (
-                              <img 
-                                src={request.mentor_profile.avatar_url} 
-                                alt="Avatar" 
+                              <img
+                                src={request.mentor_profile.avatar_url}
+                                alt="Avatar"
                                 className="w-16 h-16 rounded-full object-cover"
                               />
                             ) : (
@@ -474,7 +331,7 @@ const Favorites = () => {
                               </span>
                             )}
                           </div>
-                          
+
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
@@ -501,9 +358,9 @@ const Favorites = () => {
                                   </p>
                                 )}
                                 <div className="flex items-center gap-2 mb-3">
-                                  <Badge 
+                                  <Badge
                                     variant={
-                                      request.status === 'accepted' ? 'default' : 
+                                      request.status === 'accepted' ? 'default' :
                                       request.status === 'pending' ? 'secondary' : 'destructive'
                                     }
                                   >
@@ -517,11 +374,11 @@ const Favorites = () => {
                                 </div>
                               </div>
                             </div>
-                            
+
                             <div className="flex flex-wrap gap-2">
-                              <Button 
+                              <Button
                                 onClick={() => sendMessage(
-                                  request.mentor_profile.user_id, 
+                                  request.mentor_profile.user_id,
                                   `${request.mentor_profile.profiles.first_name || ''} ${request.mentor_profile.profiles.last_name || ''}`.trim() || 'Anonymous User'
                                 )}
                                 className="flex items-center gap-2"

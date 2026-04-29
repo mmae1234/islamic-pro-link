@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,419 +14,162 @@ import Footer from "@/components/Footer";
 import ConversationView from "@/components/ConversationView";
 import MessageRequests from "@/components/MessageRequests";
 import {
-  MessageCircle,
   Send,
   Inbox,
   SendIcon,
   Archive,
-  User,
-  Search,
   Plus,
   Shield,
-  Trash2
+  Trash2,
 } from "lucide-react";
-
-interface Message {
-  id: string;
-  content: string;
-  created_at: string;
-  sender_id: string;
-  recipient_id: string;
-  read_at: string | null;
-  sender_profile?: {
-    first_name: string;
-    last_name: string;
-  };
-  recipient_profile?: {
-    first_name: string;
-    last_name: string;
-  };
-}
-
-interface Conversation {
-  partner_id: string;
-  partner_name: string;
-  last_message: string;
-  last_message_time: string;
-  unread_count: number;
-}
+import {
+  qk,
+  useConversations,
+  useInboxMessages,
+  useSentMessages,
+  useArchivedMessages,
+  useComposePickerProfessionals,
+  useSendMessage,
+  useDeleteMessage,
+  useDeleteConversation,
+  type ComposePickerRow,
+} from "@/hooks/queries";
 
 const Messages = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [sentMessages, setSentMessages] = useState<Message[]>([]);
-  const [inboxMessages, setInboxMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [newMessage, setNewMessage] = useState("");
-  const [selectedRecipient, setSelectedRecipient] = useState<any>(null);
-  const [professionals, setProfessionals] = useState<any[]>([]);
-  const [selectedConversation, setSelectedConversation] = useState<{partnerId: string, partnerName: string} | null>(null);
-  const [archivedMessages, setArchivedMessages] = useState<Message[]>([]);
+  const [selectedRecipient, setSelectedRecipient] = useState<ComposePickerRow | null>(null);
+  const [selectedConversation, setSelectedConversation] = useState<{ partnerId: string; partnerName: string } | null>(null);
   const [requestCount, setRequestCount] = useState(0);
 
+  // Data
+  const conversationsQuery = useConversations(user?.id);
+  const inboxQuery = useInboxMessages(user?.id);
+  const sentQuery = useSentMessages(user?.id);
+  const archivedQuery = useArchivedMessages(user?.id);
+  const professionalsQuery = useComposePickerProfessionals(user?.id);
+
+  // Mutations
+  const sendMessageMutation = useSendMessage(user?.id);
+  const deleteMessageMutation = useDeleteMessage(user?.id);
+  const deleteConversationMutation = useDeleteConversation(user?.id);
+
+  const conversations = conversationsQuery.data ?? [];
+  const sentMessages = sentQuery.data ?? [];
+  const archivedMessages = archivedQuery.data ?? [];
+  const professionals = professionalsQuery.data ?? [];
+
+  // Realtime: when a new inbound message arrives, invalidate every messages cache
+  // for this user so all tabs (inbox, conversations, archived) refetch.
+  // We keep the iOS-safe channel-name suffix to prevent duplicate-channel errors.
   useEffect(() => {
-    if (user) {
-      loadMessages();
-      loadProfessionals();
-      return setupRealtimeSubscription();
-    }
-  }, [user?.id]);
-
-  // Open a conversation directly when arriving via ?recipient=… or ?userId=… deep link
-  useEffect(() => {
     if (!user) return;
-    const partnerId = searchParams.get('recipient') || searchParams.get('userId');
-    const partnerName = searchParams.get('name') || 'Conversation';
-    if (partnerId && partnerId !== user.id) {
-      setSelectedConversation({ partnerId, partnerName: decodeURIComponent(partnerName) });
-      // Clean the URL so a refresh doesn't re-open
-      const next = new URLSearchParams(searchParams);
-      next.delete('recipient');
-      next.delete('userId');
-      next.delete('name');
-      setSearchParams(next, { replace: true });
-    }
-  }, [user?.id, searchParams, setSearchParams]);
-
-  const loadMessages = async () => {
-    if (!user) return;
-
-    try {
-      // Load sent messages - get latest message per recipient
-      const { data: sentData, error: sentError } = await supabase
-        .from('messages')
-        .select(`
-          *,
-          recipient_profile:profiles!messages_recipient_id_fkey(first_name, last_name)
-        `)
-        .eq('sender_id', user.id)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
-
-      if (sentError) throw sentError;
-
-      // Load inbox messages
-      const { data: inboxData, error: inboxError } = await supabase
-        .from('messages')
-        .select(`
-          *,
-          sender_profile:profiles!messages_sender_id_fkey(first_name, last_name)
-        `)
-        .eq('recipient_id', user.id)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
-
-      if (inboxError) throw inboxError;
-
-      setSentMessages(sentData || []);
-      setInboxMessages(inboxData || []);
-
-      // Build conversations from the conversations table.
-      // Avoid cross-column .or() filters (iOS Safari stack overflows) — split into two parallel queries.
-      const conversationSelect = `
-          id,
-          user_a,
-          user_b,
-          status,
-          updated_at,
-          profiles_a:profiles!conversations_user_a_fkey(first_name, last_name),
-          profiles_b:profiles!conversations_user_b_fkey(first_name, last_name)
-        `;
-      const [{ data: convAData, error: convAError }, { data: convBData, error: convBError }] = await Promise.all([
-        supabase
-          .from('conversations')
-          .select(conversationSelect)
-          .eq('user_a', user.id)
-          .neq('status', 'blocked')
-          .order('updated_at', { ascending: false }),
-        supabase
-          .from('conversations')
-          .select(conversationSelect)
-          .eq('user_b', user.id)
-          .neq('status', 'blocked')
-          .order('updated_at', { ascending: false }),
-      ]);
-
-      if (convAError) throw convAError;
-      if (convBError) throw convBError;
-
-      const conversationsData = [...(convAData || []), ...(convBData || [])]
-        .sort((a, b) => +new Date(b.updated_at) - +new Date(a.updated_at));
-
-      const conversationsList = (conversationsData || []).map(conv => {
-        const isUserA = conv.user_a === user.id;
-        const partnerId = isUserA ? conv.user_b : conv.user_a;
-        const partnerProfile = isUserA ? conv.profiles_b : conv.profiles_a;
-        // Handle case where profile might be an array (shouldn't happen but TypeScript thinks it might)
-        const profile = Array.isArray(partnerProfile) ? partnerProfile[0] : partnerProfile;
-        
-        return {
-          partner_id: partnerId,
-          partner_name: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'Unknown',
-          last_message: '', // We'll get this from the last message
-          last_message_time: conv.updated_at,
-          unread_count: 0 // We'll calculate this separately
-        };
-      });
-
-      // Batch load all messages for conversations to avoid N+1 queries
-      // NOTE: Avoid large `.or(...)` filters (can cause stack overflows on iOS Safari for users with many conversations).
-      if (conversationsList.length > 0) {
-        const partnerIds = conversationsList.map((c) => c.partner_id);
-
-        const [outRes, inRes] = await Promise.all([
-          supabase
-            .from('messages')
-            .select('content, created_at, sender_id, recipient_id, read_at')
-            .eq('sender_id', user.id)
-            .in('recipient_id', partnerIds)
-            .is('deleted_at', null)
-            .order('created_at', { ascending: false })
-            .limit(500),
-          supabase
-            .from('messages')
-            .select('content, created_at, sender_id, recipient_id, read_at')
-            .eq('recipient_id', user.id)
-            .in('sender_id', partnerIds)
-            .is('deleted_at', null)
-            .order('created_at', { ascending: false })
-            .limit(500),
-        ]);
-
-        const allMessages = [...(outRes.data || []), ...(inRes.data || [])].sort(
-          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-
-        // Process messages for each conversation
-        for (const conv of conversationsList) {
-          const convMessages = (allMessages || []).filter(
-            (msg) =>
-              (msg.sender_id === user.id && msg.recipient_id === conv.partner_id) ||
-              (msg.sender_id === conv.partner_id && msg.recipient_id === user.id)
-          );
-
-          if (convMessages.length > 0) {
-            conv.last_message = convMessages[0].content;
-            conv.last_message_time = convMessages[0].created_at;
-          }
-
-          // Count unread messages from partner
-          conv.unread_count = convMessages.filter(
-            (msg) =>
-              msg.sender_id === conv.partner_id && msg.recipient_id === user.id && !msg.read_at
-          ).length;
-        }
-      }
-
-      setConversations(conversationsList);
-
-      // Load archived messages — split cross-column .or() into two parallel queries (iOS-safe).
-      const archivedSelect = `
-          *,
-          sender_profile:profiles!messages_sender_id_fkey(first_name, last_name),
-          recipient_profile:profiles!messages_recipient_id_fkey(first_name, last_name)
-        `;
-      const [{ data: archSent }, { data: archReceived, error: archivedError }] = await Promise.all([
-        supabase
-          .from('messages')
-          .select(archivedSelect)
-          .eq('sender_id', user.id)
-          .not('deleted_at', 'is', null)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('messages')
-          .select(archivedSelect)
-          .eq('recipient_id', user.id)
-          .not('deleted_at', 'is', null)
-          .order('created_at', { ascending: false }),
-      ]);
-
-      if (!archivedError) {
-        const archivedData = [...(archSent || []), ...(archReceived || [])]
-          .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
-        setArchivedMessages(archivedData);
-      }
-    } catch (error) {
-      console.error('Error loading messages:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Note: buildConversations has been replaced by loadMessages conversation logic
-
-  const loadProfessionals = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('professional_profiles')
-        .select(`
-          user_id,
-          occupation,
-          sector,
-          profiles!professional_profiles_user_id_fkey(first_name, last_name)
-        `)
-        .neq('user_id', user?.id)
-      .limit(100);
-
-      if (error) throw error;
-      setProfessionals(data || []);
-    } catch (error) {
-      console.error('Error loading professionals:', error);
-    }
-  };
-
-  const setupRealtimeSubscription = () => {
-    if (!user) return;
-
     const channel = supabase
       .channel(`messages-page-${user.id}-${Date.now()}-${Math.random().toString(36).slice(2)}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
           filter: `recipient_id=eq.${user.id}`,
         },
         () => {
-          loadMessages();
-        }
+          queryClient.invalidateQueries({ queryKey: qk.messages.all(user.id) });
+        },
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  };
+  }, [user, queryClient]);
 
-  const sendMessage = async () => {
+  // Open a conversation directly when arriving via ?recipient=… or ?userId=… deep link
+  useEffect(() => {
+    if (!user) return;
+    const partnerId = searchParams.get("recipient") || searchParams.get("userId");
+    const partnerName = searchParams.get("name") || "Conversation";
+    if (partnerId && partnerId !== user.id) {
+      setSelectedConversation({ partnerId, partnerName: decodeURIComponent(partnerName) });
+      const next = new URLSearchParams(searchParams);
+      next.delete("recipient");
+      next.delete("userId");
+      next.delete("name");
+      setSearchParams(next, { replace: true });
+    }
+  }, [user, searchParams, setSearchParams]);
+
+  const filteredProfessionals = useMemo(() => {
+    if (!searchTerm) return professionals;
+    const q = searchTerm.toLowerCase();
+    return professionals.filter((prof) => {
+      const fullName = `${prof.profiles?.first_name || ""} ${prof.profiles?.last_name || ""}`.trim();
+      return (
+        fullName.toLowerCase().includes(q) ||
+        (prof.occupation || "").toLowerCase().includes(q) ||
+        (prof.sector || "").toLowerCase().includes(q)
+      );
+    });
+  }, [professionals, searchTerm]);
+
+  const sendMessage = () => {
     if (!selectedRecipient || !newMessage.trim()) return;
-
-    try {
-      const { error } = await supabase.rpc('send_message', {
-        _recipient_id: selectedRecipient.user_id,
-        _content: newMessage.trim(),
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Message sent!",
-        description: "Your message has been sent successfully.",
-      });
-
-      setNewMessage("");
-      setSelectedRecipient(null);
-      loadMessages();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to send message.",
-        variant: "destructive",
-      });
-    }
+    sendMessageMutation.mutate(
+      { recipientId: selectedRecipient.user_id, content: newMessage.trim() },
+      {
+        onSuccess: () => {
+          toast({
+            title: "Message sent!",
+            description: "Your message has been sent successfully.",
+          });
+          setNewMessage("");
+          setSelectedRecipient(null);
+        },
+        onError: (err: any) =>
+          toast({
+            title: "Error",
+            description: err?.message || "Failed to send message.",
+            variant: "destructive",
+          }),
+      },
+    );
   };
 
-  const markAsRead = async (messageId: string) => {
-    if (!user) return;
-    try {
-      // Scope by recipient_id to avoid no-op writes that RLS would reject for non-recipients.
-      await supabase
-        .from('messages')
-        .update({ read_at: new Date().toISOString() })
-        .eq('id', messageId)
-        .eq('recipient_id', user.id);
+  const deleteMessage = (messageId: string) =>
+    deleteMessageMutation.mutate(messageId, {
+      onSuccess: () =>
+        toast({
+          title: "Message deleted",
+          description: "The message has been moved to archived.",
+        }),
+      onError: (err: any) =>
+        toast({
+          title: "Error",
+          description: err?.message || "Failed to delete message.",
+          variant: "destructive",
+        }),
+    });
 
-      loadMessages();
-    } catch (error) {
-      console.error('Error marking message as read:', error);
-    }
-  };
-
-  const deleteMessage = async (messageId: string) => {
-    try {
-      await supabase
-        .from('messages')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('id', messageId);
-      
-      toast({
-        title: "Message deleted",
-        description: "The message has been moved to archived.",
-      });
-      
-      loadMessages();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete message.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const deleteConversation = async (partnerId: string) => {
-    if (!user) return;
-    try {
-      console.log('Deleting conversation with partner:', partnerId);
-
-      // Conversations are stored with user_a < user_b (enforced by send_message/get_or_create_conversation),
-      // so the pair lookup collapses to a single ordered .eq().eq() — no .or() needed.
-      const [orderedA, orderedB] = [user.id, partnerId].sort();
-      const { error: conversationError } = await supabase
-        .from('conversations')
-        .delete()
-        .eq('user_a', orderedA)
-        .eq('user_b', orderedB);
-
-      if (conversationError) {
-        console.error('Error deleting conversation:', conversationError);
-        throw conversationError;
-      }
-
-      // Messages between two users — split into two parallel writes (iOS-safe, disjoint by construction).
-      const nowIso = new Date().toISOString();
-      const [outRes, inRes] = await Promise.all([
-        supabase
-          .from('messages')
-          .update({ deleted_at: nowIso })
-          .eq('sender_id', user.id)
-          .eq('recipient_id', partnerId),
-        supabase
-          .from('messages')
-          .update({ deleted_at: nowIso })
-          .eq('sender_id', partnerId)
-          .eq('recipient_id', user.id),
-      ]);
-
-      const messageError = outRes.error || inRes.error;
-      if (messageError) {
-        console.error('Error deleting messages:', messageError);
-        throw messageError;
-      }
-      
-      toast({
-        title: "Conversation deleted",
-        description: "The entire conversation has been deleted.",
-      });
-      
-      // Remove the conversation from the local state immediately for better UX
-      setConversations(prev => prev.filter(conv => conv.partner_id !== partnerId));
-      
-      // Then refresh all messages to ensure consistency
-      await loadMessages();
-    } catch (error: any) {
-      console.error('Delete conversation error:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete conversation.",
-        variant: "destructive",
-      });
-    }
-  };
+  const deleteConversation = (partnerId: string) =>
+    deleteConversationMutation.mutate(partnerId, {
+      onSuccess: () =>
+        toast({
+          title: "Conversation deleted",
+          description: "The entire conversation has been deleted.",
+        }),
+      onError: (err: any) =>
+        toast({
+          title: "Error",
+          description: err?.message || "Failed to delete conversation.",
+          variant: "destructive",
+        }),
+    });
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -433,20 +177,16 @@ const Messages = () => {
     const diffInHours = Math.abs(now.getTime() - date.getTime()) / (1000 * 60 * 60);
 
     if (diffInHours < 24) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } else {
-      return date.toLocaleDateString();
+      return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     }
+    return date.toLocaleDateString();
   };
 
-  const filteredProfessionals = professionals.filter(prof => {
-    const fullName = `${prof.profiles?.first_name || ''} ${prof.profiles?.last_name || ''}`.trim();
-    const occupation = prof.occupation || '';
-    const sector = prof.sector || '';
-    return fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      occupation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sector.toLowerCase().includes(searchTerm.toLowerCase());
-  });
+  const loading =
+    conversationsQuery.isLoading ||
+    inboxQuery.isLoading ||
+    sentQuery.isLoading ||
+    archivedQuery.isLoading;
 
   if (loading) {
     return (
@@ -463,7 +203,7 @@ const Messages = () => {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        
+
         <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="max-w-4xl mx-auto">
             <ConversationView
@@ -482,7 +222,7 @@ const Messages = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
@@ -541,18 +281,21 @@ const Messages = () => {
                   ) : (
                     <div className="space-y-4">
                       {conversations.map((conversation) => (
-        <Card 
-          key={conversation.partner_id} 
-          className={`shadow-soft ${conversation.unread_count > 0 ? 'border-primary/50' : ''}`}
-        >
+                        <Card
+                          key={conversation.partner_id}
+                          className={`shadow-soft ${conversation.unread_count > 0 ? 'border-primary/50' : ''}`}
+                        >
                           <CardContent className="pt-6">
                             <div className="flex items-start justify-between">
-                              <div className="flex items-start gap-3 flex-1 cursor-pointer" onClick={() => {
-                                setSelectedConversation({
-                                  partnerId: conversation.partner_id, 
-                                  partnerName: conversation.partner_name
-                                });
-                              }}>
+                              <div
+                                className="flex items-start gap-3 flex-1 cursor-pointer"
+                                onClick={() => {
+                                  setSelectedConversation({
+                                    partnerId: conversation.partner_id,
+                                    partnerName: conversation.partner_name,
+                                  });
+                                }}
+                              >
                                 <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center">
                                   <span className="text-primary-foreground font-semibold text-sm">
                                     {conversation.partner_name.split(' ').map(n => n[0]).join('') || 'U'}
@@ -584,6 +327,7 @@ const Messages = () => {
                                     e.stopPropagation();
                                     deleteConversation(conversation.partner_id);
                                   }}
+                                  disabled={deleteConversationMutation.isPending}
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -609,7 +353,8 @@ const Messages = () => {
                 <CardContent>
                   <MessageRequests
                     onAcceptRequest={() => {
-                      loadMessages();
+                      // Bring all messaging caches in sync after a request is accepted.
+                      queryClient.invalidateQueries({ queryKey: qk.messages.all(user?.id) });
                     }}
                     onRequestCountChange={setRequestCount}
                   />
@@ -632,56 +377,56 @@ const Messages = () => {
                       </p>
                     </div>
                   ) : (
-                     <div className="space-y-4">
-                       {sentMessages.map((message) => (
-                         <Card 
-                           key={message.id} 
-                           className="shadow-soft"
-                         >
-                           <CardContent className="pt-6">
-                             <div className="flex items-start justify-between">
-                               <div 
-                                 className="flex items-start gap-3 flex-1 cursor-pointer"
-                                 onClick={() => setSelectedConversation({
-                                   partnerId: message.recipient_id, 
-                                   partnerName: `${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim() || 'Unknown'
-                                 })}
-                               >
-                                 <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center">
-                                   <span className="text-primary-foreground font-semibold text-sm">
-                                     {`${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim().split(' ').map(n => n[0]).join('') || 'U'}
-                                   </span>
-                                 </div>
-                                 <div className="flex-1">
-                                   <h3 className="font-medium text-foreground mb-1">
-                                     To: {`${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim() || 'Unknown'}
-                                   </h3>
-                                   <p className="text-sm text-muted-foreground">
-                                     {message.content}
-                                   </p>
-                                 </div>
-                               </div>
-                               <div className="flex items-center gap-2">
-                                 <p className="text-xs text-muted-foreground">
-                                   {formatTime(message.created_at)}
-                                 </p>
-                                 <Button
-                                   variant="ghost"
-                                   size="sm"
-                                   onClick={(e) => {
-                                     e.stopPropagation();
-                                     deleteMessage(message.id);
-                                   }}
-                                   className="text-destructive hover:text-destructive"
-                                 >
-                                   <Trash2 className="w-4 h-4" />
-                                 </Button>
-                               </div>
-                             </div>
-                           </CardContent>
-                         </Card>
-                       ))}
-                     </div>
+                    <div className="space-y-4">
+                      {sentMessages.map((message) => (
+                        <Card
+                          key={message.id}
+                          className="shadow-soft"
+                        >
+                          <CardContent className="pt-6">
+                            <div className="flex items-start justify-between">
+                              <div
+                                className="flex items-start gap-3 flex-1 cursor-pointer"
+                                onClick={() => setSelectedConversation({
+                                  partnerId: message.recipient_id,
+                                  partnerName: `${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim() || 'Unknown'
+                                })}
+                              >
+                                <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center">
+                                  <span className="text-primary-foreground font-semibold text-sm">
+                                    {`${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim().split(' ').map(n => n[0]).join('') || 'U'}
+                                  </span>
+                                </div>
+                                <div className="flex-1">
+                                  <h3 className="font-medium text-foreground mb-1">
+                                    To: {`${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim() || 'Unknown'}
+                                  </h3>
+                                  <p className="text-sm text-muted-foreground">
+                                    {message.content}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <p className="text-xs text-muted-foreground">
+                                  {formatTime(message.created_at)}
+                                </p>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteMessage(message.id);
+                                  }}
+                                  className="text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -710,7 +455,7 @@ const Messages = () => {
                               <div className="flex items-start gap-3">
                                 <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center">
                                   <span className="text-primary-foreground font-semibold text-sm">
-                                    {message.sender_id === user?.id 
+                                    {message.sender_id === user?.id
                                       ? `${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim().split(' ').map(n => n[0]).join('') || 'U'
                                       : `${message.sender_profile?.first_name || ''} ${message.sender_profile?.last_name || ''}`.trim().split(' ').map(n => n[0]).join('') || 'U'
                                     }
@@ -718,7 +463,7 @@ const Messages = () => {
                                 </div>
                                 <div className="flex-1">
                                   <h3 className="font-medium text-foreground mb-1">
-                                    {message.sender_id === user?.id 
+                                    {message.sender_id === user?.id
                                       ? `To: ${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim() || 'Unknown'
                                       : `From: ${message.sender_profile?.first_name || ''} ${message.sender_profile?.last_name || ''}`.trim() || 'Unknown'
                                     }
@@ -807,16 +552,16 @@ const Messages = () => {
                       </div>
 
                       <div className="flex gap-2">
-                        <Button 
+                        <Button
                           onClick={sendMessage}
-                          disabled={!newMessage.trim()}
+                          disabled={!newMessage.trim() || sendMessageMutation.isPending}
                           className="flex-1"
                         >
                           <Send className="w-4 h-4 mr-2" />
                           Send Message
                         </Button>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           onClick={() => {
                             setSelectedRecipient(null);
                             setNewMessage("");

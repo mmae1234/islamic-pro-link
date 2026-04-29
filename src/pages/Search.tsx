@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -12,142 +12,123 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Users, Loader2 } from "lucide-react";
-
+import {
+  useProfessionals,
+  type ProfessionalListRow,
+  type ProfessionalFilters,
+} from "@/hooks/queries";
 
 const Search = () => {
-  const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const { toast } = useToast();
-  
-  const [professionals, setProfessionals] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasProfile, setHasProfile] = useState<boolean | null>(null);
+
+  const [filters, setFilters] = useState<ProfessionalFilters>({});
+  const [sortBy, setSortBy] = useState("created_at");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [showProfileSetup, setShowProfileSetup] = useState(false);
-  const [sortBy, setSortBy] = useState('created_at');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  useEffect(() => {
-    if (user) {
-      checkUserProfile();
-    }
-  }, [user]);
-
-  const checkUserProfile = async () => {
-    if (!user) return;
-
-    try {
-      // Check if user has a basic profile first
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', user.id)
+  // Profile-existence gate. Equivalent to the previous checkUserProfile() call.
+  const profileQuery = useQuery({
+    queryKey: ["profile-status", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("user_id", user!.id)
         .maybeSingle();
+      if (error && error.code !== "PGRST116") throw error;
+      return !!data;
+    },
+  });
 
-      if (profileError && profileError.code !== 'PGRST116') {
-        throw profileError;
-      }
+  const hasProfile = profileQuery.data;
 
-      // If user has a basic profile, they've completed the setup
-      setHasProfile(!!profileData);
-      if (!profileData) {
-        setShowProfileSetup(true);
-      } else {
-        // Load initial professionals
-        handleSearch({});
-      }
-    } catch (error: any) {
-      console.error('Error checking profile:', error);
-      if (toast) {
-        toast({
-          title: "Error",
-          description: "Failed to check your profile status.",
-          variant: "destructive",
-        });
-      }
-    }
-  };
+  // The professional directory query. Disabled until the user has a basic profile.
+  const directoryQuery = useProfessionals(filters, {
+    enabled: !!user && hasProfile === true,
+  });
 
-  const handleSearch = async (filters: any = {}) => {
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase.rpc('list_professional_directory', {
-        _country: filters.country && filters.country !== 'all' ? filters.country : null,
-        _state_province: filters.stateProvince && filters.stateProvince !== 'all' ? filters.stateProvince : null,
-        _city: filters.city && filters.city !== 'all' ? filters.city : null,
-        _sector: filters.sector && filters.sector !== 'all' ? filters.sector : null,
-        _occupation: filters.occupation && filters.occupation !== 'all' ? filters.occupation : null,
-        _is_mentor: filters.isMentor ? true : null,
-        _is_seeking_mentor: filters.isSeekingMentor ? true : null,
-        _search: filters.searchTerm || null,
-        _limit: 50,
-        _offset: 0,
-      });
-
-      if (error) {
-        console.error('Directory RPC error:', error);
-        setProfessionals([]);
-        toast({
-          title: "Unable to load profiles",
-          description: "Please try refreshing the page or contact support.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Shape rows to match ProfessionalCard expectations (it reads professional.profiles.first_name/last_name/avatar_url)
-      let rows = (data || []).map((r: any) => ({
-        ...r,
-        profiles: {
-          first_name: r.first_name,
-          last_name: r.last_name,
-          avatar_url: r.avatar_url,
-        },
-      }));
-
-      // Client-side post-filters that the RPC doesn't expose yet
-      if (filters.experienceMin) {
-        const min = parseInt(filters.experienceMin);
-        rows = rows.filter((r: any) => (r.experience_years ?? 0) >= min);
-      }
-      if (filters.experienceMax) {
-        const max = parseInt(filters.experienceMax);
-        rows = rows.filter((r: any) => (r.experience_years ?? 0) <= max);
-      }
-
-      // Apply client-side sort
-      if (sortBy === 'name') {
-        rows.sort((a: any, b: any) => {
-          const an = `${a.first_name || ''} ${a.last_name || ''}`.trim();
-          const bn = `${b.first_name || ''} ${b.last_name || ''}`.trim();
-          return sortOrder === 'asc' ? an.localeCompare(bn) : bn.localeCompare(an);
-        });
-      }
-
-      setProfessionals(rows);
-    } catch (error: any) {
-      console.error('Error searching professionals:', error);
-      setProfessionals([]);
+  // Surface profile-existence errors as a toast (matches old behavior).
+  useEffect(() => {
+    if (profileQuery.error) {
       toast({
-        title: "Search failed",
-        description: "Unable to load professional profiles. Please try again later.",
+        title: "Error",
+        description: "Failed to check your profile status.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }, [profileQuery.error, toast]);
+
+  // Surface directory errors as a toast (matches old behavior).
+  useEffect(() => {
+    if (directoryQuery.error) {
+      toast({
+        title: "Unable to load profiles",
+        description: "Please try refreshing the page or contact support.",
+        variant: "destructive",
+      });
+    }
+  }, [directoryQuery.error, toast]);
+
+  // First-time users with no profile get the inline setup flow.
+  useEffect(() => {
+    if (hasProfile === false) setShowProfileSetup(true);
+  }, [hasProfile]);
+
+  // Apply sort client-side. The base data comes sorted by `created_at desc` from
+  // the RPC, so the only sort that needs work is "name".
+  const professionals = useMemo<ProfessionalListRow[]>(() => {
+    const rows = directoryQuery.data ?? [];
+    if (sortBy === "name") {
+      return [...rows].sort((a, b) => {
+        const an = `${a.first_name ?? ""} ${a.last_name ?? ""}`.trim();
+        const bn = `${b.first_name ?? ""} ${b.last_name ?? ""}`.trim();
+        return sortOrder === "asc" ? an.localeCompare(bn) : bn.localeCompare(an);
+      });
+    }
+    if (sortBy && sortBy !== "created_at") {
+      return [...rows].sort((a: any, b: any) => {
+        const aVal = a[sortBy];
+        const bVal = b[sortBy];
+        if (typeof aVal === "string" && typeof bVal === "string") {
+          return sortOrder === "asc"
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
+        }
+        return sortOrder === "asc"
+          ? (aVal ?? 0) - (bVal ?? 0)
+          : (bVal ?? 0) - (aVal ?? 0);
+      });
+    }
+    return rows;
+  }, [directoryQuery.data, sortBy, sortOrder]);
 
   const handleProfileSetupComplete = () => {
     setShowProfileSetup(false);
-    setHasProfile(true);
-    handleSearch({});
+    profileQuery.refetch();
+  };
+
+  const handleSearch = (next: any = {}) => {
+    setFilters({
+      country: next.country,
+      stateProvince: next.stateProvince,
+      city: next.city,
+      sector: next.sector,
+      occupation: next.occupation,
+      isMentor: !!next.isMentor,
+      isSeekingMentor: !!next.isSeekingMentor,
+      searchTerm: next.searchTerm,
+      experienceMin: next.experienceMin,
+      experienceMax: next.experienceMax,
+    });
   };
 
   if (showProfileSetup && user) {
     return <ProfileSetup onComplete={handleProfileSetupComplete} />;
   }
 
-  if (hasProfile === null) {
+  if (hasProfile === undefined) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin" />
@@ -155,10 +136,12 @@ const Search = () => {
     );
   }
 
+  const isLoading = directoryQuery.isLoading || directoryQuery.isFetching;
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search Header */}
         <div className="text-center mb-8">
@@ -188,7 +171,7 @@ const Search = () => {
             <h2 className="text-xl font-semibold text-foreground">
               Search Results ({professionals.length} professionals found)
             </h2>
-            
+
             {professionals.length > 0 && (
               <SearchSorting
                 sortBy={sortBy}
@@ -196,27 +179,6 @@ const Search = () => {
                 onSortChange={(newSortBy, newSortOrder) => {
                   setSortBy(newSortBy);
                   setSortOrder(newSortOrder);
-                  // Re-sort current results
-                  const sorted = [...professionals].sort((a, b) => {
-                    let aVal = a[newSortBy];
-                    let bVal = b[newSortBy];
-                    
-                    if (newSortBy === 'name') {
-                      aVal = `${a.profiles?.first_name || ''} ${a.profiles?.last_name || ''}`.trim();
-                      bVal = `${b.profiles?.first_name || ''} ${b.profiles?.last_name || ''}`.trim();
-                    }
-                    
-                    if (typeof aVal === 'string' && typeof bVal === 'string') {
-                      return newSortOrder === 'asc' 
-                        ? aVal.localeCompare(bVal)
-                        : bVal.localeCompare(aVal);
-                    }
-                    
-                    return newSortOrder === 'asc' 
-                      ? (aVal || 0) - (bVal || 0)
-                      : (bVal || 0) - (aVal || 0);
-                  });
-                  setProfessionals(sorted);
                 }}
               />
             )}
@@ -261,32 +223,32 @@ const Search = () => {
               </CardContent>
             </Card>
           ) : (
-             <div className="space-y-6">
-               <div className="grid gap-6 animate-fade-in">
-                 {professionals.map((professional, index) => (
-                   <div 
-                     key={professional.id}
-                     className="animate-fade-in-up"
-                     style={{ animationDelay: `${Math.min(index * 0.05, 0.3)}s` }}
-                   >
-                      {/* Profile-view tracking moved to /profile/:userId mount —
-                          tracking on card click inflated metrics from accidental clicks
-                          and the wrapping div catching hover events. */}
-                      <ProfessionalCard
-                        professional={professional}
-                        showMentorshipButton={false}
-                        showFavoriteButton={true}
-                        onRequestSent={() => {
-                          toast({
-                            title: "Added to favorites!",
-                            description: "Professional added to your favorites.",
-                          });
-                        }}
-                      />
-                   </div>
+            <div className="space-y-6">
+              <div className="grid gap-6 animate-fade-in">
+                {professionals.map((professional, index) => (
+                  <div
+                    key={professional.user_id}
+                    className="animate-fade-in-up"
+                    style={{ animationDelay: `${Math.min(index * 0.05, 0.3)}s` }}
+                  >
+                    {/* Profile-view tracking moved to /profile/:userId mount —
+                        tracking on card click inflated metrics from accidental clicks
+                        and the wrapping div catching hover events. */}
+                    <ProfessionalCard
+                      professional={professional as any}
+                      showMentorshipButton={false}
+                      showFavoriteButton={true}
+                      onRequestSent={() => {
+                        toast({
+                          title: "Added to favorites!",
+                          description: "Professional added to your favorites.",
+                        });
+                      }}
+                    />
+                  </div>
                 ))}
-                </div>
               </div>
+            </div>
           )}
         </div>
       </main>
