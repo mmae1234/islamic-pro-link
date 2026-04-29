@@ -105,7 +105,7 @@ const Profile = () => {
               ? "This professional has been removed from your favorites."
               : "This professional has been added to your favorites.",
           }),
-        onError: (err: any) =>
+        onError: (err: Error) =>
           toast({
             title: "Error",
             description: err?.message || "Failed to update favorites.",

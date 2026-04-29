@@ -1,35 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { qk } from "./keys";
+import type { Tbl, FnRow } from "./types";
 
-export type ProfileRow = {
-  user_id: string;
-  first_name: string | null;
-  last_name: string | null;
-  avatar_url: string | null;
-  role?: string | null;
-  [key: string]: unknown;
-};
-
-export type ProfessionalProfileRow = {
-  user_id?: string;
-  occupation?: string | null;
-  sector?: string | null;
-  city?: string | null;
-  state_province?: string | null;
-  country?: string | null;
-  bio?: string | null;
-  skills?: string[] | null;
-  languages?: string[] | null;
-  experience_years?: number | null;
-  university?: string | null;
-  is_mentor?: boolean | null;
-  is_seeking_mentor?: boolean | null;
-  availability?: string | null;
-  preferred_communication?: string[] | null;
-  avatar_url?: string | null;
-  [key: string]: unknown;
-};
+// Full row from `profiles` table.
+export type ProfileRow = Tbl<"profiles">;
+// Full row from `professional_profiles` table.
+export type ProfessionalProfileRow = Tbl<"professional_profiles">;
+// Limited public-view row from the SECURITY DEFINER fallback.
+type LookupBasicRow = FnRow<"lookup_profile_basic">;
 
 export type ProfileResult = {
   profile: ProfileRow | null;
@@ -73,24 +52,28 @@ export function useProfile(userId: string | undefined, viewerId: string | undefi
         { _user_id: userId! },
       );
       if (basicErr) throw basicErr;
-      const row: any = Array.isArray(basic) ? basic[0] : basic;
+      const row: LookupBasicRow | undefined = Array.isArray(basic)
+        ? basic[0]
+        : (basic as LookupBasicRow | undefined);
       if (!row) {
         return { profile: null, professionalProfile: null, isLimitedView: false };
       }
+      // Build a partial Profile / ProfessionalProfile from the limited fields.
+      // We only fill the fields the basic-view returns; the rest stay undefined.
       return {
         profile: {
           user_id: row.user_id,
           first_name: row.first_name,
           last_name: row.last_name,
           avatar_url: row.avatar_url,
-        },
+        } as ProfileRow,
         professionalProfile: {
           avatar_url: row.avatar_url,
           occupation: row.occupation,
           sector: row.sector,
           city: row.city,
           country: row.country,
-        },
+        } as ProfessionalProfileRow,
         isLimitedView: true,
       };
     },

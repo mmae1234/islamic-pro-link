@@ -69,7 +69,7 @@ const Feedback = () => {
       setEmail("");
       setSubject("");
       setMessage("");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error sending feedback:', error);
       toast({
         title: "Error",

@@ -88,17 +88,17 @@ const Search = () => {
       });
     }
     if (sortBy && sortBy !== "created_at") {
-      return [...rows].sort((a: any, b: any) => {
-        const aVal = a[sortBy];
-        const bVal = b[sortBy];
+      return [...rows].sort((a, b) => {
+        const aVal = (a as Record<string, unknown>)[sortBy];
+        const bVal = (b as Record<string, unknown>)[sortBy];
         if (typeof aVal === "string" && typeof bVal === "string") {
           return sortOrder === "asc"
             ? aVal.localeCompare(bVal)
             : bVal.localeCompare(aVal);
         }
-        return sortOrder === "asc"
-          ? (aVal ?? 0) - (bVal ?? 0)
-          : (bVal ?? 0) - (aVal ?? 0);
+        const aNum = typeof aVal === "number" ? aVal : 0;
+        const bNum = typeof bVal === "number" ? bVal : 0;
+        return sortOrder === "asc" ? aNum - bNum : bNum - aNum;
       });
     }
     return rows;
@@ -109,7 +109,22 @@ const Search = () => {
     profileQuery.refetch();
   };
 
-  const handleSearch = (next: any = {}) => {
+  // Filters arrive from <SearchFilters /> as a loose object. Narrow to the
+  // typed `ProfessionalFilters` shape the query hook expects.
+  type SearchFilterPayload = Partial<{
+    country: string;
+    stateProvince: string;
+    city: string;
+    sector: string;
+    occupation: string;
+    isMentor: boolean;
+    isSeekingMentor: boolean;
+    searchTerm: string;
+    experienceMin: string;
+    experienceMax: string;
+  }>;
+
+  const handleSearch = (next: SearchFilterPayload = {}) => {
     setFilters({
       country: next.country,
       stateProvince: next.stateProvince,
@@ -235,7 +250,7 @@ const Search = () => {
                         tracking on card click inflated metrics from accidental clicks
                         and the wrapping div catching hover events. */}
                     <ProfessionalCard
-                      professional={professional as any}
+                      professional={professional}
                       showMentorshipButton={false}
                       showFavoriteButton={true}
                       onRequestSent={() => {

@@ -11,14 +11,15 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/ImageUpload';
-import { 
-  CountrySelect, 
-  StateProvinceSelect, 
+import { getErrorMessage } from "@/lib/errors";
+import {
+  CountrySelect,
+  StateProvinceSelect,
   CitySelect,
-  UniversitySelect, 
-  SectorSelect, 
-  OccupationSelect, 
-  AvailabilitySelect 
+  UniversitySelect,
+  SectorSelect,
+  OccupationSelect,
+  AvailabilitySelect
 } from '@/components/EnhancedFormDropdowns';
 import { LanguageSelect } from '@/components/SearchableMultiSelect';
 import { CheckCircle, Plus, X, User, Briefcase, MessageSquare, Calendar, Users, GraduationCap, MapPin, Mail, Languages } from 'lucide-react';
@@ -211,10 +212,10 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
       });
 
       onComplete();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error saving profile",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     } finally {

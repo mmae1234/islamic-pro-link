@@ -11,6 +11,7 @@ import BlockUserButton from "@/components/BlockUserButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { getErrorMessage } from "@/lib/errors";
 
 interface BusinessAccount {
   id: string;
@@ -101,7 +102,11 @@ const [favoriteBusinessIds, setFavoriteBusinessIds] = useState<string[]>([]);
         .select('business_id')
         .eq('user_id', user.id)
         .not('business_id', 'is', null);
-      setFavoriteBusinessIds((data || []).map((r: any) => r.business_id).filter(Boolean));
+      setFavoriteBusinessIds(
+        (data ?? [])
+          .map((r) => r.business_id)
+          .filter((id): id is string => !!id),
+      );
     };
     loadFavs();
   }, [user]);
@@ -110,15 +115,17 @@ const [favoriteBusinessIds, setFavoriteBusinessIds] = useState<string[]>([]);
     const load = async () => {
       if (!id) return;
       try {
-        let biz: any = null;
-        
+        // The base shape comes from the SECURITY DEFINER RPC (safe public fields).
+        // We may merge in private contact fields below if RLS allows the read.
+        let biz: Partial<BusinessAccount> | null = null;
+
         // Single-row lookup via SECURITY DEFINER RPC (returns safe public fields only)
         const { data: rpcResult, error: rpcErr } = await supabase.rpc('get_business_by_id', { _id: id });
         if (rpcErr) {
           console.error('Business lookup error', rpcErr);
         }
         const row = Array.isArray(rpcResult) ? rpcResult[0] : rpcResult;
-        if (row) biz = row;
+        if (row) biz = row as Partial<BusinessAccount>;
         
         // If user is logged in, try to get additional details (contact info) if they have permission
         if (user && biz) {
@@ -138,12 +145,14 @@ const [favoriteBusinessIds, setFavoriteBusinessIds] = useState<string[]>([]);
         // Load approved team via SECURITY DEFINER RPC (single call, RLS-safe)
         const { data: teamRows } = await supabase.rpc('get_business_team', { _business_id: id });
         if (teamRows && teamRows.length > 0) {
-          setTeam(teamRows.map((t: any) => ({
-            user_id: t.user_id,
-            first_name: t.first_name,
-            last_name: t.last_name,
-            avatar_url: t.avatar_url,
-          })) as TeamMemberProfile[]);
+          setTeam(
+            teamRows.map((t) => ({
+              user_id: t.user_id,
+              first_name: t.first_name,
+              last_name: t.last_name,
+              avatar_url: t.avatar_url,
+            })) as TeamMemberProfile[],
+          );
         } else {
           setTeam([]);
         }
@@ -199,10 +208,10 @@ if (user) {
         if (error) throw error;
         toast({ title: 'Added to favorites', description: business.name ? `${business.name} saved to your favorites.` : 'Business saved.' });
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       // Roll back
       setFavoriteBusinessIds(prev => wasFav ? [...prev, business.id] : prev.filter(x => x !== business.id));
-      toast({ title: 'Could not update favorite', description: e?.message || 'Please try again later.', variant: 'destructive' });
+      toast({ title: 'Could not update favorite', description: getErrorMessage(e) || 'Please try again later.', variant: 'destructive' });
     }
   };
 
@@ -223,8 +232,8 @@ const handleRequestLink = async () => {
     if (error) throw error;
     toast({ title: 'Request sent', description: 'Your link request is pending approval.' });
     setAlreadyLinked(true);
-  } catch (e: any) {
-    toast({ title: 'Could not send request', description: e.message || 'Try again later.', variant: 'destructive' });
+  } catch (e: unknown) {
+    toast({ title: 'Could not send request', description: getErrorMessage(e) || 'Try again later.', variant: 'destructive' });
   } finally {
     setLinking(false);
   }

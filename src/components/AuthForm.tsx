@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, Mail, Lock, User, CheckCircle, Building2, Phone, Globe } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { getErrorMessage } from "@/lib/errors";
  
  interface AuthFormProps {
    mode: 'login' | 'signup';
@@ -130,7 +131,7 @@ useEffect(() => {
               .eq('user_id', uid)
               .maybeSingle();
 
-            const isFirstLogin = (profileRes as any)?.first_login ?? true;
+            const isFirstLogin = profileRes?.first_login ?? true;
             if (isFirstLogin) {
               navigate('/edit-profile', { replace: true });
             } else {
@@ -143,10 +144,10 @@ useEffect(() => {
           navigate('/dashboard', { replace: true });
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     } finally {

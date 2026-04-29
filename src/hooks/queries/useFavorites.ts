@@ -115,14 +115,18 @@ export function useFavoriteProfessionals(userId: string | undefined) {
 
       return favProfs
         .map((fav) => {
+          if (!fav.professional_id) return null;
           const profile = professionals?.find(
             (p) => p.user_id === fav.professional_id,
           );
           if (!profile) return null;
           return {
-            ...(fav as any),
-            professional_profile: profile,
-          } as FavoriteProfessional;
+            id: fav.id,
+            professional_id: fav.professional_id,
+            created_at: fav.created_at,
+            professional_profile:
+              profile as unknown as FavoriteProfessional["professional_profile"],
+          } satisfies FavoriteProfessional;
         })
         .filter((f): f is FavoriteProfessional => !!f);
     },
@@ -175,7 +179,15 @@ export function useFavoriteMentors(userId: string | undefined) {
         .map((req) => {
           const profile = mentorProfiles?.find((p) => p.user_id === req.mentor_id);
           if (!profile) return null;
-          return { ...(req as any), mentor_profile: profile } as FavoriteMentor;
+          return {
+            id: req.id,
+            mentor_id: req.mentor_id,
+            mentee_id: req.mentee_id,
+            status: req.status ?? "pending",
+            created_at: req.created_at,
+            mentor_profile:
+              profile as unknown as FavoriteMentor["mentor_profile"],
+          } satisfies FavoriteMentor;
         })
         .filter((f): f is FavoriteMentor => !!f);
     },

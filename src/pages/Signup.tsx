@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Chrome, Mail, ArrowLeft } from "lucide-react";
+import { getErrorMessage } from "@/lib/errors";
 
 const setSeo = (title: string, description?: string) => {
   document.title = title;
@@ -67,7 +68,7 @@ const Signup = () => {
       options: { redirectTo }
     });
     if (error) {
-      toast({ title: 'Google sign-in failed', description: error.message, variant: 'destructive' });
+      toast({ title: 'Google sign-in failed', description: getErrorMessage(error), variant: 'destructive' });
     }
   };
 
@@ -117,8 +118,8 @@ const Signup = () => {
       if (selected === 'visitor') navigate('/');
       else if (selected === 'professional') navigate('/dashboard/professional');
       else navigate('/dashboard/business');
-    } catch (error: any) {
-      toast({ title: 'Could not save selection', description: error.message || 'Try again.', variant: 'destructive' });
+    } catch (error: unknown) {
+      toast({ title: 'Could not save selection', description: getErrorMessage(error) || 'Try again.', variant: 'destructive' });
     }
   };
 

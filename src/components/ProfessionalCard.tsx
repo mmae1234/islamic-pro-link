@@ -14,28 +14,32 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Link } from 'react-router-dom';
 import ReportDialog from '@/components/ReportDialog';
 import BlockUserButton from '@/components/BlockUserButton';
+import { getErrorMessage } from "@/lib/errors";
 
+// Loose superset matching what `list_professional_directory` returns plus the
+// synthesized `profiles` slice the card expects. Most fields are nullable in
+// the DB; we accept that here so callers don't have to assert non-null.
 interface Professional {
-  id: string;
+  id?: string;
   user_id: string;
-  first_name: string;
-  last_name: string;
-  bio: string;
-  occupation: string;
-  sector: string;
-  city: string;
-  country: string;
-  university: string;
-  experience_years: number;
-  skills: string[];
-  is_mentor: boolean;
-  is_seeking_mentor: boolean;
-  availability: string;
-  avatar_url: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  bio?: string | null;
+  occupation?: string | null;
+  sector?: string | null;
+  city?: string | null;
+  country?: string | null;
+  university?: string | null;
+  experience_years?: number | null;
+  skills?: string[] | null;
+  is_mentor?: boolean | null;
+  is_seeking_mentor?: boolean | null;
+  availability?: string | null;
+  avatar_url?: string | null;
   profiles?: {
-    first_name: string;
-    last_name: string;
-    avatar_url: string | null;
+    first_name?: string | null;
+    last_name?: string | null;
+    avatar_url?: string | null;
   };
 }
 
@@ -116,10 +120,10 @@ const ProfessionalCard = ({
       setIsRequestDialogOpen(false);
       setRequestMessage('');
       onRequestSent?.();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Could not send request",
-        description: error.message || "Please try again later.",
+        description: getErrorMessage(error) || "Please try again later.",
         variant: "destructive",
       });
     } finally {
@@ -146,10 +150,10 @@ const ProfessionalCard = ({
 
       setIsMessageDialogOpen(false);
       setMessageContent('');
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error sending message",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     } finally {
@@ -194,10 +198,10 @@ const ProfessionalCard = ({
         });
         setIsFavorited(true);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     } finally {

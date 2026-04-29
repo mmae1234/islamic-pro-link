@@ -129,7 +129,7 @@ const Businesses = () => {
               : "Business saved.",
           });
         },
-        onError: (e: any) => {
+        onError: (e: Error) => {
           toast({
             title: "Could not update favorite",
             description: e?.message || "Please try again later.",
@@ -189,7 +189,7 @@ const Businesses = () => {
           setMessageOpen(false);
           setMessageContent("");
         },
-        onError: (e: any) => {
+        onError: (e: Error) => {
           toast({
             title: "Error",
             description: e?.message || "Failed to send message.",

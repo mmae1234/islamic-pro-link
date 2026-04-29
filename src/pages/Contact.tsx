@@ -56,7 +56,7 @@ const Contact = () => {
       setEmail("");
       setSubject("");
       setMessage("");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error sending message:', error);
       toast({
         title: "Error",

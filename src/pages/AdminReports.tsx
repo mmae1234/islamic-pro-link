@@ -9,22 +9,34 @@ import { Shield, AlertTriangle, User, MessageCircle, Calendar, FileText } from "
 import { formatDistanceToNow } from "date-fns";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { getErrorMessage } from "@/lib/errors";
+import type { Tbl, ProfileNameSlice } from "@/hooks/queries/types";
 
-interface AbuseReport {
-  id: string;
-  created_at: string;
-  reason: string;
-  details: string | null;
-  conversation_id: string | null;
-  reporter_profile: {
-    first_name: string;
-    last_name: string;
-  };
-  accused_profile: {
-    first_name: string;
-    last_name: string;
-  };
-}
+// Base abuse_reports row + joined name slices for both reporter and accused.
+type AbuseReport = Pick<
+  Tbl<"abuse_reports">,
+  "id" | "created_at" | "reason" | "details" | "conversation_id"
+> & {
+  reporter_profile: ProfileNameSlice;
+  accused_profile: ProfileNameSlice;
+};
+
+// Raw shape from PostgREST: embedded relations may be a single object or an
+// array depending on cardinality. We narrow to a single slice in code.
+type AbuseReportRaw = Pick<
+  Tbl<"abuse_reports">,
+  "id" | "created_at" | "reason" | "details" | "conversation_id"
+> & {
+  reporter_profile: ProfileNameSlice | ProfileNameSlice[] | null;
+  accused_profile: ProfileNameSlice | ProfileNameSlice[] | null;
+};
+
+const FALLBACK_NAME: ProfileNameSlice = { first_name: "Unknown", last_name: "" };
+
+const pickProfile = (
+  p: ProfileNameSlice | ProfileNameSlice[] | null,
+): ProfileNameSlice =>
+  Array.isArray(p) ? p[0] ?? FALLBACK_NAME : p ?? FALLBACK_NAME;
 
 const AdminReports = () => {
   const { user } = useAuth();
@@ -82,11 +94,21 @@ const AdminReports = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setReports(data || []);
-    } catch (error: any) {
+      const rows = (data ?? []) as unknown as AbuseReportRaw[];
+      const normalized: AbuseReport[] = rows.map((row) => ({
+        id: row.id,
+        created_at: row.created_at,
+        reason: row.reason,
+        details: row.details,
+        conversation_id: row.conversation_id,
+        reporter_profile: pickProfile(row.reporter_profile),
+        accused_profile: pickProfile(row.accused_profile),
+      }));
+      setReports(normalized);
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message || "Failed to load reports.",
+        description: getErrorMessage(error) || "Failed to load reports.",
         variant: "destructive",
       });
     }
