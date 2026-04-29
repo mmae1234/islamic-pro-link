@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Mail, Phone, MapPin, Lightbulb } from "lucide-react";
+import { Mail, MapPin, Lightbulb } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Contact = () => {
