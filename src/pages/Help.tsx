@@ -222,8 +222,8 @@ const Help = () => {
                 <AccordionItem value="item-2f">
                   <AccordionTrigger>How do I add social media links to my profile?</AccordionTrigger>
                   <AccordionContent>
+                    Professionals: open Edit Profile and add your Facebook, Instagram, and LinkedIn URLs.
                     Businesses: open the Business Dashboard and use the Social Links section to add Facebook, Instagram, LinkedIn, X, YouTube, TikTok, WhatsApp, or Telegram.
-                    Professionals: social links will be available on the Edit Profile page shortly.
                   </AccordionContent>
                 </AccordionItem>
 
