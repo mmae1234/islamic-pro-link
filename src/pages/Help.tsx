@@ -145,12 +145,22 @@ const Help = () => {
                   <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
                     <li>Your personal contact information is never shared publicly</li>
                     <li>You control what information appears on your profile</li>
-                    <li>All messages are encrypted and secure</li>
+                    <li>Messages are private and transmitted over secure (TLS) connections</li>
+                    <li>Uploaded profile and business images are automatically screened for inappropriate content</li>
                   </ul>
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-2">Reporting Issues</h3>
-                  <p className="text-muted-foreground">If you encounter inappropriate behavior, use the report function on profiles or messages. Our team investigates all reports promptly.</p>
+                  <h3 className="font-semibold mb-2">Blocking & Reporting</h3>
+                  <p className="text-muted-foreground mb-2">You have tools to keep your experience safe:</p>
+                  <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                    <li>Block any user from their profile or from professional cards (three-dot menu)</li>
+                    <li>Report fake profiles or abusive messages — our moderation team reviews all reports</li>
+                    <li>Manage blocked users in Settings → Privacy</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-2">Deleting Your Account</h3>
+                  <p className="text-muted-foreground">You can permanently delete your account and personal data anytime from Settings → Delete Account.</p>
                 </div>
               </div>
             </CardContent>
