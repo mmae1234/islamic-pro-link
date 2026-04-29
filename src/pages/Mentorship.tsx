@@ -697,49 +697,81 @@ const Mentorship = () => {
         </div>
       </main>
 
-      {/* Request Modal */}
-      {selectedMentor && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle>Request Mentorship</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Send a request to {`${selectedMentor.profiles.first_name || ''} ${selectedMentor.profiles.last_name || ''}`.trim() || 'Unknown'}
+      {/* Request Mentorship Dialog (proper a11y, focus trap, escape-to-close) */}
+      <Dialog
+        open={!!selectedMentor}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedMentor(null);
+            setRequestMessage("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Request Mentorship</DialogTitle>
+            {selectedMentor && (
+              <DialogDescription>
+                Send a request to {`${selectedMentor.profiles.first_name || ''} ${selectedMentor.profiles.last_name || ''}`.trim() || 'this mentor'}
+              </DialogDescription>
+            )}
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="mentorship-message">Message</Label>
+              <Textarea
+                id="mentorship-message"
+                rows={4}
+                placeholder="Introduce yourself and explain what you're looking for in a mentor (at least 30 characters)..."
+                value={requestMessage}
+                onChange={(e) => setRequestMessage(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                {requestMessage.trim().length}/30 characters minimum
               </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Message</label>
-                <textarea
-                  className="w-full mt-1 p-3 border rounded-md resize-none"
-                  rows={4}
-                  placeholder="Introduce yourself and explain what you're looking for in a mentor..."
-                  value={requestMessage}
-                  onChange={(e) => setRequestMessage(e.target.value)}
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  onClick={sendMentorshipRequest}
-                  disabled={!requestMessage.trim()}
-                  className="flex-1"
-                >
-                  Send Request
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setSelectedMentor(null);
-                    setRequestMessage("");
-                  }}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSelectedMentor(null);
+                  setRequestMessage("");
+                }}
+                disabled={sendingRequest}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={sendMentorshipRequest}
+                disabled={requestMessage.trim().length < 30 || sendingRequest}
+              >
+                {sendingRequest ? 'Sending…' : 'Send Request'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Disconnect confirmation */}
+      <AlertDialog open={!!disconnectTarget} onOpenChange={(open) => !open && setDisconnectTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Disconnect from mentor?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {disconnectTarget && `Are you sure you want to disconnect from ${disconnectTarget.name}? This action cannot be undone.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={performDisconnect}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Disconnect
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Footer />
     </div>
