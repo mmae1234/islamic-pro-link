@@ -17,14 +17,15 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
-import { 
-  CountrySelect, 
-  StateProvinceSelect, 
+import { getErrorMessage } from "@/lib/errors";
+import {
+  CountrySelect,
+  StateProvinceSelect,
   CitySelect,
-  UniversitySelect, 
-  SectorSelect, 
-  OccupationSelect, 
-  AvailabilitySelect 
+  UniversitySelect,
+  SectorSelect,
+  OccupationSelect,
+  AvailabilitySelect
 } from "@/components/EnhancedFormDropdowns";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -218,10 +219,10 @@ const Settings = () => {
         title: "Profile updated!",
         description: "Your profile has been updated successfully.",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message || "Failed to save profile.",
+        description: getErrorMessage(error) || "Failed to save profile.",
         variant: "destructive",
       });
     } finally {
@@ -307,10 +308,10 @@ const Settings = () => {
       setShowEmailDialog(false);
       setNewEmail('');
       setConfirmEmail('');
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message || "Failed to update email.",
+        description: getErrorMessage(error) || "Failed to update email.",
         variant: "destructive",
       });
     } finally {
@@ -330,10 +331,13 @@ const Settings = () => {
       });
 
       if (error) {
-        throw new Error(error.message || 'Failed to delete account');
+        throw new Error(getErrorMessage(error) || 'Failed to delete account');
       }
-      if (data && (data as any).error) {
-        throw new Error((data as any).error);
+      // The edge function may return { error: string } in its body even on
+      // a 200 response — check the parsed payload.
+      const payload = data as { error?: string } | null;
+      if (payload?.error) {
+        throw new Error(payload.error);
       }
 
       toast({
@@ -346,10 +350,10 @@ const Settings = () => {
 
       await signOut().catch(() => {});
       navigate('/', { replace: true });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message || "Failed to delete account.",
+        description: getErrorMessage(error) || "Failed to delete account.",
         variant: "destructive",
       });
       setShowDeleteDialog(false);

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import { getErrorMessage } from "@/lib/errors";
 
 interface PendingLink {
   id: string;
@@ -52,22 +53,26 @@ const BusinessLinkRequests = ({ businessId }: BusinessLinkRequestsProps) => {
             .eq("status", "approved"),
         ]);
 
-        const pending = (pendingRes as any)?.data || [];
-        const approvedData = (approvedRes as any)?.data || [];
+        const pending: PendingLink[] = (pendingRes.data ?? []) as PendingLink[];
+        const approvedData: PendingLink[] = (approvedRes.data ?? []) as PendingLink[];
         setRequests(pending);
         setApproved(approvedData);
 
         const ids: string[] = Array.from(
-          new Set([...pending, ...approvedData].map((l: any) => String(l.professional_user_id)))
+          new Set(
+            [...pending, ...approvedData].map((l) => String(l.professional_user_id)),
+          ),
         );
         if (ids.length > 0) {
           const { data: profs, error: pErr } = await supabase
             .from("profiles")
             .select("user_id, first_name, last_name, avatar_url")
-            .in("user_id", ids as any);
+            .in("user_id", ids);
           if (pErr) throw pErr;
           const map: Record<string, Profile> = {};
-          (profs as any)?.forEach((p: Profile) => (map[p.user_id] = p));
+          (profs ?? []).forEach((p) => {
+            map[p.user_id] = p as Profile;
+          });
           setProfiles(map);
         } else {
           setProfiles({});
@@ -89,8 +94,8 @@ const BusinessLinkRequests = ({ businessId }: BusinessLinkRequestsProps) => {
       if (error) throw error;
       setRequests((prev) => prev.filter((r) => r.id !== id));
       toast({ title: `Request ${action}`, description: `The link request was ${action}.` });
-    } catch (e: any) {
-      toast({ title: "Action failed", description: e.message || "You may not have permission.", variant: "destructive" });
+    } catch (e: unknown) {
+      toast({ title: "Action failed", description: getErrorMessage(e) || "You may not have permission.", variant: "destructive" });
     } finally {
       setActioningId(null);
     }
@@ -106,8 +111,8 @@ const BusinessLinkRequests = ({ businessId }: BusinessLinkRequestsProps) => {
       if (error) throw error;
       setApproved((prev) => prev.filter((l) => l.id !== id));
       toast({ title: "Delinked", description: "The professional was removed from your business." });
-    } catch (e: any) {
-      toast({ title: "Action failed", description: e.message || "You may not have permission.", variant: "destructive" });
+    } catch (e: unknown) {
+      toast({ title: "Action failed", description: getErrorMessage(e) || "You may not have permission.", variant: "destructive" });
     } finally {
       setActioningId(null);
     }

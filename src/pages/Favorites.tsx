@@ -58,7 +58,7 @@ const Favorites = () => {
           title: "Removed from favorites",
           description: "Professional removed from your favorites.",
         }),
-      onError: (err: any) =>
+      onError: (err: Error) =>
         toast({
           title: "Error",
           description: err?.message || "Failed to remove favorite.",
@@ -73,7 +73,7 @@ const Favorites = () => {
           title: "Removed from favorites",
           description: "Business removed from your favorites.",
         }),
-      onError: (err: any) =>
+      onError: (err: Error) =>
         toast({
           title: "Error",
           description: err?.message || "Could not remove favorite.",

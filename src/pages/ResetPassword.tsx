@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, Lock, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { getErrorMessage } from "@/lib/errors";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
@@ -148,10 +149,10 @@ const ResetPassword = () => {
       setTimeout(() => {
         navigate('/login');
       }, 2000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Password reset failed",
-        description: error.message || "An error occurred while resetting your password.",
+        description: getErrorMessage(error) || "An error occurred while resetting your password.",
         variant: "destructive",
       });
     } finally {

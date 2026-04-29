@@ -61,9 +61,9 @@ const BusinessDashboard = () => {
           .eq('user_id', user.id)
           .maybeSingle()
       ]);
-      if ((bizRes as any).data) setAccount((bizRes as any).data as BusinessAccount);
+      if (bizRes.data) setAccount(bizRes.data as BusinessAccount);
       // SECURITY: profiles.role is the only authoritative source.
-      const role = (profRes as any).data?.role;
+      const role = profRes.data?.role;
       setIsBusinessUser(role === 'business');
       setLoading(false);
     };

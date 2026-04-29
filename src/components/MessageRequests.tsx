@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, User, MapPin, Briefcase } from "lucide-react";
+import { getErrorMessage } from "@/lib/errors";
 
 interface RequestSender {
   id: string;
@@ -156,11 +157,11 @@ export default function MessageRequests({ onAcceptRequest, onRequestCountChange 
         return next;
       });
       onAcceptRequest(conversationId);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error accepting request:", error);
       toast({
         title: "Error",
-        description: error?.message || "Failed to accept message request",
+        description: getErrorMessage(error) || "Failed to accept message request",
         variant: "destructive",
       });
     } finally {
@@ -195,11 +196,11 @@ export default function MessageRequests({ onAcceptRequest, onRequestCountChange 
         onRequestCountChange?.(next.length);
         return next;
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error declining request:", error);
       toast({
         title: "Error",
-        description: error?.message || "Failed to decline message request",
+        description: getErrorMessage(error) || "Failed to decline message request",
         variant: "destructive",
       });
     } finally {

@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Loader2, UserX } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { getErrorMessage } from "@/lib/errors";
 
 interface BlockedUser {
   id: string;
@@ -62,14 +63,29 @@ const MessagingPrivacySettings = () => {
       if (blockedError) throw blockedError;
 
       if (blockedData) {
-        const blocked = blockedData.map((item: any) => ({
-          id: item.id,
-          blocked_id: item.blocked_id,
-          first_name: item.profiles?.first_name || 'Unknown',
-          last_name: item.profiles?.last_name || 'User',
-          avatar_url: item.profiles?.avatar_url,
-          blocked_at: item.created_at
-        }));
+        // PostgREST may return the embedded `profiles` as an array or single
+        // object depending on cardinality inference. Narrow to a single slice.
+        type BlockedRow = {
+          id: string;
+          blocked_id: string;
+          created_at: string;
+          profiles:
+            | { first_name: string | null; last_name: string | null; avatar_url: string | null }
+            | { first_name: string | null; last_name: string | null; avatar_url: string | null }[]
+            | null;
+        };
+        const rows = blockedData as unknown as BlockedRow[];
+        const blocked = rows.map((item) => {
+          const profile = Array.isArray(item.profiles) ? item.profiles[0] : item.profiles;
+          return {
+            id: item.id,
+            blocked_id: item.blocked_id,
+            first_name: profile?.first_name || 'Unknown',
+            last_name: profile?.last_name || 'User',
+            avatar_url: profile?.avatar_url ?? undefined,
+            blocked_at: item.created_at,
+          };
+        });
         setBlockedUsers(blocked);
       }
     } catch (error) {
@@ -130,10 +146,10 @@ const MessagingPrivacySettings = () => {
         title: "User unblocked",
         description: "The user has been unblocked successfully.",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error unblocking user",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     }
