@@ -19,6 +19,7 @@ import {
 } from "@/components/EnhancedFormDropdowns";
 import { SearchableMultiSelect } from "@/components/SearchableMultiSelect";
 import { Building2 } from "lucide-react";
+import { validateHttpUrl, validatePhoneNumber } from "@/lib/url-validation";
 
 const LANGUAGES = [
   'Arabic', 'English', 'French', 'Spanish', 'German', 'Italian', 'Portuguese', 'Russian',
