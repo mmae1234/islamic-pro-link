@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Building2, Search, Heart, MessageCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { CountrySelect, CitySelect as CitySelectEF, SectorSelect } from "@/components/EnhancedFormDropdowns";
 import { StateProvinceSelect } from "@/components/StateProvinceSelect";
 import { useToast } from "@/hooks/use-toast";
@@ -67,6 +67,7 @@ const Businesses = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [favoriteBusinessIds, setFavoriteBusinessIds] = useState<string[]>([]);
   const [messageOpen, setMessageOpen] = useState(false);
   const [messageRecipientId, setMessageRecipientId] = useState<string | null>(null);
@@ -108,9 +109,26 @@ const Businesses = () => {
   }, [user]);
 
   useEffect(() => {
-    const raw = localStorage.getItem('favorite_business_ids');
-    setFavoriteBusinessIds(raw ? JSON.parse(raw) : []);
-  }, []);
+    const loadFavorites = async () => {
+      if (!user) {
+        setFavoriteBusinessIds([]);
+        return;
+      }
+      try {
+        const { data, error } = await supabase
+          .from('favorites')
+          .select('business_id')
+          .eq('user_id', user.id)
+          .not('business_id', 'is', null);
+        if (error) throw error;
+        setFavoriteBusinessIds((data || []).map((r: any) => r.business_id).filter(Boolean));
+      } catch (e) {
+        console.error('Failed to load business favorites', e);
+        setFavoriteBusinessIds([]);
+      }
+    };
+    loadFavorites();
+  }, [user]);
 
   const handleSearch = async () => {
     if (!user) {
@@ -142,22 +160,34 @@ const Businesses = () => {
       setLoading(false);
     }
   };
-  const handleFavorite = (id: string, name?: string | null) => {
+  const handleFavorite = async (id: string, name?: string | null) => {
+    if (!user) {
+      navigate('/login?redirect=/businesses');
+      return;
+    }
+    const isFav = favoriteBusinessIds.includes(id);
+    // Optimistic update
+    setFavoriteBusinessIds(prev => isFav ? prev.filter(x => x !== id) : [...prev, id]);
     try {
-      const key = 'favorite_business_ids';
-      const arr = [...favoriteBusinessIds];
-      const index = arr.indexOf(id);
-      if (index === -1) {
-        arr.push(id);
-        toast({ title: 'Added to favorites', description: name ? `${name} saved to your favorites.` : 'Business saved.' });
-      } else {
-        arr.splice(index, 1);
+      if (isFav) {
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('business_id', id);
+        if (error) throw error;
         toast({ title: 'Removed from favorites', description: name ? `${name} removed from your favorites.` : 'Business removed.' });
+      } else {
+        const { error } = await supabase
+          .from('favorites')
+          .insert({ user_id: user.id, business_id: id });
+        if (error) throw error;
+        toast({ title: 'Added to favorites', description: name ? `${name} saved to your favorites.` : 'Business saved.' });
       }
-      localStorage.setItem(key, JSON.stringify(arr));
-      setFavoriteBusinessIds(arr);
-    } catch {
-      toast({ title: 'Could not update favorite', description: 'Please try again later.', variant: 'destructive' });
+    } catch (e: any) {
+      // Roll back optimistic update
+      setFavoriteBusinessIds(prev => isFav ? [...prev, id] : prev.filter(x => x !== id));
+      toast({ title: 'Could not update favorite', description: e?.message || 'Please try again later.', variant: 'destructive' });
     }
   };
 
@@ -165,7 +195,7 @@ const Businesses = () => {
 
   const openMessageDialog = async (b: BusinessAccount) => {
     if (!user) {
-      window.location.href = `/login?redirect=/businesses`;
+      navigate('/login?redirect=/businesses');
       return;
     }
     setMessageOpen(true);

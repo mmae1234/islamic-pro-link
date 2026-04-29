@@ -92,9 +92,14 @@ const Favorites = () => {
     if (!user) return;
 
     try {
-      // Load favorite businesses from localStorage
-      const raw = localStorage.getItem('favorite_business_ids');
-      const businessIds: string[] = raw ? JSON.parse(raw) : [];
+      // Load favorite businesses from favorites table
+      const { data: favBizRows, error: favBizErr } = await supabase
+        .from('favorites')
+        .select('business_id')
+        .eq('user_id', user.id)
+        .not('business_id', 'is', null);
+      if (favBizErr) throw favBizErr;
+      const businessIds: string[] = (favBizRows || []).map((r: any) => r.business_id).filter(Boolean);
       if (businessIds.length > 0) {
         // Use RPC function to get business data securely
         const { data: allBusinesses, error: bizError } = await supabase.rpc('search_business_directory', {
@@ -214,17 +219,19 @@ const Favorites = () => {
     }
   };
 
-  const removeFavoriteBusiness = (businessId: string) => {
+  const removeFavoriteBusiness = async (businessId: string) => {
+    if (!user) return;
     try {
-      const key = 'favorite_business_ids';
-      const raw = localStorage.getItem(key);
-      const arr = raw ? (JSON.parse(raw) as string[]) : [];
-      const updated = arr.filter(id => id !== businessId);
-      localStorage.setItem(key, JSON.stringify(updated));
+      const { error } = await supabase
+        .from('favorites')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('business_id', businessId);
+      if (error) throw error;
       setFavoriteBusinesses(prev => prev.filter(b => b.id !== businessId));
       toast({ title: 'Removed from favorites', description: 'Business removed from your favorites.' });
     } catch (error: any) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      toast({ title: 'Error', description: error?.message || 'Could not remove favorite.', variant: 'destructive' });
     }
   };
 
