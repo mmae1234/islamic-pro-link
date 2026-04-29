@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -77,6 +77,7 @@ interface FavoriteBusiness {
 const Favorites = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [favoriteProfessionals, setFavoriteProfessionals] = useState<FavoriteProfessional[]>([]);
   const [favoriteMentors, setFavoriteMentors] = useState<FavoriteMentor[]>([]);
   const [favoriteBusinesses, setFavoriteBusinesses] = useState<FavoriteBusiness[]>([]);
@@ -101,21 +102,16 @@ const Favorites = () => {
       if (favBizErr) throw favBizErr;
       const businessIds: string[] = (favBizRows || []).map((r: any) => r.business_id).filter(Boolean);
       if (businessIds.length > 0) {
-        // Use RPC function to get business data securely
-        const { data: allBusinesses, error: bizError } = await supabase.rpc('search_business_directory', {
-          search_term: null,
-          filter_country: null,
-          filter_state: null,
-          filter_city: null,
-          filter_sector: null,
-          verified_only: false,
-          result_limit: 1000
-        });
-        if (bizError) throw bizError;
-        // Filter to only favorited businesses and maintain order
-        const ordered = businessIds
-          .map(id => allBusinesses?.find((b: any) => b.id === id))
-          .filter(Boolean) as FavoriteBusiness[];
+        // Fetch each business via the single-row RPC (parallel) — much faster than scanning the whole directory
+        const businessResults = await Promise.all(
+          businessIds.map(async (bid) => {
+            const { data, error } = await supabase.rpc('get_business_by_id', { _id: bid });
+            if (error) return null;
+            const row = Array.isArray(data) ? data[0] : data;
+            return row || null;
+          })
+        );
+        const ordered = businessResults.filter(Boolean) as FavoriteBusiness[];
         setFavoriteBusinesses(ordered);
       } else {
         setFavoriteBusinesses([]);
@@ -235,9 +231,9 @@ const Favorites = () => {
     }
   };
 
-  const sendMessage = async (recipientId: string, recipientName: string) => {
-    // Redirect to messages page with pre-selected recipient
-    window.location.href = `/messages?recipient=${recipientId}&name=${encodeURIComponent(recipientName)}`;
+  const sendMessage = (recipientId: string, recipientName: string) => {
+    // SPA navigation — preserves session and avoids full reload
+    navigate(`/messages?recipient=${recipientId}&name=${encodeURIComponent(recipientName)}`);
   };
   if (loading) {
     return (
