@@ -386,14 +386,16 @@ const Mentorship = () => {
     }
 
     if (filters.experienceMin) {
+      const min = parseInt(filters.experienceMin);
       filteredMentors = filteredMentors.filter(mentor => 
-        mentor.experience_years >= parseInt(filters.experienceMin)
+        (mentor.experience_years ?? 0) >= min
       );
     }
 
     if (filters.experienceMax) {
+      const max = parseInt(filters.experienceMax);
       filteredMentors = filteredMentors.filter(mentor => 
-        mentor.experience_years <= parseInt(filters.experienceMax)
+        (mentor.experience_years ?? 0) <= max
       );
     }
 
