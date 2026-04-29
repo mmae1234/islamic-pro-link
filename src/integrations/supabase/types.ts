@@ -254,21 +254,24 @@ export type Database = {
       }
       favorites: {
         Row: {
+          business_id: string | null
           created_at: string
           id: string
-          professional_id: string
+          professional_id: string | null
           user_id: string
         }
         Insert: {
+          business_id?: string | null
           created_at?: string
           id?: string
-          professional_id: string
+          professional_id?: string | null
           user_id: string
         }
         Update: {
+          business_id?: string | null
           created_at?: string
           id?: string
-          professional_id?: string
+          professional_id?: string | null
           user_id?: string
         }
         Relationships: []
