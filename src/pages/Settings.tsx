@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
 import { 
@@ -485,56 +486,13 @@ const Settings = () => {
                   <CardHeader>
                     <CardTitle>Profile Privacy</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="profile-visibility">Profile Visibility</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Control who can see your full profile information
-                        </p>
-                      </div>
-                      <Switch id="profile-visibility" />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="contact-info">Contact Information</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Show email and phone number to other users
-                        </p>
-                      </div>
-                      <Switch id="contact-info" />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="search-indexing">Search Engine Indexing</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Allow search engines to index your public profile
-                        </p>
-                      </div>
-                      <Switch id="search-indexing" />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="location-sharing">Location Sharing</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Share your city and country with other users
-                        </p>
-                      </div>
-                      <Switch id="location-sharing" defaultChecked />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="activity-status">Activity Status</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Show when you were last active on the platform
-                        </p>
-                      </div>
-                      <Switch id="activity-status" />
-                    </div>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                      Additional privacy controls (profile visibility, contact info, search indexing,
+                      activity status) are coming soon. For now, your profile is visible only to other
+                      authenticated members, and contact details (email, phone, WhatsApp) are never
+                      shared automatically — they only appear if you add them to your public profile.
+                    </p>
                   </CardContent>
                 </Card>
               </div>
@@ -575,6 +533,54 @@ const Settings = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Change Email Dialog */}
+      <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Email Address</DialogTitle>
+            <DialogDescription>
+              Enter your new email address. We'll send a confirmation link to both your current and
+              new addresses — your email won't change until you click the link in the new inbox.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label htmlFor="new-email">New email</Label>
+              <Input
+                id="new-email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="confirm-email">Confirm new email</Label>
+              <Input
+                id="confirm-email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                value={confirmEmail}
+                onChange={(e) => setConfirmEmail(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEmailDialog(false)} disabled={emailUpdating}>
+              Cancel
+            </Button>
+            <Button onClick={handleEmailChange} disabled={emailUpdating || !newEmail || !confirmEmail}>
+              {emailUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Send confirmation
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
