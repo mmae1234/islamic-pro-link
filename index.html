@@ -79,8 +79,22 @@
             '</div>';
         }
 
+        // Benign errors that should never trigger the fallback screen.
+        function isBenign(msg) {
+          if (!msg) return false;
+          var s = String(msg);
+          return (
+            s.indexOf('ResizeObserver loop') !== -1 ||
+            s.indexOf('Non-Error promise rejection captured') !== -1 ||
+            s.indexOf('Script error') !== -1
+          );
+        }
+
         window.addEventListener('error', function (e) {
+          // Once the app has booted, let React/its error boundaries handle errors.
+          if (window.__APP_BOOT_OK__) return;
           var msg = (e && e.message) || 'JavaScript error while loading the app';
+          if (isBenign(msg)) return;
           var details = '';
           if (e) {
             details += 'Message: ' + msg + '\n';
@@ -92,7 +106,10 @@
         }, true);
 
         window.addEventListener('unhandledrejection', function (e) {
+          if (window.__APP_BOOT_OK__) return;
           var reason = e && e.reason ? e.reason : '';
+          var msg = reason && reason.message ? reason.message : String(reason);
+          if (isBenign(msg)) return;
           var details = 'Unhandled promise rejection\n\n' + (reason && reason.stack ? reason.stack : String(reason));
           show('App failed during startup.', details);
         });
