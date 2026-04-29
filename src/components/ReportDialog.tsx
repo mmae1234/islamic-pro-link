@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { getErrorMessage } from "@/lib/errors";
 import {
   Dialog,
   DialogContent,
@@ -108,10 +109,10 @@ const ReportDialog = ({
       setSelectedReason('');
       setDetails('');
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message || "Failed to submit report.",
+        description: getErrorMessage(error) || "Failed to submit report.",
         variant: "destructive",
       });
     } finally {

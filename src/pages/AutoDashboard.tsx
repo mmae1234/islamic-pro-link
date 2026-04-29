@@ -27,8 +27,8 @@ const AutoDashboard = () => {
 
         if (!isMounted) return;
 
-        const hasBiz = !!(bizRes as any).data;
-        const role = (profRes as any).data?.role;
+        const hasBiz = !!bizRes.data;
+        const role = profRes.data?.role;
         // SECURITY: Trust only server-side profiles.role (immutable) and owned businesses.
         // Never read account_type from auth.user_metadata or localStorage — both are user-mutable.
         const isBusiness = hasBiz || role === 'business';

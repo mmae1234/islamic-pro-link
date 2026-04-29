@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
+import { getErrorMessage } from '@/lib/errors';
 
 interface MentorshipRequest {
   id: string;
@@ -87,11 +88,11 @@ const MentorshipRequests = () => {
         .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
 
       setRequests(data);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error loading requests:', error);
       toast({
         title: "Error loading requests",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     } finally {
@@ -117,10 +118,10 @@ const MentorshipRequests = () => {
       });
 
       loadRequests();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error updating request",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     } finally {
@@ -162,10 +163,10 @@ const MentorshipRequests = () => {
         notes: ''
       });
       loadRequests();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error scheduling session",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     } finally {

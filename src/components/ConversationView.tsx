@@ -12,6 +12,7 @@ import { Send, ArrowLeft, Trash2, Archive, Flag } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import ReportDialog from '@/components/ReportDialog';
+import { getErrorMessage } from "@/lib/errors";
 
 interface Message {
   id: string;
@@ -74,7 +75,9 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
         },
         (payload) => {
           // Only refresh if the new message is from our current partner.
-          if ((payload.new as any)?.sender_id === partnerId) {
+          // payload.new is the inserted row from the `messages` table.
+          const newRow = payload.new as { sender_id?: string } | null;
+          if (newRow?.sender_id === partnerId) {
             loadConversation();
             markAllAsRead();
           }
@@ -160,10 +163,10 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
         title: "Message deleted",
         description: "The message has been deleted.",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message || "Failed to delete message.",
+        description: getErrorMessage(error) || "Failed to delete message.",
         variant: "destructive",
       });
     } finally {
@@ -186,10 +189,10 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
         title: "Message archived",
         description: "The message has been archived.",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message || "Failed to archive message.",
+        description: getErrorMessage(error) || "Failed to archive message.",
         variant: "destructive",
       });
     }
@@ -211,10 +214,10 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
         title: "Message reported",
         description: "The message has been reported to moderators.",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message || "Failed to report message.",
+        description: getErrorMessage(error) || "Failed to report message.",
         variant: "destructive",
       });
     }
@@ -242,10 +245,10 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
 
       setNewMessage('');
       await loadConversation();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message || "Failed to send message.",
+        description: getErrorMessage(error) || "Failed to send message.",
         variant: "destructive",
       });
     } finally {
@@ -291,10 +294,10 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
         description: "The conversation has been deleted.",
       });
       onBack();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     }

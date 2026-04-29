@@ -17,6 +17,10 @@ interface Notification {
   description: string;
   read: boolean;
   created_at: string;
+  // `data` is an intentionally-polymorphic payload — its shape depends on the
+  // notification `type` (a session payload looks different from a message one).
+  // Narrow at the call site, not here.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data?: any;
 }
 

@@ -42,7 +42,7 @@ const Header = () => {
         .maybeSingle()
     ]).then(([bizRes, profRes]) => {
       if (!isMounted) return;
-      const biz = (bizRes as any).data;
+      const biz = bizRes.data;
       if (biz) {
         setBusinessId(biz.id);
         setBusinessName(biz.name ?? null);
@@ -51,7 +51,7 @@ const Header = () => {
         setBusinessName(null);
       }
       // SECURITY: Only trust server-side profiles.role; user_metadata is user-mutable.
-      setIsBusiness(((profRes as any).data)?.role === 'business');
+      setIsBusiness(profRes.data?.role === 'business');
     });
     return () => { isMounted = false; };
   }, [user]);

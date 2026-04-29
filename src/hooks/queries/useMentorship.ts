@@ -1,6 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { qk } from "./keys";
+import type { FnRow } from "./types";
+
+type DirectoryRow = FnRow<"list_professional_directory">;
 
 export type MentorProfile = {
   user_id: string;
@@ -63,11 +66,11 @@ export function useMentors(userId: string | undefined) {
       );
 
       return (mentorsData ?? [])
-        .filter((m: any) => !excluded.has(m.user_id))
-        .map((m: any) => ({
+        .filter((m: DirectoryRow) => !excluded.has(m.user_id))
+        .map((m: DirectoryRow) => ({
           ...m,
           profiles: { first_name: m.first_name, last_name: m.last_name },
-        })) as MentorProfile[];
+        })) as unknown as MentorProfile[];
     },
   });
 }
@@ -121,7 +124,7 @@ export function useMentorshipRequests(userId: string | undefined) {
             .in("user_id", mentorIds),
         ]);
 
-      return requestsData.map((request: any) => ({
+      return requestsData.map((request) => ({
         ...request,
         profiles:
           menteesData?.find((m) => m.user_id === request.mentee_id) ?? {
@@ -139,7 +142,7 @@ export function useMentorshipRequests(userId: string | undefined) {
             occupation: "",
           }),
         },
-      })) as MentorshipRequest[];
+      })) as unknown as MentorshipRequest[];
     },
   });
 }

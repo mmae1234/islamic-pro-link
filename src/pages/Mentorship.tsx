@@ -228,7 +228,7 @@ const Mentorship = () => {
           setSelectedMentor(null);
           setRequestMessage("");
         },
-        onError: (error: any) =>
+        onError: (error: Error) =>
           toast({
             title: "Could not send request",
             description: error?.message || "Please try again later.",
@@ -247,7 +247,7 @@ const Mentorship = () => {
             title: "Request updated",
             description: `Request ${status} successfully.`,
           }),
-        onError: (err: any) =>
+        onError: (err: Error) =>
           toast({
             title: "Error",
             description: err?.message || "Failed to update request.",
@@ -263,7 +263,7 @@ const Mentorship = () => {
           title: "Request cancelled",
           description: "Your mentorship request has been cancelled successfully.",
         }),
-      onError: (err: any) =>
+      onError: (err: Error) =>
         toast({
           title: "Error",
           description: err?.message || "Failed to cancel request.",
@@ -280,7 +280,7 @@ const Mentorship = () => {
           title: "Disconnected successfully",
           description: `You have disconnected from ${mentorName}.`,
         }),
-      onError: (err: any) =>
+      onError: (err: Error) =>
         toast({
           title: "Error",
           description: err?.message || "Failed to disconnect from mentor.",

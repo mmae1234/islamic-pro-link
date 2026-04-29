@@ -17,8 +17,24 @@ const SKILLS_OPTIONS = [
   'Healthcare', 'Education', 'Consulting', 'Sales', 'HR', 'Legal', 'Engineering'
 ];
 
+export type SearchFilterValues = {
+  searchTerm: string;
+  country: string;
+  stateProvince: string;
+  sector: string;
+  occupation: string;
+  universities: string[];
+  languages: string[];
+  skills: string[];
+  gender: string;
+  isMentor: boolean;
+  isSeekingMentor: boolean;
+  experienceMin: string;
+  experienceMax: string;
+};
+
 interface SearchFiltersProps {
-  onSearch: (filters: any) => void;
+  onSearch: (filters: SearchFilterValues) => void;
   loading?: boolean;
 }
 

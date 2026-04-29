@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Ban } from 'lucide-react';
+import { getErrorMessage } from "@/lib/errors";
 
 interface BlockUserButtonProps {
   targetUserId: string;
@@ -58,7 +59,7 @@ const BlockUserButton = ({
         title: "User blocked",
         description: `${targetUserName} has been blocked successfully.`,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error.code === '23505') {
         toast({
           title: "Already blocked",
@@ -68,7 +69,7 @@ const BlockUserButton = ({
       } else {
         toast({
           title: "Error blocking user",
-          description: error.message || "Unable to block this user",
+          description: getErrorMessage(error) || "Unable to block this user",
           variant: "destructive",
         });
       }

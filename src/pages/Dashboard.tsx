@@ -10,6 +10,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import type { Tbl } from "@/hooks/queries/types";
+
+type ProfileRow = Tbl<"profiles">;
+type ProfessionalProfileRow = Tbl<"professional_profiles">;
 import { 
   Loader2, 
   User, 
@@ -215,7 +219,10 @@ const Dashboard = () => {
     setPendingRequests(requests || []);
   };
 
-  const calculateProfileCompletion = (profileData: any, professionalData: any) => {
+  const calculateProfileCompletion = (
+    profileData: ProfileRow | null,
+    professionalData: ProfessionalProfileRow | null,
+  ) => {
     const fields = [
       profileData?.first_name,
       profileData?.last_name,
@@ -224,8 +231,8 @@ const Dashboard = () => {
       professionalData?.city,
       professionalData?.sector,
       professionalData?.occupation,
-      professionalData?.skills?.length > 0,
-      professionalData?.experience_years
+      (professionalData?.skills?.length ?? 0) > 0,
+      professionalData?.experience_years,
     ];
 
     const filledFields = fields.filter(field => field).length;

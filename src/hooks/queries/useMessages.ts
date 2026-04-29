@@ -1,22 +1,35 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { qk } from "./keys";
+import type { Tbl, ProfileNameSlice } from "./types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type MessageRow = {
-  id: string;
-  content: string;
-  created_at: string;
-  sender_id: string;
-  recipient_id: string;
-  read_at: string | null;
-  deleted_at?: string | null;
-  sender_profile?: { first_name: string | null; last_name: string | null } | null;
-  recipient_profile?: { first_name: string | null; last_name: string | null } | null;
+/** Base messages row + optional joined sender/recipient name slices. */
+export type MessageRow = Tbl<"messages"> & {
+  sender_profile?: ProfileNameSlice | null;
+  recipient_profile?: ProfileNameSlice | null;
 };
+
+/** Embedded payload from a `select(... profiles!fk(first_name,last_name))` query. */
+type EmbeddedNamePayload = ProfileNameSlice | ProfileNameSlice[] | null;
+
+/** Conversations row joined with both sides' name slices (raw PostgREST shape). */
+type ConversationJoinedRow = Pick<
+  Tbl<"conversations">,
+  "id" | "user_a" | "user_b" | "status" | "updated_at"
+> & {
+  profiles_a: EmbeddedNamePayload;
+  profiles_b: EmbeddedNamePayload;
+};
+
+/** A bare message row used purely for last-message + unread-count rollups. */
+type MessageRollupRow = Pick<
+  Tbl<"messages">,
+  "content" | "created_at" | "sender_id" | "recipient_id" | "read_at"
+>;
 
 export type ConversationSummary = {
   partner_id: string;
@@ -65,15 +78,20 @@ export function useConversations(userId: string | undefined) {
       if (convAError) throw convAError;
       if (convBError) throw convBError;
 
-      const conversationsData = [...(convAData ?? []), ...(convBData ?? [])].sort(
+      const conversationsData = ([
+        ...(convAData ?? []),
+        ...(convBData ?? []),
+      ] as unknown as ConversationJoinedRow[]).sort(
         (a, b) => +new Date(b.updated_at) - +new Date(a.updated_at),
       );
 
-      const conversationsList: ConversationSummary[] = conversationsData.map((conv: any) => {
+      const conversationsList: ConversationSummary[] = conversationsData.map((conv) => {
         const isUserA = conv.user_a === userId;
         const partnerId: string = isUserA ? conv.user_b : conv.user_a;
         const rawProfile = isUserA ? conv.profiles_b : conv.profiles_a;
-        const profile = Array.isArray(rawProfile) ? rawProfile[0] : rawProfile;
+        const profile: ProfileNameSlice | null = Array.isArray(rawProfile)
+          ? rawProfile[0] ?? null
+          : rawProfile;
         return {
           partner_id: partnerId,
           partner_name:
@@ -107,9 +125,9 @@ export function useConversations(userId: string | undefined) {
             .limit(500),
         ]);
 
-        const allMessages = [
-          ...((outRes.data ?? []) as any[]),
-          ...((inRes.data ?? []) as any[]),
+        const allMessages: MessageRollupRow[] = [
+          ...((outRes.data ?? []) as MessageRollupRow[]),
+          ...((inRes.data ?? []) as MessageRollupRow[]),
         ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
         for (const conv of conversationsList) {
@@ -203,8 +221,10 @@ export function useArchivedMessages(userId: string | undefined) {
       if (errSent) throw errSent;
       if (errReceived) throw errReceived;
 
-      return [...((archSent ?? []) as any[]), ...((archReceived ?? []) as any[])]
-        .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at)) as MessageRow[];
+      return [
+        ...((archSent ?? []) as unknown as MessageRow[]),
+        ...((archReceived ?? []) as unknown as MessageRow[]),
+      ].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
     },
   });
 }

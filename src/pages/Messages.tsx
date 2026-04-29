@@ -131,7 +131,7 @@ const Messages = () => {
           setNewMessage("");
           setSelectedRecipient(null);
         },
-        onError: (err: any) =>
+        onError: (err: Error) =>
           toast({
             title: "Error",
             description: err?.message || "Failed to send message.",
@@ -148,7 +148,7 @@ const Messages = () => {
           title: "Message deleted",
           description: "The message has been moved to archived.",
         }),
-      onError: (err: any) =>
+      onError: (err: Error) =>
         toast({
           title: "Error",
           description: err?.message || "Failed to delete message.",
@@ -163,7 +163,7 @@ const Messages = () => {
           title: "Conversation deleted",
           description: "The entire conversation has been deleted.",
         }),
-      onError: (err: any) =>
+      onError: (err: Error) =>
         toast({
           title: "Error",
           description: err?.message || "Failed to delete conversation.",
