@@ -165,10 +165,6 @@ const Contact = () => {
                     <span>contact@muslimprosnet.com</span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <Phone className="h-5 w-5 text-primary" />
-                    <span>+1 (555) 123-4567</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
                     <MapPin className="h-5 w-5 text-primary" />
                     <span>Portland, Oregon, USA</span>
                   </div>
@@ -177,23 +173,14 @@ const Contact = () => {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Office Hours</CardTitle>
+                  <CardTitle>Response Time</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>Monday - Friday</span>
-                      <span>9:00 AM - 6:00 PM PST</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Saturday</span>
-                      <span>10:00 AM - 4:00 PM PST</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Sunday</span>
-                      <span>Closed</span>
-                    </div>
-                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    We typically reply to inquiries within 2–3 business days. For urgent
+                    moderation concerns, please use the in-app Report feature so our team
+                    can prioritize it.
+                  </p>
                 </CardContent>
               </Card>
 
