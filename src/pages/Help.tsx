@@ -244,8 +244,48 @@ const Help = () => {
                 <AccordionItem value="item-3">
                   <AccordionTrigger>What is the mentorship program?</AccordionTrigger>
                   <AccordionContent>
-                    Our mentorship program connects experienced professionals with those seeking guidance. 
+                    Our mentorship program connects experienced professionals with those seeking guidance.
                     You can either offer mentorship or request a mentor through the Mentorship section in your dashboard.
+                    To start a mentorship, browse mentors and send a request directly from their profile —
+                    once accepted, you can coordinate sessions through our private messaging.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-beta">
+                  <AccordionTrigger>Why does the site say "Beta"?</AccordionTrigger>
+                  <AccordionContent>
+                    Muslim Professionals Network is in its early beta phase. Features are still being
+                    refined and we're actively gathering feedback from our first users. You may
+                    occasionally see rough edges — please let us know so we can improve.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-feedback">
+                  <AccordionTrigger>How do I share feedback or report an issue?</AccordionTrigger>
+                  <AccordionContent>
+                    Use our dedicated <a href="/feedback" className="text-primary underline">Feedback page</a> —
+                    accessible from the "About" menu in the header and from the footer. You can choose a
+                    category (Bug, Idea, UX, Praise, or General), give an overall rating, and leave a
+                    detailed message. Your feedback goes straight to our team.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-reset-password">
+                  <AccordionTrigger>I forgot my password — how do I reset it?</AccordionTrigger>
+                  <AccordionContent>
+                    On the Login page, click "Forgot password?" and enter your email. You'll receive a
+                    secure link that takes you directly to a reset page where you can set a new password.
+                    If the link doesn't open the reset page, make sure you click it from the same device
+                    and browser, and check that it hasn't expired.
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="item-contact-channels">
+                  <AccordionTrigger>How can I contact the team?</AccordionTrigger>
+                  <AccordionContent>
+                    The best way to reach us is through the <a href="/contact" className="text-primary underline">Contact page</a>
+                    {" "}or the <a href="/feedback" className="text-primary underline">Feedback page</a>.
+                    We currently support written communication only — we do not offer phone support at this time.
                   </AccordionContent>
                 </AccordionItem>
 
