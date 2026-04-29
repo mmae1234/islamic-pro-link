@@ -51,12 +51,16 @@ const AdminReports = () => {
     }
 
     try {
-      // Check if user is admin - you can modify this logic based on your admin system
+      // Use .maybeSingle() — .single() throws if no profile row exists yet,
+      // showing a confusing error instead of a clean Access Denied screen.
+      // Note: this is UI gating only. Real security comes from the
+      // "Admins can view all reports" RLS policy on abuse_reports
+      // (which uses is_admin(auth.uid()) — already in place).
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       setIsAdmin(profile?.role === 'admin');
     } catch (error) {
