@@ -109,9 +109,24 @@ const Businesses = () => {
   }, [user]);
 
   useEffect(() => {
-    const raw = localStorage.getItem('favorite_business_ids');
-    setFavoriteBusinessIds(raw ? JSON.parse(raw) : []);
-  }, []);
+    const loadFavs = async () => {
+      if (!user) {
+        setFavoriteBusinessIds([]);
+        return;
+      }
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('business_id')
+        .eq('user_id', user.id)
+        .not('business_id', 'is', null);
+      if (error) {
+        console.error('Failed to load business favorites:', error);
+        return;
+      }
+      setFavoriteBusinessIds((data || []).map((r: any) => r.business_id).filter(Boolean));
+    };
+    loadFavs();
+  }, [user]);
 
   const handleSearch = async () => {
     if (!user) {
@@ -143,22 +158,35 @@ const Businesses = () => {
       setLoading(false);
     }
   };
-  const handleFavorite = (id: string, name?: string | null) => {
+
+  const handleFavorite = async (id: string, name?: string | null) => {
+    if (!user) {
+      navigate(`/login?redirect=/businesses`);
+      return;
+    }
+    const wasFav = favoriteBusinessIds.includes(id);
+    // Optimistic update
+    setFavoriteBusinessIds(prev => wasFav ? prev.filter(x => x !== id) : [...prev, id]);
     try {
-      const key = 'favorite_business_ids';
-      const arr = [...favoriteBusinessIds];
-      const index = arr.indexOf(id);
-      if (index === -1) {
-        arr.push(id);
-        toast({ title: 'Added to favorites', description: name ? `${name} saved to your favorites.` : 'Business saved.' });
-      } else {
-        arr.splice(index, 1);
+      if (wasFav) {
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('business_id', id);
+        if (error) throw error;
         toast({ title: 'Removed from favorites', description: name ? `${name} removed from your favorites.` : 'Business removed.' });
+      } else {
+        const { error } = await supabase
+          .from('favorites')
+          .insert({ user_id: user.id, business_id: id });
+        if (error) throw error;
+        toast({ title: 'Added to favorites', description: name ? `${name} saved to your favorites.` : 'Business saved.' });
       }
-      localStorage.setItem(key, JSON.stringify(arr));
-      setFavoriteBusinessIds(arr);
-    } catch {
-      toast({ title: 'Could not update favorite', description: 'Please try again later.', variant: 'destructive' });
+    } catch (e: any) {
+      // Roll back optimistic update
+      setFavoriteBusinessIds(prev => wasFav ? [...prev, id] : prev.filter(x => x !== id));
+      toast({ title: 'Could not update favorite', description: e?.message || 'Please try again later.', variant: 'destructive' });
     }
   };
 
