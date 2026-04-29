@@ -19,6 +19,7 @@ import {
 } from "@/components/EnhancedFormDropdowns";
 import { SearchableMultiSelect } from "@/components/SearchableMultiSelect";
 import { Building2 } from "lucide-react";
+import { validateHttpUrl, validatePhoneNumber } from "@/lib/url-validation";
 
 const LANGUAGES = [
   'Arabic', 'English', 'French', 'Spanish', 'German', 'Italian', 'Portuguese', 'Russian',
@@ -134,6 +135,41 @@ const EditBusinessProfile = () => {
 
     setSaving(true);
     try {
+      const urlFields: Array<[string, string, (v: string) => void]> = [
+        ['Website', website, setWebsite],
+        ['Booking URL', bookingUrl, setBookingUrl],
+        ['Facebook', facebookUrl, setFacebookUrl],
+        ['Instagram', instagramUrl, setInstagramUrl],
+        ['LinkedIn', linkedinUrl, setLinkedinUrl],
+        ['X (Twitter)', twitterUrl, setTwitterUrl],
+        ['YouTube', youtubeUrl, setYoutubeUrl],
+        ['TikTok', tiktokUrl, setTiktokUrl],
+        ['Telegram', telegramUrl, setTelegramUrl],
+      ];
+      const sanitized: Record<string, string> = {};
+      for (const [label, value, setter] of urlFields) {
+        const r = validateHttpUrl(value);
+        if (!r.isValid) {
+          toast({ title: `${label} URL invalid`, description: r.error, variant: 'destructive' });
+          setSaving(false);
+          return;
+        }
+        sanitized[label] = r.sanitized;
+        if (r.sanitized !== value) setter(r.sanitized);
+      }
+      const phoneRes = validatePhoneNumber(phone);
+      if (!phoneRes.isValid) {
+        toast({ title: 'Phone number invalid', description: phoneRes.error, variant: 'destructive' });
+        setSaving(false);
+        return;
+      }
+      const waRes = validatePhoneNumber(whatsappNumber);
+      if (!waRes.isValid) {
+        toast({ title: 'WhatsApp number invalid', description: waRes.error, variant: 'destructive' });
+        setSaving(false);
+        return;
+      }
+
       const { error } = await supabase
         .from('business_accounts')
         .update({
@@ -146,18 +182,18 @@ const EditBusinessProfile = () => {
           state: state || null,
           city: city || null,
           email: email || null,
-          phone: phone || null,
-          website: website || null,
-          booking_url: bookingUrl || null,
+          phone: phoneRes.sanitized || null,
+          website: sanitized['Website'] || null,
+          booking_url: sanitized['Booking URL'] || null,
           languages: languages.length > 0 ? languages : null,
-          facebook_url: facebookUrl || null,
-          instagram_url: instagramUrl || null,
-          linkedin_url: linkedinUrl || null,
-          twitter_url: twitterUrl || null,
-          youtube_url: youtubeUrl || null,
-          tiktok_url: tiktokUrl || null,
-          whatsapp_number: whatsappNumber || null,
-          telegram_url: telegramUrl || null,
+          facebook_url: sanitized['Facebook'] || null,
+          instagram_url: sanitized['Instagram'] || null,
+          linkedin_url: sanitized['LinkedIn'] || null,
+          twitter_url: sanitized['X (Twitter)'] || null,
+          youtube_url: sanitized['YouTube'] || null,
+          tiktok_url: sanitized['TikTok'] || null,
+          whatsapp_number: waRes.sanitized || null,
+          telegram_url: sanitized['Telegram'] || null,
           status: 'published', // Auto-publish when saving
         })
         .eq('id', accountId);

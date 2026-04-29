@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Upload, X, Loader2 } from 'lucide-react';
+import { compressImage } from '@/lib/image-compress';
 
 interface ImageUploadProps {
   currentImageUrl?: string;
@@ -50,18 +51,22 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         throw new Error('Please select an image file');
       }
 
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        throw new Error('Image must be smaller than 5MB');
+      if (file.size > 10 * 1024 * 1024) { // 10MB pre-compression cap
+        throw new Error('Image must be smaller than 10MB');
       }
 
+      // Client-side compression to keep storage + bandwidth small
+      const processed = await compressImage(file, { maxDimension: 1024, quality: 0.82 });
+
       // Upload to Supabase Storage
-      const fileExt = file.name.split('.').pop();
+      const fileExt = (processed.type === 'image/webp' ? 'webp' : 'jpg');
       const fileName = `${user.id}/avatar.${fileExt}`;
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(fileName, file, {
+        .upload(fileName, processed, {
           upsert: true, // Replace existing file
+          contentType: processed.type,
         });
 
       if (uploadError) {
