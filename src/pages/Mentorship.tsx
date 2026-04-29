@@ -792,6 +792,48 @@ const Mentorship = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Schedule session dialog */}
+      <Dialog open={!!scheduleTarget} onOpenChange={(open) => { if (!open) setScheduleTarget(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Schedule Mentorship Session</DialogTitle>
+            <DialogDescription>
+              Pick a date and time. You can optionally include a meeting link and notes.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="schedule-date">Date</Label>
+                <Input id="schedule-date" type="date" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="schedule-time">Time</Label>
+                <Input id="schedule-time" type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="schedule-duration">Duration (minutes)</Label>
+              <Input id="schedule-duration" type="number" min="15" step="15" value={scheduleDuration} onChange={(e) => setScheduleDuration(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="schedule-link">Meeting link (optional)</Label>
+              <Input id="schedule-link" placeholder="Zoom, Google Meet, etc." value={scheduleMeetingLink} onChange={(e) => setScheduleMeetingLink(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="schedule-notes">Notes (optional)</Label>
+              <Textarea id="schedule-notes" rows={3} value={scheduleNotes} onChange={(e) => setScheduleNotes(e.target.value)} />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setScheduleTarget(null)} disabled={schedulingSession}>Cancel</Button>
+              <Button onClick={submitScheduleSession} disabled={schedulingSession}>
+                {schedulingSession ? "Scheduling..." : "Schedule Session"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Disconnect confirmation */}
       <AlertDialog open={!!disconnectTarget} onOpenChange={(open) => !open && setDisconnectTarget(null)}>
         <AlertDialogContent>
