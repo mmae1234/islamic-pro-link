@@ -66,6 +66,19 @@ const Hero = () => {
               build connections, and advance your career while staying true to your values.
             </p>
 
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/30 bg-primary-foreground/10 backdrop-blur-sm px-3 py-1.5 text-xs sm:text-sm text-primary-foreground">
+              <span className="inline-flex items-center rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-accent-foreground">
+                Beta
+              </span>
+              <span>
+                We're just getting started —{" "}
+                <Link to="/feedback" className="underline underline-offset-2 hover:text-accent">
+                  share your feedback
+                </Link>
+                .
+              </span>
+            </div>
+
             <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 justify-center lg:justify-start pt-2">
               <Button variant="accent" size="lg" className="font-semibold hover:shadow-glow w-full sm:w-auto text-sm sm:text-base" asChild>
                 <Link to={user ? "/search" : "/auth-gate"}>
