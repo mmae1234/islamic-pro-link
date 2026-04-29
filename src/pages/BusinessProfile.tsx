@@ -89,6 +89,23 @@ const [favoriteBusinessIds, setFavoriteBusinessIds] = useState<string[]>([]);
     if (id) setSeo('Business Profile – Muslim Pros', 'View business details, services, and team', canonical);
   }, [id, canonical]);
 
+  // Load this user's business favorites from DB
+  useEffect(() => {
+    const loadFavs = async () => {
+      if (!user) {
+        setFavoriteBusinessIds([]);
+        return;
+      }
+      const { data } = await supabase
+        .from('favorites')
+        .select('business_id')
+        .eq('user_id', user.id)
+        .not('business_id', 'is', null);
+      setFavoriteBusinessIds((data || []).map((r: any) => r.business_id).filter(Boolean));
+    };
+    loadFavs();
+  }, [user]);
+
   useEffect(() => {
     const load = async () => {
       if (!id) return;
