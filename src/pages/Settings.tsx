@@ -533,6 +533,54 @@ const Settings = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Change Email Dialog */}
+      <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Email Address</DialogTitle>
+            <DialogDescription>
+              Enter your new email address. We'll send a confirmation link to both your current and
+              new addresses — your email won't change until you click the link in the new inbox.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label htmlFor="new-email">New email</Label>
+              <Input
+                id="new-email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="confirm-email">Confirm new email</Label>
+              <Input
+                id="confirm-email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                value={confirmEmail}
+                onChange={(e) => setConfirmEmail(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEmailDialog(false)} disabled={emailUpdating}>
+              Cancel
+            </Button>
+            <Button onClick={handleEmailChange} disabled={emailUpdating || !newEmail || !confirmEmail}>
+              {emailUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Send confirmation
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
