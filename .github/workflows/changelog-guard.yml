@@ -15,17 +15,21 @@ jobs:
 
       - name: Check if package.json changed
         id: pkg
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          if git diff --name-only origin/${{ github.base_ref }}... | grep -q '^package.json$'; then
-            echo "changed=true" >> $GITHUB_OUTPUT
+          if git diff --name-only "origin/${BASE_REF}..." | grep -q '^package.json$'; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           else
-            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Ensure CHANGELOG.md updated when version changes
         if: steps.pkg.outputs.changed == 'true'
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          if ! git diff --name-only origin/${{ github.base_ref }}... | grep -q '^CHANGELOG.md$'; then
+          if ! git diff --name-only "origin/${BASE_REF}..." | grep -q '^CHANGELOG.md$'; then
             echo "CHANGELOG.md must be updated when package.json changes" >&2
             exit 1
           fi
