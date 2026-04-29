@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react-swc";
 import legacy from "@vitejs/plugin-legacy";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -19,6 +20,26 @@ export default defineConfig(({ mode }) => ({
       targets: ["defaults", "not IE 11"],
     }),
     mode === "development" && componentTagger(),
+    // Sentry source-map upload + release creation. Only registered when
+    // SENTRY_AUTH_TOKEN is present at build time — local dev builds and
+    // forks without secrets skip this step silently.
+    process.env.SENTRY_AUTH_TOKEN &&
+      sentryVitePlugin({
+        org: "tajdeed-tech",
+        project: "mpn",
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        sourcemaps: {
+          // We emit hidden sourcemaps for production (see build.sourcemap below);
+          // upload them so Sentry can symbolicate, then they remain unreferenced
+          // from the deployed bundles.
+          assets: "./dist/**",
+        },
+        // Release name follows VITE_APP_VERSION when set; otherwise the plugin
+        // auto-generates one from the git commit.
+        release: process.env.VITE_APP_VERSION
+          ? { name: process.env.VITE_APP_VERSION }
+          : undefined,
+      }),
   ].filter(Boolean),
   resolve: {
     alias: {

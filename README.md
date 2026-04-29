@@ -60,6 +60,36 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Error tracking (Sentry)
+
+Frontend errors are reported to Sentry via [`src/lib/sentry.ts`](./src/lib/sentry.ts). Initialization is **opt-in** — the client is a complete no-op unless `VITE_SENTRY_DSN` is set, so local dev and forks build and run without any Sentry account.
+
+### Environment variables
+
+Build-time (read by Vite — must be prefixed `VITE_`):
+
+| Var | Required | Notes |
+|---|---|---|
+| `VITE_SENTRY_DSN` | for Sentry to be active | Public DSN. Safe to commit to `.env`. Format: `https://<key>@o<org>.ingest.sentry.io/<project>` |
+| `VITE_APP_VERSION` | optional | Tags events with a release. If omitted, events are released-untagged. |
+
+Runtime-only (used by `@sentry/vite-plugin` during `npm run build` to upload source maps and create releases):
+
+| Var | Required | Notes |
+|---|---|---|
+| `SENTRY_AUTH_TOKEN` | only for source-map upload | Read & Write scope. Configured in Lovable runtime secrets — **do not** commit. The plugin no-ops silently when this is unset. |
+
+`VITE_SENTRY_ORG` and `VITE_SENTRY_PROJECT` are not consumed by the runtime client (the org/project are hard-coded in `vite.config.ts` for the upload step).
+
+### What's reported
+
+- Uncaught render errors caught by `GlobalErrorBoundary`, `ErrorBoundary`, and `LazyRouteErrorBoundary` (each tagged with `boundary` for filtering).
+- 10% transaction sampling (`tracesSampleRate: 0.1`).
+- Replay on errors only (`replaysOnErrorSampleRate: 1.0`, session replay disabled).
+- User context: **id only** — no email, no name (`sendDefaultPii: false`).
+- Drops events when `navigator.onLine === false`.
+- Email-shaped strings are scrubbed from `extra` and breadcrumb messages.
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/8e0ed7b7-0ffc-4e43-978c-3b3c5a047199) and click on Share -> Publish.

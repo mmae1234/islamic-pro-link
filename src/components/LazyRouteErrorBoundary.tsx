@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Home } from 'lucide-react';
+import { captureException } from '@/lib/sentry';
 
 interface Props {
   children: ReactNode;
@@ -23,6 +24,14 @@ class LazyRouteErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('LazyRouteErrorBoundary caught error:', error, errorInfo);
+    // Lazy chunk-load failures show up here; tagging them lets us split out
+    // network/CDN issues from genuine runtime bugs in dashboards.
+    const isModuleError =
+      /module|import|script|chunk|loading css/i.test(error?.message ?? '');
+    captureException(error, {
+      tags: { boundary: 'lazy-route', module_load_failure: String(isModuleError) },
+      extra: { componentStack: errorInfo.componentStack },
+    });
   }
 
   handleRetry = () => {
