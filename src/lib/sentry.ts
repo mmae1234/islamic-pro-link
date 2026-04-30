@@ -65,6 +65,18 @@ export function initSentry(): void {
     release,
     sendDefaultPii: false,
 
+    // Known-harmless noise we never want to page on.
+    // - Supabase gotrue-js auth lock contention: the library auto-recovers by
+    //   forcefully re-acquiring the lock; no user impact.
+    // - ResizeObserver loop notices: benign browser warning.
+    ignoreErrors: [
+      "AbortError: Lock was stolen by another request",
+      "Lock was stolen by another request",
+      /Lock .* was not released within \d+ms/i,
+      "ResizeObserver loop limit exceeded",
+      "ResizeObserver loop completed with undelivered notifications",
+    ],
+
     integrations: [
       Sentry.browserTracingIntegration(),
       Sentry.replayIntegration({
