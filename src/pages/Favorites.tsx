@@ -113,18 +113,18 @@ const Favorites = () => {
           </div>
 
           <Tabs defaultValue="professionals" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="professionals" className="flex items-center gap-2">
-                <Heart className="w-4 h-4" />
-                Favorite Professionals ({favoriteProfessionals.length})
+            <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto gap-1 sm:gap-0">
+              <TabsTrigger value="professionals" className="flex items-center justify-center gap-2 w-full text-xs sm:text-sm whitespace-normal sm:whitespace-nowrap py-2">
+                <Heart className="w-4 h-4 shrink-0" />
+                <span className="truncate">Professionals ({favoriteProfessionals.length})</span>
               </TabsTrigger>
-              <TabsTrigger value="mentors" className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Mentorship Connections ({favoriteMentors.length})
+              <TabsTrigger value="mentors" className="flex items-center justify-center gap-2 w-full text-xs sm:text-sm whitespace-normal sm:whitespace-nowrap py-2">
+                <Users className="w-4 h-4 shrink-0" />
+                <span className="truncate">Mentorship ({favoriteMentors.length})</span>
               </TabsTrigger>
-              <TabsTrigger value="businesses" className="flex items-center gap-2">
-                <Briefcase className="w-4 h-4" />
-                Favorite Businesses ({favoriteBusinesses.length})
+              <TabsTrigger value="businesses" className="flex items-center justify-center gap-2 w-full text-xs sm:text-sm whitespace-normal sm:whitespace-nowrap py-2">
+                <Briefcase className="w-4 h-4 shrink-0" />
+                <span className="truncate">Businesses ({favoriteBusinesses.length})</span>
               </TabsTrigger>
             </TabsList>
 
