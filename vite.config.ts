@@ -67,12 +67,46 @@ export default defineConfig(({ mode }) => ({
     },
     rollupOptions: {
       output: {
-        // Split the heavy country-state-city dataset into its own chunks so the
-        // 8 MB city dataset only loads when a city dropdown is opened.
+        // Vendor + dataset chunking. The csc-* rules MUST stay first because
+        // the modulePreload filter above relies on those exact chunk names —
+        // see the comment block above for why.
         manualChunks(id) {
+          // Heavy dataset — kept lazy by csc-lazy.ts dynamic imports.
           if (id.includes("country-state-city/lib/city")) return "csc-city";
           if (id.includes("country-state-city/lib/state")) return "csc-state";
           if (id.includes("country-state-city/lib/country")) return "csc-country";
+
+          if (!id.includes("node_modules")) return undefined;
+
+          // React core — used on every route, perfect long-cache candidate.
+          if (
+            id.includes("/node_modules/react/") ||
+            id.includes("/node_modules/react-dom/") ||
+            id.includes("/node_modules/scheduler/")
+          ) {
+            return "vendor-react";
+          }
+
+          // Router — small but landing-only paths still pay for it.
+          if (id.includes("/node_modules/react-router")) return "vendor-router";
+
+          // Supabase — only the landing page touches it via AuthContext, but
+          // every authenticated route uses it heavily. Split so cold-loads
+          // amortize across routes and updates don't bust the React vendor.
+          if (id.includes("/node_modules/@supabase/")) return "vendor-supabase";
+
+          // React Query — used on every page-level data fetch hook.
+          if (id.includes("/node_modules/@tanstack/")) return "vendor-query";
+
+          // Sentry — heavy SDK; should be its own chunk so the source-map
+          // upload step still walks ./dist/** cleanly. Replay + browser
+          // tracing are the bulk; isolating them avoids polluting React vendor.
+          if (id.includes("/node_modules/@sentry/")) return "vendor-sentry";
+
+          // Radix primitives — most pages eventually pull a handful in. Keep
+          // them out of the per-route chunks so the same ~30 KB doesn't get
+          // duplicated across Search/Profile/Settings/etc.
+          if (id.includes("/node_modules/@radix-ui/")) return "vendor-radix";
         },
       },
     },

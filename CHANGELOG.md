@@ -24,6 +24,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Build
 - `terser` added as a `devDependency` so `@vitejs/plugin-legacy` minification works on local builds without `--legacy-peer-deps` gymnastics.
 
+### Performance
+- Vendor chunk splitting in `vite.config.ts`: `vendor-react`, `vendor-router`, `vendor-supabase`, `vendor-query`, `vendor-radix`, and `vendor-sentry` are now their own immutable chunks so dependency updates don't bust per-route caches.
+- Sentry SDK is now dynamic-imported inside `initSentry()`. The wrapper queues exceptions and user-context changes that arrive before the import resolves and drains them once it does. Removes the ~89 KB gzip Sentry bundle from the landing critical path.
+- `NotificationCenter` is `React.lazy()`-loaded in `Header.tsx` since it only ever renders when a user is signed in. Wrapped in `<Suspense fallback={null}>`.
+- Landing-route initial JS: **229.23 KB → 173.50 KB gzip** (24% reduction). No `csc-*`, dashboard, or form-component chunks fetched on `/`.
+
 ## [1.4.1] - 2025-08-12
 ### Fixed
 - Minor UI adjustments and copy updates following security hardening.
