@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -10,8 +10,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Menu, X, User, Search, MessageCircle, LogOut, Settings, Heart } from "lucide-react";
-import NotificationCenter from "./NotificationCenter";
 import { supabase } from "@/integrations/supabase/client";
+
+// NotificationCenter is only ever rendered when a user is signed in. Lazy-load
+// so its Radix Popover/ScrollArea + realtime subscription code stay out of the
+// landing entry chunk.
+const NotificationCenter = lazy(() => import("./NotificationCenter"));
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -166,7 +170,9 @@ const Header = () => {
                     <MessageCircle className="w-4 h-4" />
                   </Link>
                 </Button>
-                <NotificationCenter />
+                <Suspense fallback={null}>
+                  <NotificationCenter />
+                </Suspense>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="relative h-9 w-9 p-0">

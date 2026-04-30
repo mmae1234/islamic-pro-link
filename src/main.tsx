@@ -4,10 +4,11 @@ import App from './App.tsx'
 import './index.css'
 import { initSentry } from './lib/sentry'
 
-// Initialize Sentry as early as possible so failures during initial render
-// (e.g. iOS WebKit quirks below) are captured. Internally a no-op when
-// VITE_SENTRY_DSN is unset.
-initSentry();
+// Fire-and-forget Sentry bring-up. The SDK is dynamic-imported inside
+// initSentry(), which keeps the ~273 KB bundle out of the landing entry chunk.
+// Any exceptions thrown during initial render are queued by the wrapper and
+// drained once init resolves. No-op when VITE_SENTRY_DSN is unset.
+void initSentry();
 
 console.log("Starting app initialization...");
 
