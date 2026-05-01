@@ -254,13 +254,10 @@ async function sendDigest(period: "Weekly" | "Monthly", windowDays: number) {
 
 serve(async (req) => {
   try {
-    // Auth: require the service role key as a Bearer token. pg_cron is
-    // configured to send this header, and it is never exposed to clients.
-    const expected = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const authHeader = req.headers.get("authorization") ?? "";
-    const provided = authHeader.toLowerCase().startsWith("bearer ")
-      ? authHeader.slice(7).trim()
-      : "";
+    // Auth: require the shared DIGEST_SECRET in the x-digest-secret header.
+    // pg_cron reads this value from Supabase Vault and sends it on each call.
+    const expected = Deno.env.get("DIGEST_SECRET");
+    const provided = req.headers.get("x-digest-secret") ?? "";
     if (!expected || provided !== expected) {
       return new Response(
         JSON.stringify({ success: false, error: "Forbidden" }),
