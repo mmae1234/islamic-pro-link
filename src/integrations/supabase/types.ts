@@ -623,24 +623,18 @@ export type Database = {
       profile_views: {
         Row: {
           id: string
-          ip_address: unknown
-          user_agent: string | null
           viewed_at: string
           viewed_profile_id: string
           viewer_id: string | null
         }
         Insert: {
           id?: string
-          ip_address?: unknown
-          user_agent?: string | null
           viewed_at?: string
           viewed_profile_id: string
           viewer_id?: string | null
         }
         Update: {
           id?: string
-          ip_address?: unknown
-          user_agent?: string | null
           viewed_at?: string
           viewed_profile_id?: string
           viewer_id?: string | null
