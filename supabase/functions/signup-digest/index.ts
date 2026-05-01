@@ -254,6 +254,20 @@ async function sendDigest(period: "Weekly" | "Monthly", windowDays: number) {
 
 serve(async (req) => {
   try {
+    // Auth: require the service role key as a Bearer token. pg_cron is
+    // configured to send this header, and it is never exposed to clients.
+    const expected = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const authHeader = req.headers.get("authorization") ?? "";
+    const provided = authHeader.toLowerCase().startsWith("bearer ")
+      ? authHeader.slice(7).trim()
+      : "";
+    if (!expected || provided !== expected) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Forbidden" }),
+        { status: 403, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
     let mode: "weekly" | "monthly" | "auto" = "auto";
     let force = false;
     if (req.method === "POST") {

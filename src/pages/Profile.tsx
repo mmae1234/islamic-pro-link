@@ -72,7 +72,6 @@ const Profile = () => {
         await supabase.from("profile_views").insert({
           viewer_id: user.id,
           viewed_profile_id: userId,
-          user_agent: navigator.userAgent,
         });
       } catch (err) {
         console.error("Failed to track profile view:", err);
