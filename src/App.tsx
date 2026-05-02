@@ -9,17 +9,54 @@ import GlobalErrorBoundary from "@/components/GlobalErrorBoundary";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import LazyRouteErrorBoundary from "@/components/LazyRouteErrorBoundary";
 
-// Helper function to create lazy imports with retry logic
+// Detects dynamic-import / chunk-load failures across browsers (Chrome,
+// Safari/WebKit "Importing a module script failed", Firefox, etc.).
+const isChunkLoadError = (err: unknown): boolean => {
+  const msg = (err as { message?: string } | null)?.message ?? "";
+  const name = (err as { name?: string } | null)?.name ?? "";
+  return (
+    /Loading chunk \d+ failed/i.test(msg) ||
+    /Loading CSS chunk/i.test(msg) ||
+    /Failed to fetch dynamically imported module/i.test(msg) ||
+    /Importing a module script failed/i.test(msg) ||
+    /error loading dynamically imported module/i.test(msg) ||
+    name === "ChunkLoadError"
+  );
+};
+
+// Helper function to create lazy imports with retry logic.
+// On hard chunk-load failures (typically caused by a redeploy invalidating
+// hashed filenames while the user still has the old index.html cached), we
+// force a one-time full page reload so the browser picks up the new HTML
+// and fresh chunk URLs. A sessionStorage flag prevents reload loops.
+const RELOAD_FLAG = "__chunk_reload_attempted__";
+
 const lazyWithRetry = (importFn: () => Promise<any>, retries = 3) => {
   return React.lazy(() => {
     const tryImport = async (attempt: number): Promise<any> => {
       try {
-        return await importFn();
+        const mod = await importFn();
+        // Successful load — clear the reload guard so a future stale-deploy
+        // event can trigger another reload.
+        try { sessionStorage.removeItem(RELOAD_FLAG); } catch { /* ignore */ }
+        return mod;
       } catch (error) {
         if (attempt < retries) {
-          // Wait a bit before retrying
           await new Promise(resolve => setTimeout(resolve, 500 * attempt));
           return tryImport(attempt + 1);
+        }
+        // All retries exhausted. If this looks like a stale-deploy chunk
+        // miss and we haven't already reloaded, force a fresh load.
+        if (isChunkLoadError(error) && typeof window !== "undefined") {
+          let alreadyReloaded = false;
+          try { alreadyReloaded = sessionStorage.getItem(RELOAD_FLAG) === "1"; } catch { /* ignore */ }
+          if (!alreadyReloaded) {
+            try { sessionStorage.setItem(RELOAD_FLAG, "1"); } catch { /* ignore */ }
+            window.location.reload();
+            // Return a never-resolving promise so React Suspense keeps the
+            // fallback up while the page reloads.
+            return new Promise(() => {});
+          }
         }
         throw error;
       }
