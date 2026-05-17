@@ -1,0 +1,25 @@
+# Muslim Professionals Network
+
+> A global professional network helping Muslims connect, find mentors, discover Muslim-owned businesses, and grow their careers while staying true to their faith.
+
+## Pages
+
+- [Home](/): Overview of the network and how to join.
+- [About](/about): Mission, story, and community values.
+- [Search Professionals](/search): Directory of Muslim professionals (filters are public; results require login).
+- [Businesses](/businesses): Directory of Muslim-owned businesses.
+- [Mentorship](/mentorship): Find and request Muslim mentors.
+- [Organizations](/organizations): Muslim professional organizations.
+- [Scholarships](/scholarships): Scholarship opportunities.
+- [Careers](/careers): Career resources and opportunities.
+- [News](/news): Community news and updates.
+- [Donations](/donations): Support our mission.
+- [Contact](/contact): Reach the team.
+- [Help](/help): Help center and FAQs.
+
+## Optional
+
+- [Login](/login): Sign in.
+- [Signup](/signup): Create an account.
+- [Privacy](/privacy): Privacy policy.
+- [Terms](/terms): Terms of service.

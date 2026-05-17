@@ -25,8 +25,8 @@ const About = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    setSEOTitle("About Us - Muslim Professionals Network | Our Story & Mission");
-    setSEOMeta("description", "Learn about Muslim Professionals Network's mission to empower Muslims in building meaningful careers while staying true to Islamic values. Discover our story and community features.");
+    setSEOTitle("About Muslim Professionals Network | Our Mission");
+    setSEOMeta("description", "Learn how Muslim Professionals Network empowers Muslims to build meaningful careers and community while staying true to Islamic values.");
     setSEOMeta("keywords", "Muslim Professionals Network about, Islamic networking story, Muslim career platform mission, halal professional community");
   }, []);
 
