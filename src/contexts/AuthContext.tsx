@@ -3,6 +3,7 @@ import { User, AuthError } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { isIOS, hasLocalStorage, withTimeout } from "@/lib/auth-storage";
+import { describeAuthError, isRateLimitError } from "@/lib/auth-errors";
 import { setSentryUser } from "@/lib/sentry";
 
 interface AuthContextType {
@@ -169,10 +170,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "Please check your email to verify your account.",
       });
     } catch (error) {
-      const authError = error as AuthError;
+      const limited = isRateLimitError(error);
       toast({
-        title: "Registration failed",
-        description: authError.message,
+        title: limited ? "Slow down a moment" : "Registration failed",
+        description: describeAuthError(error, "signUp"),
         variant: "destructive",
       });
       throw error;
@@ -188,10 +189,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "You have been successfully logged in.",
       });
     } catch (error) {
-      const authError = error as AuthError;
+      const limited = isRateLimitError(error);
       toast({
-        title: "Login failed",
-        description: authError.message,
+        title: limited ? "Slow down a moment" : "Login failed",
+        description: describeAuthError(error, "signIn"),
         variant: "destructive",
       });
       throw error;
@@ -242,10 +243,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           "This reset link is valid for 60 minutes and can only be used once. Check your email for password reset instructions.",
       });
     } catch (error) {
-      const authError = error as AuthError;
+      const limited = isRateLimitError(error);
       toast({
-        title: "Password reset failed",
-        description: authError.message,
+        title: limited ? "Slow down a moment" : "Password reset failed",
+        description: describeAuthError(error, "resetPassword"),
         variant: "destructive",
       });
       throw error;

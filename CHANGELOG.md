@@ -16,7 +16,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Messages realtime subscription now invalidates query caches via `queryClient.invalidateQueries` instead of manually re-fetching.
 
 ### Fixed
-- N/A
+- Friendly toast copy when Supabase Auth rate-limits a password-reset, signup, or sign-in request — the raw `"You reached the maximum number of …"` string is replaced with actionable guidance ("Too many reset requests. Please wait an hour, or check your inbox — your previous reset email may still be valid.").
 
 ### Removed
 - N/A
