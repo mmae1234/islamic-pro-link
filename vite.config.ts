@@ -40,7 +40,7 @@ export default defineConfig(({ mode }) => ({
           ? { name: process.env.VITE_APP_VERSION }
           : undefined,
       }),
-  ].filter(Boolean),
+  ].filter(Boolean) as PluginOption[],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
