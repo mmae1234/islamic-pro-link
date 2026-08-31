@@ -6,6 +6,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, MessageCircle, Book, Users, Shield } from "lucide-react";
+import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
 
 const setSeo = (title: string, description?: string) => {
   document.title = title;
@@ -16,6 +17,7 @@ const setSeo = (title: string, description?: string) => {
 };
 
 const Help = () => {
+  useCanonicalUrl("/help");
   useEffect(() => {
     setSeo('Help Center – Muslim Pros', 'FAQs and help: linking, delinking, business profiles, social links.');
   }, []);

@@ -1,3 +1,4 @@
+import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -22,6 +23,7 @@ import {
 } from "lucide-react";
 
 const About = () => {
+  useCanonicalUrl("/about");
   const { user } = useAuth();
 
   useEffect(() => {

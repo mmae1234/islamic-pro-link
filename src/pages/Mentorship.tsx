@@ -34,6 +34,7 @@ import {
   type MentorshipRequest,
 } from "@/hooks/queries";
 import { supabase } from "@/integrations/supabase/client";
+import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
 
 type AdvancedFilters = {
   searchTerm?: string;
@@ -50,6 +51,7 @@ type AdvancedFilters = {
 };
 
 const Mentorship = () => {
+  useCanonicalUrl("/mentorship");
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();

@@ -1,3 +1,4 @@
+import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
 import { useEffect, useMemo, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -57,6 +58,7 @@ type FormFilters = {
 };
 
 const Businesses = () => {
+  useCanonicalUrl("/businesses");
   // The form state is what the user is editing; `appliedFilters` is what we've
   // committed to the React Query cache via the Search button.
   const [formFilters, setFormFilters] = useState<FormFilters>({

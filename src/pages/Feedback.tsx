@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Lightbulb, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
 
 const setSeo = (title: string, description?: string) => {
   document.title = title;
@@ -39,6 +40,7 @@ const CATEGORY_LABELS: Record<FeedbackCategory, string> = {
 };
 
 const Feedback = () => {
+  useCanonicalUrl("/feedback");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [category, setCategory] = useState<FeedbackCategory | "">("");

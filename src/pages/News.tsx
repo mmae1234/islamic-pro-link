@@ -5,8 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Newspaper, Search, Clock, Tag } from "lucide-react";
+import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
 
 const News = () => {
+  useCanonicalUrl("/news");
   return (
     <div className="min-h-screen bg-background">
       <Header />

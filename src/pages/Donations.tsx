@@ -4,8 +4,10 @@ import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, Target, Users, Zap } from "lucide-react";
+import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
 
 const Donations = () => {
+  useCanonicalUrl("/donations");
   const [selectedAmount, setSelectedAmount] = useState<string>('');
 
   useEffect(() => {

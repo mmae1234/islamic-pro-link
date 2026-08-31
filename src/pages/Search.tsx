@@ -1,3 +1,4 @@
+import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -19,6 +20,7 @@ import {
 } from "@/hooks/queries";
 
 const Search = () => {
+  useCanonicalUrl("/search");
   const { user } = useAuth();
   const { toast } = useToast();
 

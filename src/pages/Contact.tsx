@@ -10,8 +10,10 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Mail, MapPin, Lightbulb } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
 
 const Contact = () => {
+  useCanonicalUrl("/contact");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");

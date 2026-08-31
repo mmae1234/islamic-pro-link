@@ -1,9 +1,11 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
 
 const LAST_UPDATED = "April 29, 2026";
 
 const Terms = () => {
+  useCanonicalUrl("/terms");
   return (
     <div className="min-h-screen bg-background">
       <Header />
