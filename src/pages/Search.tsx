@@ -13,12 +13,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Users, Loader2 } from "lucide-react";
 import {
+import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
   useProfessionals,
   type ProfessionalListRow,
   type ProfessionalFilters,
 } from "@/hooks/queries";
 
 const Search = () => {
+  useCanonicalUrl("/search");
   const { user } = useAuth();
   const { toast } = useToast();
 

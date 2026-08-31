@@ -2,8 +2,10 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Building } from "lucide-react";
+import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
 
 const Organizations = () => {
+  useCanonicalUrl("/organizations");
   return (
     <div className="min-h-screen bg-background">
       <Header />

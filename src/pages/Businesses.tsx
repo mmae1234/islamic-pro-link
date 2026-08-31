@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import {
+import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
   useBusinesses,
   useFavoriteBusinessIds,
   useToggleBusinessFavorite,
@@ -57,6 +58,7 @@ type FormFilters = {
 };
 
 const Businesses = () => {
+  useCanonicalUrl("/businesses");
   // The form state is what the user is editing; `appliedFilters` is what we've
   // committed to the React Query cache via the Search button.
   const [formFilters, setFormFilters] = useState<FormFilters>({

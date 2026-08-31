@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { setSEOTitle, setSEOMeta } from "@/lib/utils";
 import { useEffect } from "react";
 import { 
+import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
   Heart, 
   Users, 
   Globe, 
@@ -22,6 +23,7 @@ import {
 } from "lucide-react";
 
 const About = () => {
+  useCanonicalUrl("/about");
   const { user } = useAuth();
 
   useEffect(() => {
