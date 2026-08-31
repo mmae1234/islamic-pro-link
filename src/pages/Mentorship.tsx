@@ -31,7 +31,9 @@ import {
   useCancelMentorshipRequest,
   useDisconnectFromMentor,
   type MentorProfile,
+  type MentorshipRequest,
 } from "@/hooks/queries";
+import { supabase } from "@/integrations/supabase/client";
 
 type AdvancedFilters = {
   searchTerm?: string;

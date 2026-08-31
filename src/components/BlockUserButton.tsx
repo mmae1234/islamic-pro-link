@@ -60,7 +60,7 @@ const BlockUserButton = ({
         description: `${targetUserName} has been blocked successfully.`,
       });
     } catch (error: unknown) {
-      if (error.code === '23505') {
+      if ((error as { code?: string })?.code === '23505') {
         toast({
           title: "Already blocked",
           description: "This user is already blocked.",
