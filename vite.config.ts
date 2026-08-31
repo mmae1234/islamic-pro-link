@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, type PluginOption } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import legacy from "@vitejs/plugin-legacy";
 import path from "path";
