@@ -31,5 +31,15 @@ export const useCanonicalUrl = (path: string) => {
       document.head.appendChild(link);
     }
     link.setAttribute("href", href);
+
+    // Keep og:url self-referencing so social previews match the page.
+    let og = document.querySelector<HTMLMetaElement>('meta[property="og:url"]');
+    if (!og) {
+      og = document.createElement("meta");
+      og.setAttribute("property", "og:url");
+      document.head.appendChild(og);
+    }
+    og.setAttribute("content", href);
   }, [path]);
 };
+
