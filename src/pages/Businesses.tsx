@@ -1,3 +1,4 @@
+import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
 import { useEffect, useMemo, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -17,7 +18,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
   useBusinesses,
   useFavoriteBusinessIds,
   useToggleBusinessFavorite,

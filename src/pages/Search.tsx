@@ -1,3 +1,4 @@
+import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
@@ -13,7 +14,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Users, Loader2 } from "lucide-react";
 import {
-import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
   useProfessionals,
   type ProfessionalListRow,
   type ProfessionalFilters,

@@ -1,3 +1,4 @@
+import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -7,7 +8,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { setSEOTitle, setSEOMeta } from "@/lib/utils";
 import { useEffect } from "react";
 import { 
-import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
   Heart, 
   Users, 
   Globe, 
