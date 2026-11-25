@@ -163,13 +163,18 @@ const ProfileSetup = ({ onComplete }: ProfileSetupProps) => {
           user_id: user.id,
           first_name: firstName,
           last_name: lastName,
-          role: profileData.role,
           avatar_url: avatarUrl
         }, {
           onConflict: 'user_id'
         });
 
       if (profileError) throw profileError;
+
+      // profiles.role is not client-writable; set it via the validated RPC.
+      if (profileData.role) {
+        const { error: roleError } = await supabase.rpc('set_account_type', { _type: profileData.role });
+        if (roleError) throw roleError;
+      }
 
       // Save to professional_profiles for both professionals and visitors who want mentorship
       if (profileData.role === 'professional' || (profileData.role === 'visitor' && profileData.wants_mentorship)) {

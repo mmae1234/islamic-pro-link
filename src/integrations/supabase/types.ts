@@ -215,6 +215,7 @@ export type Database = {
           created_at: string
           id: string
           status: Database["public"]["Enums"]["conversation_status"]
+          requested_by: string | null
           updated_at: string
           user_a: string
           user_b: string
@@ -223,6 +224,7 @@ export type Database = {
           created_at?: string
           id?: string
           status?: Database["public"]["Enums"]["conversation_status"]
+          requested_by?: string | null
           updated_at?: string
           user_a: string
           user_b: string
@@ -231,6 +233,7 @@ export type Database = {
           created_at?: string
           id?: string
           status?: Database["public"]["Enums"]["conversation_status"]
+          requested_by?: string | null
           updated_at?: string
           user_a?: string
           user_b?: string
@@ -943,6 +946,7 @@ export type Database = {
         Args: { _content: string; _recipient_id: string }
         Returns: string
       }
+      set_account_type: { Args: { _type: string }; Returns: undefined }
       update_conversation_status: {
         Args: { _conversation_id: string; _new_status: string }
         Returns: boolean

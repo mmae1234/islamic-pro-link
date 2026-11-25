@@ -42,8 +42,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    // Safe fallback so mobile/error paths don't crash the tree.
-    console.warn("useAuth used outside of AuthProvider, returning guest defaults");
+    // In development, fail loudly: a missing provider otherwise shows a
+    // signed-in user the guest UI and hides the real bug.
+    if (import.meta.env.DEV) {
+      throw new Error("useAuth must be used inside <AuthProvider>");
+    }
+    // In production, keep the safe fallback so mobile/error paths don't crash the tree.
+    console.error("useAuth used outside of AuthProvider, returning guest defaults");
     return guestDefaults;
   }
   return context;

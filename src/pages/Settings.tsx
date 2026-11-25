@@ -180,7 +180,8 @@ const Settings = () => {
           user_id: user.id,
           first_name: firstNameValidation.sanitized,
           last_name: lastNameValidation.sanitized,
-          role: formData.role,
+          // role is intentionally omitted: UPDATE on profiles.role is revoked,
+          // and including it makes the whole upsert fail with a permission error.
           avatar_url: avatarUrl
         }, {
           onConflict: 'user_id'

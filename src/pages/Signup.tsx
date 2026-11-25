@@ -107,8 +107,8 @@ const Signup = () => {
       const { error: metaError } = await supabase.auth.updateUser({ data: { account_type: selected } });
       if (metaError) throw metaError;
 
-      // Update profiles.role
-      const { error: profileError } = await supabase.from('profiles').upsert({ user_id: user.id, role: selected }, { onConflict: 'user_id' });
+      // profiles.role is not client-writable; the RPC validates the value server-side.
+      const { error: profileError } = await supabase.rpc('set_account_type', { _type: selected });
       if (profileError) throw profileError;
 
       // Analytics completion

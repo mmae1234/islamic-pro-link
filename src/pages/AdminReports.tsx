@@ -68,13 +68,14 @@ const AdminReports = () => {
       // Note: this is UI gating only. Real security comes from the
       // "Admins can view all reports" RLS policy on abuse_reports
       // (which uses is_admin(auth.uid()) — already in place).
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('user_id', user.id)
-        .maybeSingle();
+      // profiles.role is only an account type (visitor/professional/business).
+      // Platform admin rights live in user_roles — check them the same way RLS does.
+      const { data: isAdminResult, error: adminError } = await supabase.rpc('is_admin', {
+        _user_id: user.id,
+      });
+      if (adminError) throw adminError;
 
-      setIsAdmin(profile?.role === 'admin');
+      setIsAdmin(isAdminResult === true);
     } catch (error) {
       console.error('Error checking admin status:', error);
       setIsAdmin(false);
