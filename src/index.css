@@ -180,13 +180,34 @@ body {
   transition: all 0.3s var(--transition-smooth);
 }
 
-/* Global link styling using brand accent */
-a {
-  color: hsl(var(--accent));
-  transition: color 0.2s ease;
+/* Global link styling using brand accent.
+   Plain --brand-gold (#E9C46A) is ~1.8:1 on white and fails WCAG AA, so
+   unstyled text links use a darker gold from the same hue (~5.9:1).
+   Kept in @layer base so Tailwind text-* utilities always win. */
+@layer base {
+  :root {
+    --link: 36 78% 30%;
+    --link-hover: 155 100% 21%;
+  }
+  a {
+    color: hsl(var(--link));
+    transition: color 0.2s ease;
+  }
+  a:hover {
+    color: hsl(var(--link-hover));
+  }
 }
-a:hover {
-  color: hsl(var(--brand-gold-600));
+
+/* Respect users who ask the OS for less motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Enhanced mobile text sizes */
