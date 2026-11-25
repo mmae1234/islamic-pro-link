@@ -829,6 +829,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_member_profiles: { Args: { _user_ids: string[] }; Returns: Json[] }
       get_or_create_conversation: {
         Args: { user_a_param: string; user_b_param: string }
         Returns: string
