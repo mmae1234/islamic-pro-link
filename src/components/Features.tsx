@@ -39,7 +39,7 @@ const features = [
   },
   {
     icon: Award,
-    title: "Mentorship Programs",
+    title: "Mentorship",
     description: "Find a mentor for your career, or offer to mentor someone else.",
     color: "text-primary"
   },

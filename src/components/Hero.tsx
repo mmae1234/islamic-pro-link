@@ -9,19 +9,11 @@ const Hero = () => {
   const { user } = useAuth();
   
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary via-primary-glow to-primary">
+    <section className="relative pt-8 pb-14 sm:py-16 lg:py-0 lg:min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary via-primary-glow to-primary">
       {/* iOS-specific viewport fixes */}
       <style>{`
-        @supports (-webkit-touch-callout: none) {
-          .hero-container {
-            min-height: -webkit-fill-available;
-          }
-        }
-        
         @media (max-width: 480px) {
           .hero-container {
-            min-height: 100vh;
-            min-height: 100dvh;
             padding: 0.75rem;
           }
           
@@ -72,7 +64,7 @@ const Hero = () => {
               </span>
               <span>
                 We're just getting started —{" "}
-                <Link to="/feedback" className="underline underline-offset-2 hover:text-accent">
+                <Link to="/feedback" className="font-semibold text-primary-foreground underline underline-offset-2 decoration-2 hover:text-primary-foreground/80">
                   share your feedback
                 </Link>
                 .
@@ -153,8 +145,8 @@ const Hero = () => {
                     <Award className="w-6 h-6 text-primary-glow" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-foreground">Mentorship Programs</h3>
-                    <p className="text-sm text-muted-foreground">Get guidance from experienced Muslim professionals</p>
+                    <h3 className="font-semibold text-foreground">Mentorship</h3>
+                    <p className="text-sm text-muted-foreground">Ask an experienced Muslim professional to mentor you</p>
                   </div>
                 </div>
               </div>
