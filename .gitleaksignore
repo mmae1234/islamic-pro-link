@@ -1,0 +1,6 @@
+# Supabase *anon* (public) key in pg_net calls. It is intentionally public:
+# the same key ships in the website's JavaScript and only grants what Row Level
+# Security allows. Real secrets (service role, Resend, digest secret) are never
+# committed; the digest secret is read from Vault at run time.
+012e3167f77fa1e764fdef9b6d57735b956fce3e:supabase/migrations/20261126090000_member_digest.sql:jwt:37
+759876d94e73f12004081ffbffcaada28289977d:supabase/migrations/20261126090000_member_digest.sql:jwt:37
