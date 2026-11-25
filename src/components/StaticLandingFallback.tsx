@@ -51,7 +51,7 @@ const StaticLandingFallback = () => {
             </h1>
             
             <p className="text-lg md:text-xl text-primary-foreground/90 mb-8 max-w-2xl mx-auto">
-              Join the largest professional network for the Muslim community. Build connections, 
+              A growing network for Muslim professionals. Build connections, 
               find mentors, and grow your career while staying true to your values.
             </p>
 
@@ -73,16 +73,16 @@ const StaticLandingFallback = () => {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4 pt-8 border-t border-primary-foreground/30 mb-8">
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-primary-foreground">10K+</div>
-                <div className="text-sm text-primary-foreground/90">Professionals</div>
+                <div className="text-2xl md:text-3xl font-bold text-primary-foreground">Free</div>
+                <div className="text-sm text-primary-foreground/90">to join</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-primary-foreground">50+</div>
-                <div className="text-sm text-primary-foreground/90">Countries</div>
+                <div className="text-2xl md:text-3xl font-bold text-primary-foreground">1:1</div>
+                <div className="text-sm text-primary-foreground/90">mentorship</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-primary-foreground">200+</div>
-                <div className="text-sm text-primary-foreground/90">Industries</div>
+                <div className="text-2xl md:text-3xl font-bold text-primary-foreground">Private</div>
+                <div className="text-sm text-primary-foreground/90">messaging</div>
               </div>
             </div>
 

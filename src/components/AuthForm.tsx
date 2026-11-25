@@ -97,8 +97,8 @@ useEffect(() => {
           errors.lastName = lastNameValidation.error!;
         }
       }
-      if (password.length < 8) {
-        errors.password = 'Password must be at least 8 characters long';
+      if (password.length < 10) {
+        errors.password = 'Password must be at least 10 characters long';
       }
     }
     
@@ -330,7 +330,7 @@ useEffect(() => {
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder={mode === 'signup' ? "Enter your password (min 8 characters)" : "Enter your password"}
+                      placeholder={mode === 'signup' ? "Enter your password (min 10 characters)" : "Enter your password"}
                       value={password}
                       onChange={(e) => update('password', e.target.value)}
                       className={`pl-9 pr-9 ${validationErrors.password ? 'border-destructive' : ''}`}

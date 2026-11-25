@@ -13,6 +13,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Users, Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import {
   useProfessionals,
   type ProfessionalListRow,
@@ -21,7 +23,7 @@ import {
 
 const Search = () => {
   useCanonicalUrl("/search");
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
 
   const [filters, setFilters] = useState<ProfessionalFilters>({});
@@ -145,7 +147,9 @@ const Search = () => {
     return <ProfileSetup onComplete={handleProfileSetupComplete} />;
   }
 
-  if (hasProfile === undefined) {
+  // Signed-out visitors skip the profile check entirely (it never runs for them),
+  // so only wait on it when someone is signed in.
+  if (authLoading || (user && hasProfile === undefined)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin" />
@@ -163,14 +167,14 @@ const Search = () => {
         {/* Search Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Find Muslim Professionals Network
+            Find Muslim Professionals
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Search and connect with Muslim professionals across various industries and locations worldwide.
           </p>
         </div>
 
-        {!hasProfile && (
+        {user && !hasProfile && (
           <Alert className="mb-8 border-primary/20 bg-primary/5">
             <Users className="h-4 w-4" />
             <AlertDescription>
@@ -182,7 +186,29 @@ const Search = () => {
         {/* Search Filters */}
         <SearchFilters onSearch={handleSearch} loading={isLoading} />
 
+        {/* Signed-out visitors: invite them in instead of showing an empty search */}
+        {!user && (
+          <Card className="shadow-soft mt-8">
+            <CardContent className="p-8 text-center">
+              <Users className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <h2 className="text-xl font-semibold text-foreground mb-2">Sign in to Browse Professionals</h2>
+              <p className="text-muted-foreground mb-4">
+                Create a free account or sign in to search and connect with Muslim professionals.
+              </p>
+              <div className="flex flex-wrap gap-3 justify-center">
+                <Button asChild>
+                  <Link to="/login?redirect=/search">Sign In</Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link to="/signup?redirect=/search">Create Account</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Results */}
+        {user && (
         <div className="mt-8 space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h2 className="text-xl font-semibold text-foreground">
@@ -268,6 +294,7 @@ const Search = () => {
             </div>
           )}
         </div>
+        )}
       </main>
 
       <Footer />
