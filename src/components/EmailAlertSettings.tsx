@@ -18,6 +18,9 @@ const EmailAlertSettings = () => {
   const [enabled, setEnabled] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  // null = column not available yet (migration not applied) -> hide the row
+  const [weekly, setWeekly] = useState<boolean | null>(null);
+  const [savingWeekly, setSavingWeekly] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -31,6 +34,13 @@ const EmailAlertSettings = () => {
       if (cancelled) return;
       if (!error && data) setEnabled(data.email_alerts !== false);
       setLoading(false);
+      const weeklyRes = await supabase
+        .from("profiles")
+        .select("weekly_digest")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      if (!weeklyRes.error && weeklyRes.data) setWeekly(weeklyRes.data.weekly_digest !== false);
     })();
     return () => {
       cancelled = true;
@@ -61,6 +71,33 @@ const EmailAlertSettings = () => {
       description: next
         ? "We'll email you when someone messages you or sends a mentorship request."
         : "You won't get alert emails. You'll still see everything when you log in.",
+    });
+  };
+
+  const handleWeeklyChange = async (next: boolean) => {
+    if (!user) return;
+    const previous = weekly;
+    setWeekly(next);
+    setSavingWeekly(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ weekly_digest: next })
+      .eq("user_id", user.id);
+    setSavingWeekly(false);
+    if (error) {
+      setWeekly(previous);
+      toast({
+        title: "Couldn't save",
+        description: "Your weekly email setting wasn't changed. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+    toast({
+      title: next ? "Weekly email on" : "Weekly email off",
+      description: next
+        ? "We'll email you once a week when new professionals join."
+        : "You won't get the weekly new-members email.",
     });
   };
 
@@ -97,6 +134,26 @@ const EmailAlertSettings = () => {
             />
           )}
         </div>
+        {weekly !== null && (
+          <div className="flex items-start justify-between gap-4 pt-5 mt-5 border-t border-border">
+            <div className="space-y-1">
+              <Label htmlFor="weekly-digest" className="text-base">
+                Weekly new-members email
+              </Label>
+              <p id="weekly-digest-help" className="text-sm text-muted-foreground">
+                Once a week, only when new professionals join, with people in your field first.
+              </p>
+            </div>
+            <Switch
+              id="weekly-digest"
+              aria-describedby="weekly-digest-help"
+              checked={weekly}
+              disabled={savingWeekly}
+              onCheckedChange={handleWeeklyChange}
+              className="shrink-0"
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );
