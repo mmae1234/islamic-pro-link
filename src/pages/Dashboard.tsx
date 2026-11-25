@@ -5,11 +5,11 @@ import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ProfileChecklist, { buildProfileChecklist, type ChecklistItem } from "@/components/ProfileChecklist";
 import type { Tbl } from "@/hooks/queries/types";
 
 type ProfileRow = Tbl<"profiles">;
@@ -63,6 +63,7 @@ const Dashboard = () => {
   const [notifications, setNotifications] = useState<NotificationPreview[]>([]);
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [profileCompletion, setProfileCompletion] = useState(0);
+  const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -223,21 +224,9 @@ const Dashboard = () => {
     profileData: ProfileRow | null,
     professionalData: ProfessionalProfileRow | null,
   ) => {
-    const fields = [
-      profileData?.first_name,
-      profileData?.last_name,
-      professionalData?.bio,
-      professionalData?.country,
-      professionalData?.city,
-      professionalData?.sector,
-      professionalData?.occupation,
-      (professionalData?.skills?.length ?? 0) > 0,
-      professionalData?.experience_years,
-    ];
-
-    const filledFields = fields.filter(field => field).length;
-    const completion = Math.round((filledFields / fields.length) * 100);
-    setProfileCompletion(completion);
+    const items = buildProfileChecklist(profileData, professionalData);
+    setChecklist(items);
+    setProfileCompletion(Math.round((items.filter((i) => i.done).length / items.length) * 100));
   };
 
   const handleMentorshipAction = async (requestId: string, action: 'accept' | 'decline') => {
@@ -335,7 +324,10 @@ const Dashboard = () => {
             
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-8">
-              
+
+              {/* What's missing from the profile (hidden once complete) */}
+              {professionalProfile && checklist.length > 0 && <ProfileChecklist items={checklist} />}
+
               {/* Quick Actions */}
               <Card className="shadow-soft">
                 <CardHeader>
@@ -480,30 +472,6 @@ const Dashboard = () => {
             {/* Sidebar */}
             <div className="space-y-6">
               
-              {/* Profile Completion */}
-              <Card className="shadow-soft">
-                <CardHeader>
-                  <CardTitle className="text-lg">Profile Completion</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Progress</span>
-                      <span className="text-sm font-medium">{profileCompletion}%</span>
-                    </div>
-                    <Progress value={profileCompletion} className="h-2" />
-                    {profileCompletion < 100 && (
-                      <div className="text-sm text-muted-foreground">
-                        <p>Complete your profile to get discovered by more professionals!</p>
-                        <Button asChild size="sm" className="mt-2" variant="outline">
-                          <Link to="/edit-profile">Complete Profile</Link>
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
               {/* Stats */}
               <Card className="shadow-soft">
                 <CardHeader>
