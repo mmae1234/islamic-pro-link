@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import {
   User,
@@ -54,7 +53,6 @@ const Profile = () => {
   const profileQuery = useProfile(userId, user?.id);
   const profile = profileQuery.data?.profile ?? null;
   const professionalProfile = profileQuery.data?.professionalProfile ?? null;
-  const isLimitedView = profileQuery.data?.isLimitedView ?? false;
   const loading = profileQuery.isLoading;
 
   const isOwnProfile = user?.id === userId;
@@ -147,13 +145,6 @@ const Profile = () => {
 
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-4xl mx-auto">
-          {isLimitedView && !isOwnProfile && (
-            <Alert className="mb-6 border-primary/20 bg-primary/5">
-              <AlertDescription>
-                You're viewing a limited profile. <span className="font-medium">Connect with this professional</span> to see their full bio, skills, education, and contact preferences.
-              </AlertDescription>
-            </Alert>
-          )}
           {/* Profile Header */}
           <Card className="shadow-soft mb-8">
             <CardContent className="pt-6">
