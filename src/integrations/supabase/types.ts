@@ -650,6 +650,7 @@ export type Database = {
           created_at: string
           email_alerts: boolean
           public_preview: boolean
+          weekly_digest: boolean
           first_login: boolean
           first_name: string | null
           id: string
@@ -664,6 +665,7 @@ export type Database = {
           created_at?: string
           email_alerts?: boolean
           public_preview?: boolean
+          weekly_digest?: boolean
           first_login?: boolean
           first_name?: string | null
           id?: string
@@ -678,6 +680,7 @@ export type Database = {
           created_at?: string
           email_alerts?: boolean
           public_preview?: boolean
+          weekly_digest?: boolean
           first_login?: boolean
           first_name?: string | null
           id?: string
