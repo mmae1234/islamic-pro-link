@@ -167,3 +167,4 @@ export default defineConfig(({ mode }) => ({
   },
 }));
 
+// Lovable build OK
