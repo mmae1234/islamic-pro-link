@@ -14,7 +14,7 @@ interface AuthContextType {
     firstName: string,
     lastName: string,
     accountType?: string,
-  ) => Promise<void>;
+  ) => Promise<{ alreadyRegistered: boolean }>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -155,7 +155,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const redirect = urlParams.get("redirect") || "/dashboard";
       const emailRedirectTo = `${window.location.origin}${redirect}`;
 
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -169,10 +169,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       if (error) throw error;
 
+      // Supabase answers a sign-up for an existing email with a fake success
+      // (no email sent, password unchanged). It marks it with an empty
+      // identities list, so tell the person to sign in or reset instead.
+      const alreadyRegistered =
+        !!data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0;
+      if (alreadyRegistered) return { alreadyRegistered: true };
+
       toast({
         title: "Registration successful!",
         description: "Please check your email to verify your account.",
       });
+      return { alreadyRegistered: false };
     } catch (error) {
       const authError = error as AuthError;
       toast({

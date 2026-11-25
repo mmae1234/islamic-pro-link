@@ -38,13 +38,29 @@ const ResetPassword = () => {
       // 1) PKCE flow: email link contains ?code=... — exchange it for a session.
       const code = searchParams.get('code');
       if (code) {
+        // The client (detectSessionInUrl) usually exchanges the code on its
+        // own as the page loads; a second exchange then fails because the
+        // code is single-use. So check for that session before (and after)
+        // trying, and only call the link invalid if there is truly none.
+        const before = await supabase.auth.getSession();
+        if (cancelled) return;
+        if (before.data.session) {
+          setValidToken(true);
+          return;
+        }
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (cancelled) return;
-        if (error) {
-          console.error('Error exchanging recovery code:', error);
-          setValidToken(false);
-        } else {
+        if (!error) {
           setValidToken(true);
+          return;
+        }
+        const after = await supabase.auth.getSession();
+        if (cancelled) return;
+        if (after.data.session) {
+          setValidToken(true);
+        } else {
+          console.error('Error exchanging recovery code:', error);
+          setValidToken((v) => (v === true ? true : false));
         }
         return;
       }
@@ -65,7 +81,7 @@ const ResetPassword = () => {
         if (cancelled) return;
         if (error) {
           console.error('Error setting session from hash:', error);
-          setValidToken(false);
+          setValidToken((v) => (v === true ? true : false));
         } else {
           setValidToken(true);
         }
@@ -80,7 +96,7 @@ const ResetPassword = () => {
         if (cancelled) return;
         if (error) {
           console.error('Error setting session:', error);
-          setValidToken(false);
+          setValidToken((v) => (v === true ? true : false));
         } else {
           setValidToken(true);
         }
@@ -96,7 +112,7 @@ const ResetPassword = () => {
         if (data.session) {
           setValidToken(true);
         } else {
-          setValidToken(false);
+          setValidToken((v) => (v === true ? true : false));
         }
       }, 1500);
     };
