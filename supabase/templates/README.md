@@ -12,14 +12,12 @@ Emails → Templates). Sent through Resend SMTP from
 | magic_link.html | Magic link or OTP | Your Muslim Pros Network sign-in link |
 | invite.html | Invite user | You're invited to Muslim Pros Network |
 
-## Planned switch to scanner-proof links
+## Scanner-proof links (live since Nov 25, 2026)
 
-The live templates use `{{ .ConfirmationURL }}`, which spends the one-time token
-as soon as anything opens the link (including Outlook/Defender "Safe Links"
-scanners) and, for password resets, only works in the browser that asked.
-
-Once the `/auth/confirm` page (src/pages/AuthConfirm.tsx) is published, replace
-the button `href` in each template:
+Buttons link to `/auth/confirm` (src/pages/AuthConfirm.tsx) with a token hash
+instead of `{{ .ConfirmationURL }}`, which spent the one-time token as soon as
+anything opened the link (including Outlook/Defender "Safe Links" scanners) and,
+for resets, only worked in the browser that asked. Current hrefs:
 
 | Template | New href |
 |---|---|
@@ -29,6 +27,5 @@ the button `href` in each template:
 | Magic link or OTP | `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=magiclink&next=/dashboard` |
 | Invite user | `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=invite&next=/dashboard` |
 
-Check first that Authentication → URL Configuration → Site URL is
-`https://muslimprosnet.com`. Do NOT switch before the page is live: the old
-site has no `/auth/confirm` route and every link would 404.
+Authentication → URL Configuration → Site URL must stay `https://muslimprosnet.com`.
+The reset flow was tested end to end on Nov 25, 2026.
