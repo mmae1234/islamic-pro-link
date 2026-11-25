@@ -649,46 +649,46 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           email_alerts: boolean
-          public_preview: boolean
-          weekly_digest: boolean
           first_login: boolean
           first_name: string | null
           id: string
           last_name: string | null
           messaging_privacy: Database["public"]["Enums"]["messaging_privacy"]
+          public_preview: boolean
           role: string | null
           updated_at: string
           user_id: string
+          weekly_digest: boolean
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
           email_alerts?: boolean
-          public_preview?: boolean
-          weekly_digest?: boolean
           first_login?: boolean
           first_name?: string | null
           id?: string
           last_name?: string | null
           messaging_privacy?: Database["public"]["Enums"]["messaging_privacy"]
+          public_preview?: boolean
           role?: string | null
           updated_at?: string
           user_id: string
+          weekly_digest?: boolean
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
           email_alerts?: boolean
-          public_preview?: boolean
-          weekly_digest?: boolean
           first_login?: boolean
           first_name?: string | null
           id?: string
           last_name?: string | null
           messaging_privacy?: Database["public"]["Enums"]["messaging_privacy"]
+          public_preview?: boolean
           role?: string | null
           updated_at?: string
           user_id?: string
+          weekly_digest?: boolean
         }
         Relationships: []
       }
@@ -918,6 +918,19 @@ export type Database = {
           user_id: string
         }[]
       }
+      public_directory_preview: {
+        Args: { _limit?: number }
+        Returns: {
+          city: string
+          country: string
+          first_name: string
+          is_mentor: boolean
+          last_initial: string
+          occupation: string
+          sector: string
+          state_province: string
+        }[]
+      }
       queue_email_alert: {
         Args: { _actor: string; _kind: string; _recipient: string }
         Returns: undefined
@@ -930,6 +943,7 @@ export type Database = {
         }
         Returns: string
       }
+      run_member_digest: { Args: never; Returns: undefined }
       search_business_directory: {
         Args: {
           filter_city?: string
@@ -958,19 +972,6 @@ export type Database = {
       send_message: {
         Args: { _content: string; _recipient_id: string }
         Returns: string
-      }
-      public_directory_preview: {
-        Args: { _limit?: number }
-        Returns: {
-          city: string | null
-          country: string | null
-          first_name: string
-          is_mentor: boolean
-          last_initial: string | null
-          occupation: string | null
-          sector: string | null
-          state_province: string | null
-        }[]
       }
       set_account_type: { Args: { _type: string }; Returns: undefined }
       update_conversation_status: {
