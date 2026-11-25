@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
+import { fetchMemberProfiles } from '@/hooks/queries/useProfile';
 
 interface Notification {
   id: string;
@@ -86,7 +87,61 @@ const NotificationCenter = () => {
         .order('created_at', { ascending: false })
         .limit(5);
 
+      // My requests a mentor accepted in the last 7 days
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data: accepted } = await supabase
+        .from('mentorship_requests')
+        .select('id, mentor_id, updated_at')
+        .eq('mentee_id', user.id)
+        .eq('status', 'accepted')
+        .gte('updated_at', weekAgo)
+        .order('updated_at', { ascending: false })
+        .limit(5);
+
+      // Sessions in the next 7 days (RLS: only my mentorships)
+      const { data: sessions } = await supabase
+        .from('mentorship_sessions')
+        .select('id, scheduled_at, created_at')
+        .gte('scheduled_at', new Date().toISOString())
+        .lte('scheduled_at', new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString())
+        .order('scheduled_at', { ascending: true })
+        .limit(5);
+
+      const mentorNames = new Map<string, string>();
+      if (accepted && accepted.length > 0) {
+        try {
+          const rows = await fetchMemberProfiles(accepted.map((a) => a.mentor_id));
+          rows.forEach((r) => mentorNames.set(r.profile.user_id, `${r.profile.first_name || ''} ${r.profile.last_name || ''}`.trim()));
+        } catch {
+          // names are optional
+        }
+      }
+
       const notificationsList: Notification[] = [];
+
+      accepted?.forEach((a) => {
+        notificationsList.push({
+          id: `acc-${a.id}`,
+          type: 'mentorship_accepted',
+          title: 'Mentorship accepted',
+          description: `${mentorNames.get(a.mentor_id) || 'Your mentor'} accepted your mentorship request`,
+          read: false,
+          created_at: a.updated_at ?? new Date().toISOString(),
+          data: { requestId: a.id },
+        });
+      });
+
+      sessions?.forEach((sess) => {
+        notificationsList.push({
+          id: `sess-${sess.id}`,
+          type: 'session_scheduled',
+          title: 'Upcoming mentorship session',
+          description: new Date(sess.scheduled_at).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
+          read: false,
+          created_at: sess.created_at ?? sess.scheduled_at,
+          data: { sessionId: sess.id },
+        });
+      });
 
       // Add message notifications
       messages?.forEach(msg => {
@@ -202,6 +257,7 @@ const NotificationCenter = () => {
       case 'message':
         return <MessageCircle className="w-4 h-4" />;
       case 'mentorship_request':
+      case 'mentorship_accepted':
         return <Users className="w-4 h-4" />;
       case 'session_scheduled':
         return <Calendar className="w-4 h-4" />;
@@ -284,7 +340,7 @@ const NotificationCenter = () => {
                         setShowNotifications(false);
                         if (notification.type === 'message') {
                           navigate('/messages');
-                        } else if (notification.type === 'mentorship_request') {
+                        } else if (notification.type === 'mentorship_request' || notification.type === 'mentorship_accepted' || notification.type === 'session_scheduled') {
                           navigate('/mentorship');
                         }
                       }}

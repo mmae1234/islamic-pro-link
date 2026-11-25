@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Shield, AlertTriangle, User, MessageCircle, Calendar, FileText } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Header from "@/components/Header";
+import AdminBusinessVerification from "@/components/AdminBusinessVerification";
 import Footer from "@/components/Footer";
 import { getErrorMessage } from "@/lib/errors";
 import type { Tbl, ProfileNameSlice } from "@/hooks/queries/types";
@@ -179,6 +180,8 @@ const AdminReports = () => {
               Review and manage community reports. Total reports: {reports.length}
             </p>
           </div>
+
+          <AdminBusinessVerification />
 
           {reports.length === 0 ? (
             <Card>

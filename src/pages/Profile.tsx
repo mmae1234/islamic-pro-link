@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +22,11 @@ import {
   MessageCircle,
   MoreVertical,
   Flag,
+  Linkedin,
+  Globe,
+  Phone,
+  Send,
+  Lock,
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import ReportDialog from "@/components/ReportDialog";
@@ -42,18 +48,41 @@ const Profile = () => {
 
   useCanonicalUrl(userId ? `/profile/${userId}` : "/");
 
-  // Anonymous users can't view profiles (RLS + lookup_profile_basic both require auth.uid()).
-  // Bounce to auth-gate matching the directory privacy rule, preserving the deep link.
-  useEffect(() => {
-    if (!authLoading && !user && userId) {
-      navigate(`/auth-gate?redirect=${encodeURIComponent(`/profile/${userId}`)}`, { replace: true });
-    }
-  }, [authLoading, user, userId, navigate]);
+  // Signed-out visitors get a short preview card (public_profile_preview:
+  // first name, last initial, job, city; honours the member's opt-out).
+  const previewQuery = useQuery({
+    queryKey: ["public-profile-preview", userId],
+    enabled: !authLoading && !user && !!userId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("public_profile_preview" as never, { _user_id: userId } as never);
+      if (error) throw error;
+      const rows = (data ?? []) as Array<{
+        first_name: string; last_initial: string | null; occupation: string | null; sector: string | null;
+        city: string | null; state_province: string | null; country: string | null; is_mentor: boolean;
+      }>;
+      return rows[0] ?? null;
+    },
+  });
+
+  // Whether the viewer can message this person: allowed | request | closed | blocked.
+  const messageStatusQuery = useQuery({
+    queryKey: ["can-send-message", user?.id, userId],
+    enabled: !!user && !!userId && user.id !== userId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("can_send_message", {
+        sender_id_param: user!.id,
+        recipient_id_param: userId!,
+      });
+      if (error) throw error;
+      return String(data ?? "closed");
+    },
+  });
+  const messageStatus = messageStatusQuery.data;
 
   const profileQuery = useProfile(userId, user?.id);
   const profile = profileQuery.data?.profile ?? null;
   const professionalProfile = profileQuery.data?.professionalProfile ?? null;
-  const loading = profileQuery.isLoading;
+  const loading = authLoading || profileQuery.isLoading;
 
   const isOwnProfile = user?.id === userId;
 
@@ -111,6 +140,56 @@ const Profile = () => {
       },
     );
   };
+
+  if (!authLoading && !user) {
+    const pv = previewQuery.data;
+    const redirect = encodeURIComponent(`/profile/${userId}`);
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto px-4 py-16">
+          <Card className="max-w-md mx-auto shadow-soft">
+            <CardContent className="p-8 text-center space-y-4">
+              {previewQuery.isLoading ? (
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto" />
+              ) : pv ? (
+                <>
+                  <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-semibold" aria-hidden="true">
+                    {pv.first_name.charAt(0).toUpperCase()}{pv.last_initial ?? ""}
+                  </div>
+                  <div>
+                    <h1 className="text-2xl font-bold text-foreground">
+                      {pv.last_initial ? `${pv.first_name} ${pv.last_initial}.` : pv.first_name}
+                    </h1>
+                    {pv.occupation && <p className="text-primary font-medium">{pv.occupation}</p>}
+                    {(pv.city || pv.country) && (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {[pv.city, pv.state_province || pv.country].filter(Boolean).join(", ")}
+                      </p>
+                    )}
+                    {pv.is_mentor && <Badge variant="secondary" className="mt-2">Available as Mentor</Badge>}
+                  </div>
+                  <p className="text-muted-foreground">
+                    Join Muslim Pros Network free to see the full profile and send a message.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h1 className="text-2xl font-bold text-foreground">Member profile</h1>
+                  <p className="text-muted-foreground">Sign in or join free to view this member's profile.</p>
+                </>
+              )}
+              <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
+                <Button asChild variant="hero"><Link to={`/signup?redirect=${redirect}`}>Join free</Link></Button>
+                <Button asChild variant="outline"><Link to={`/login?redirect=${redirect}`}>Sign in</Link></Button>
+              </div>
+            </CardContent>
+          </Card>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -197,17 +276,33 @@ const Profile = () => {
                           <Heart className={`w-4 h-4 mr-2 ${isFavorite ? 'fill-current text-favorite' : ''}`} />
                           {isFavorite ? 'Unfavorite' : 'Favorite'}
                         </Button>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => {
-                            const partnerName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'Conversation';
-                            navigate(`/messages?recipient=${userId}&name=${encodeURIComponent(partnerName)}`);
-                          }}
-                        >
-                          <MessageCircle className="w-4 h-4 mr-2" />
-                          Message
-                        </Button>
+                        {messageStatus === "closed" ? (
+                          <Button variant="secondary" size="sm" disabled title="This member isn't accepting new messages">
+                            <Lock className="w-4 h-4 mr-2" />
+                            Not accepting messages
+                          </Button>
+                        ) : messageStatus !== "blocked" && (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            disabled={messageStatusQuery.isLoading}
+                            onClick={() => {
+                              const partnerName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'Conversation';
+                              navigate(`/messages?recipient=${userId}&name=${encodeURIComponent(partnerName)}`);
+                            }}
+                          >
+                            <MessageCircle className="w-4 h-4 mr-2" />
+                            {messageStatus === "request" ? "Send message request" : "Message"}
+                          </Button>
+                        )}
+                        {professionalProfile?.is_mentor && (
+                          <Button asChild variant="hero" size="sm">
+                            <Link to={`/mentorship?mentor=${userId}`}>
+                              <Users className="w-4 h-4 mr-2" />
+                              Request mentorship
+                            </Link>
+                          </Button>
+                        )}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -319,6 +414,60 @@ const Profile = () => {
 
             {/* Sidebar */}
             <div className="space-y-6">
+              {/* Contact & links */}
+              {professionalProfile && (() => {
+                const pp = professionalProfile as typeof professionalProfile & {
+                  linkedin_url?: string | null; website?: string | null;
+                  whatsapp_number?: string | null; telegram_url?: string | null;
+                };
+                const safeUrl = (u?: string | null) => {
+                  if (!u) return null;
+                  const v = u.trim();
+                  const withProto = /^https?:\/\//i.test(v) ? v : `https://${v}`;
+                  try { const url = new URL(withProto); return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null; } catch { return null; }
+                };
+                const linkedin = safeUrl(pp.linkedin_url);
+                const website = safeUrl(pp.website);
+                const telegram = safeUrl(pp.telegram_url);
+                const whatsapp = pp.whatsapp_number?.trim() || null;
+                const connected = isOwnProfile || messageStatus === "allowed";
+                if (!linkedin && !website && !telegram && !whatsapp && connected) return null;
+                return (
+                  <Card className="shadow-soft">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Send className="w-5 h-5" />
+                        Contact & Links
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3 text-sm">
+                      {linkedin && (
+                        <a href={linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline">
+                          <Linkedin className="w-4 h-4" /> LinkedIn
+                        </a>
+                      )}
+                      {website && (
+                        <a href={website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline break-all">
+                          <Globe className="w-4 h-4 shrink-0" /> {new URL(website).hostname}
+                        </a>
+                      )}
+                      {whatsapp && (
+                        <p className="flex items-center gap-2"><Phone className="w-4 h-4" /> WhatsApp: {whatsapp}</p>
+                      )}
+                      {telegram && (
+                        <a href={telegram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline">
+                          <Send className="w-4 h-4" /> Telegram
+                        </a>
+                      )}
+                      {!connected && (
+                        <p className="text-xs text-muted-foreground">
+                          Phone and Telegram details, if the member added them, are shared once they accept your message.
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })()}
               {/* Personal Information */}
               <Card className="shadow-soft">
                 <CardHeader>

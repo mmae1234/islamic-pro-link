@@ -127,16 +127,13 @@ const [favoriteBusinessIds, setFavoriteBusinessIds] = useState<string[]>([]);
         const row = Array.isArray(rpcResult) ? rpcResult[0] : rpcResult;
         if (row) biz = row as Partial<BusinessAccount>;
         
-        // If user is logged in, try to get additional details (contact info) if they have permission
+        // Contact details (email, phone, address, social links) are shown to
+        // signed-in members only (get_business_contact; owner decision).
         if (user && biz) {
-          const { data: fullData } = await supabase
-            .from('business_accounts')
-            .select('email, phone, address_line1, address_line2, postal_code, facebook_url, instagram_url, linkedin_url, twitter_url, youtube_url, tiktok_url, whatsapp_number, telegram_url, owner_id')
-            .eq('id', id)
-            .maybeSingle();
-          
-          if (fullData) {
-            biz = { ...biz, ...fullData };
+          const { data: contactRows } = await supabase.rpc('get_business_contact' as never, { _business_id: id } as never);
+          const contact = Array.isArray(contactRows) ? contactRows[0] : contactRows;
+          if (contact) {
+            biz = { ...biz, ...(contact as Partial<BusinessAccount>) };
           }
         }
         
@@ -221,7 +218,7 @@ const handleRequestLink = async () => {
     return;
   }
   if (linkBlocked) {
-    toast({ title: 'Linking disabled', description: 'This business has declined twice. Please contact an admin for manual approval.', variant: 'destructive' });
+    toast({ title: 'Linking disabled', description: 'This business declined your request twice, so you can\'t send another. You can still message them.', variant: 'destructive' });
     return;
   }
   try {
@@ -293,12 +290,17 @@ const handleRequestLink = async () => {
 <div className="flex flex-wrap gap-2">
   {user && (
     <>
-      <Button variant="accent" asChild>
-        <Link to="/messages" aria-label="Message this business">
-          <MessageCircle className="w-4 h-4 mr-2" /> Message
-        </Link>
-      </Button>
-      {user.id !== business.owner_id && (
+      {business.owner_id && user.id !== business.owner_id && (
+        <Button variant="accent" asChild>
+          <Link
+            to={`/messages?recipient=${business.owner_id}&name=${encodeURIComponent(business.name || 'Business')}`}
+            aria-label="Message this business"
+          >
+            <MessageCircle className="w-4 h-4 mr-2" /> Message
+          </Link>
+        </Button>
+      )}
+      {business.owner_id && user.id !== business.owner_id && (
         <BlockUserButton 
           targetUserId={business.owner_id} 
           targetUserName={business.name || 'this business'} 

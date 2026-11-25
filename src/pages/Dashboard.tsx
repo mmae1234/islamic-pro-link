@@ -327,6 +327,20 @@ const Dashboard = () => {
 
               {/* What's missing from the profile (hidden once complete) */}
               {professionalProfile && checklist.length > 0 && <ProfileChecklist items={checklist} />}
+              {!loading && !professionalProfile && (
+                <Card className="shadow-soft border-primary/30">
+                  <CardContent className="p-6 space-y-3">
+                    <h2 className="text-lg font-semibold text-foreground">Get found by other members</h2>
+                    <p className="text-sm text-muted-foreground">
+                      You're browsing without a professional profile, so other members can't find you in the
+                      directory or ask you to mentor them. It takes about two minutes to add one.
+                    </p>
+                    <Button asChild variant="hero" size="sm">
+                      <Link to="/edit-profile">Add my professional profile</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Quick Actions */}
               <Card className="shadow-soft">

@@ -45,6 +45,22 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
   const [reportType, setReportType] = useState<'message' | 'conversation'>('message');
   const [reportMessageId, setReportMessageId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  // allowed | request | closed | blocked (server rule: can_send_message)
+  const [sendStatus, setSendStatus] = useState<string | null>(null);
+
+  const refreshSendStatus = async () => {
+    if (!user || !partnerId) return;
+    const { data } = await supabase.rpc('can_send_message', {
+      sender_id_param: user.id,
+      recipient_id_param: partnerId,
+    });
+    setSendStatus(data ? String(data) : null);
+  };
+
+  useEffect(() => {
+    refreshSendStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, partnerId]);
 
   useEffect(() => {
     if (user && partnerId) {
@@ -245,6 +261,7 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
 
       setNewMessage('');
       await loadConversation();
+      refreshSendStatus();
     } catch (error: unknown) {
       toast({
         title: "Error",
@@ -443,6 +460,18 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
 
         <div className="border-t p-4">
           <div className="space-y-2">
+            {sendStatus === 'request' && (
+              <p className="text-sm rounded-md bg-muted px-3 py-2 text-muted-foreground" role="status">
+                This is a message request. {partnerName} will see it and can accept or decline. You can send up to 3 messages until they accept.
+              </p>
+            )}
+            {(sendStatus === 'closed' || sendStatus === 'blocked') && (
+              <p className="text-sm rounded-md bg-muted px-3 py-2 text-muted-foreground" role="status">
+                {sendStatus === 'closed'
+                  ? `${partnerName} isn't accepting new messages.`
+                  : "You can't message this person."}
+              </p>
+            )}
             <div className="flex gap-2">
               <Input
                 placeholder="Type your message... (max 2000 characters)"
@@ -452,11 +481,11 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
                   setMessageError('');
                 }}
                 onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-                disabled={sending}
+                disabled={sending || sendStatus === 'closed' || sendStatus === 'blocked'}
                 maxLength={2000}
                 className={messageError ? 'border-destructive' : ''}
               />
-              <Button onClick={sendMessage} disabled={sending || !newMessage.trim()}>
+              <Button onClick={sendMessage} disabled={sending || !newMessage.trim() || sendStatus === 'closed' || sendStatus === 'blocked'}>
                 <Send className="w-4 h-4" />
               </Button>
             </div>

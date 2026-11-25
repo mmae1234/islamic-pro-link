@@ -125,8 +125,8 @@ const Messages = () => {
       {
         onSuccess: () => {
           toast({
-            title: "Message sent!",
-            description: "Your message has been sent successfully.",
+            title: "Message sent",
+            description: "If this is your first message to them, it arrives as a request they can accept.",
           });
           setNewMessage("");
           setSelectedRecipient(null);

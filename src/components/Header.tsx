@@ -24,6 +24,7 @@ const Header = () => {
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [businessName, setBusinessName] = useState<string | null>(null);
   const [isBusiness, setIsBusiness] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -43,8 +44,9 @@ const Header = () => {
         .from('profiles')
         .select('role')
         .eq('user_id', user.id)
-        .maybeSingle()
-    ]).then(([bizRes, profRes]) => {
+        .maybeSingle(),
+      supabase.rpc('is_admin', { _user_id: user.id }),
+    ]).then(([bizRes, profRes, adminRes]) => {
       if (!isMounted) return;
       const biz = bizRes.data;
       if (biz) {
@@ -56,6 +58,7 @@ const Header = () => {
       }
       // SECURITY: Only trust server-side profiles.role; user_metadata is user-mutable.
       setIsBusiness(profRes.data?.role === 'business');
+      setIsAdmin(adminRes.data === true);
     });
     return () => { isMounted = false; };
   }, [user]);
@@ -111,7 +114,7 @@ const Header = () => {
               </>
             ) : (
               <>
-                <Link to="/auth-gate?redirect=/search" className="text-foreground hover:text-accent transition-smooth text-sm">
+                <Link to="/search" className="text-foreground hover:text-accent transition-smooth text-sm">
                   Find Professionals
                 </Link>
                 <Link to="/businesses" className="text-foreground hover:text-accent transition-smooth text-sm">
@@ -260,6 +263,14 @@ const Header = () => {
                         Settings
                       </Link>
                     </DropdownMenuItem>
+                    {isAdmin && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin/reports" className="flex items-center text-foreground">
+                          <Settings className="w-4 h-4 mr-2" />
+                          Admin
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut} className="flex items-center text-foreground">
                       <LogOut className="w-4 h-4 mr-2" />
@@ -326,7 +337,7 @@ const Header = () => {
               ) : (
                 <>
                   <Link 
-                    to="/auth-gate?redirect=/search" 
+                    to="/search" 
                     className="text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-4 py-3 rounded-lg text-sm font-medium"
                     onClick={() => setIsMenuOpen(false)}
                   >
