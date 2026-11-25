@@ -47,7 +47,7 @@ const MessagingPrivacySettings = () => {
 
       if (profileError) throw profileError;
       
-      setMessagingPrivacy(profile.messaging_privacy || 'closed');
+      setMessagingPrivacy(profile.messaging_privacy || 'open');
 
       // Load blocked users
       const { data: blockedData, error: blockedError } = await supabase
@@ -177,15 +177,15 @@ const MessagingPrivacySettings = () => {
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="open" id="open" />
-                <Label htmlFor="open">Open - Anyone can message you</Label>
+                <Label htmlFor="open">Open (recommended) - Anyone can send you a message request; you choose whether to accept</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="mentorship_only" id="mentorship_only" />
-                <Label htmlFor="mentorship_only">Mentorship Only - Only mentors/mentees can message directly</Label>
+                <Label htmlFor="mentorship_only">Mentorship only - Only your mentors and mentees can message you</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="closed" id="closed" />
-                <Label htmlFor="closed">Closed - Only people you've contacted can message you</Label>
+                <Label htmlFor="closed">Closed - Only people you already have a conversation with can message you</Label>
               </div>
             </div>
           </RadioGroup>
