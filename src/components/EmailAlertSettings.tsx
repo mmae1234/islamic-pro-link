@@ -78,7 +78,7 @@ const EmailAlertSettings = () => {
             <Label htmlFor="email-alerts" className="text-base">
               Email me about new activity
             </Label>
-            <p className="text-sm text-muted-foreground">
+            <p id="email-alerts-help" className="text-sm text-muted-foreground">
               One email when someone messages you (not one per message), when you get a
               mentorship request, and when your request is accepted. Emails never include
               the message itself.
@@ -89,6 +89,7 @@ const EmailAlertSettings = () => {
           ) : (
             <Switch
               id="email-alerts"
+              aria-describedby="email-alerts-help"
               checked={enabled}
               disabled={saving}
               onCheckedChange={handleChange}
