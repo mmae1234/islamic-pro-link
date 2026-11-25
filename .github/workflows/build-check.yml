@@ -1,0 +1,53 @@
+name: Build check
+
+# Catches broken changes before they reach Lovable/production:
+# type errors and a full production build (including the legacy
+# iOS bundle) on every pull request and every push to main.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        # --legacy-peer-deps mirrors Lovable (bun), which ignores the known
+        # @vitejs/plugin-legacy 7 (wants Vite 7) vs Vite 5 peer mismatch.
+        run: npm ci --no-audit --no-fund --legacy-peer-deps
+
+      - name: Type check (app)
+        run: npx tsc -p tsconfig.app.json --noEmit
+
+      - name: Type check (build config)
+        run: npx tsc -p tsconfig.node.json --noEmit
+
+      - name: Production build
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
+        run: npm run build
+
+      - name: Sanity-check build output
+        run: |
+          test -f dist/index.html
+          ls dist/assets | grep -q '^index-.*\.js$'
+          ls dist/assets | grep -q 'legacy' || { echo "::error::Legacy (older iPhone) bundle missing"; exit 1; }
+          echo "Build output OK: $(ls dist/assets | wc -l) asset files"
