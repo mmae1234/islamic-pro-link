@@ -649,6 +649,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           email_alerts: boolean
+          public_preview: boolean
           first_login: boolean
           first_name: string | null
           id: string
@@ -662,6 +663,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email_alerts?: boolean
+          public_preview?: boolean
           first_login?: boolean
           first_name?: string | null
           id?: string
@@ -675,6 +677,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email_alerts?: boolean
+          public_preview?: boolean
           first_login?: boolean
           first_name?: string | null
           id?: string
@@ -952,6 +955,19 @@ export type Database = {
       send_message: {
         Args: { _content: string; _recipient_id: string }
         Returns: string
+      }
+      public_directory_preview: {
+        Args: { _limit?: number }
+        Returns: {
+          city: string | null
+          country: string | null
+          first_name: string
+          is_mentor: boolean
+          last_initial: string | null
+          occupation: string | null
+          sector: string | null
+          state_province: string | null
+        }[]
       }
       set_account_type: { Args: { _type: string }; Returns: undefined }
       update_conversation_status: {

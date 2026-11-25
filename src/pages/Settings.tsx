@@ -31,6 +31,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MessagingPrivacySettings from "@/components/MessagingPrivacySettings";
 import EmailAlertSettings from "@/components/EmailAlertSettings";
+import PublicPreviewSettings from "@/components/PublicPreviewSettings";
 import { User, Briefcase, Users, X, Loader2, Shield, Bell, Settings as SettingsIcon, Mail, Phone } from "lucide-react";
 
 const SKILLS_OPTIONS = [
@@ -475,19 +476,7 @@ const Settings = () => {
               <div className="space-y-6">
                 <MessagingPrivacySettings />
                 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Profile Privacy</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                      Additional privacy controls (profile visibility, contact info, search indexing,
-                      activity status) are coming soon. For now, your profile is visible only to other
-                      authenticated members, and contact details (email, phone, WhatsApp) are never
-                      shared automatically — they only appear if you add them to your public profile.
-                    </p>
-                  </CardContent>
-                </Card>
+                <PublicPreviewSettings />
               </div>
             </TabsContent>
           </Tabs>

@@ -2,7 +2,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
 
-const LAST_UPDATED = "April 29, 2026";
+const LAST_UPDATED = "November 25, 2026";
 
 const Privacy = () => {
   useCanonicalUrl("/privacy");
@@ -49,7 +49,7 @@ const Privacy = () => {
             <ul className="list-disc pl-6 mb-4">
               <li>Operate, maintain, and improve the Service.</li>
               <li>Authenticate you and keep your account secure.</li>
-              <li>Display your profile to other signed-in members in directory results.</li>
+              <li>Display your profile to other signed-in members in directory results, and show a limited preview (first name, last initial, occupation, field and city) to visitors who are not signed in, unless you turn this off in Settings.</li>
               <li>Deliver messages, mentorship requests, and notifications.</li>
               <li>Enforce our Terms, investigate abuse reports, and protect users.</li>
               <li>Respond to inquiries you submit via the contact or feedback forms.</li>
@@ -74,7 +74,7 @@ const Privacy = () => {
               below:
             </p>
             <ul className="list-disc pl-6 mb-4">
-              <li><strong>With other members:</strong> profile information is visible to other signed-in members in directory results and on your public profile. Directory results are not visible to unauthenticated visitors.</li>
+              <li><strong>With other members:</strong> profile information is visible to other signed-in members in directory results and on your public profile. Visitors who are not signed in can see only a limited directory preview: your first name, last initial, occupation, field and city, never your photo, full name, profile page or contact details. You can opt out of the preview at any time in Settings &gt; Privacy.</li>
               <li><strong>Service providers (data processors):</strong>
                 <ul className="list-[circle] pl-6 mt-1">
                   <li>Supabase — database, authentication, storage, edge functions (hosted in the United States).</li>
