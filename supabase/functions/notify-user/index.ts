@@ -5,7 +5,7 @@ import { Resend } from "npm:resend@2.0.0";
 // Email alerts for members.
 // Called only by database triggers (public.queue_email_alert) through pg_net.
 // Auth: shared secret in x-digest-secret (same Vault secret as signup-digest).
-// Body: { kind: "message" | "mentorship_request" | "mentorship_accepted",
+// Body: { kind: "message" | "mentorship_request" | "mentorship_accepted" | "session_scheduled",
 //         recipient_id: uuid, actor_id: uuid }
 // Privacy: never includes message content, only who acted and a link.
 
@@ -18,7 +18,7 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
 );
 
-type Kind = "message" | "mentorship_request" | "mentorship_accepted";
+type Kind = "message" | "mentorship_request" | "mentorship_accepted" | "session_scheduled";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -61,6 +61,13 @@ function content(kind: Kind, actor: string) {
         subject: `${actor} asked you to be their mentor`,
         line: `${actor} sent you a mentorship request.`,
         cta: "View the request",
+        path: "/mentorship",
+      };
+    case "session_scheduled":
+      return {
+        subject: `${actor} scheduled a mentorship session with you`,
+        line: `${actor} scheduled a mentorship session with you. See the date, time and meeting link on the Mentorship page.`,
+        cta: "See the session",
         path: "/mentorship",
       };
     case "mentorship_accepted":
@@ -112,7 +119,7 @@ serve(async (req) => {
     const recipientId = String(body?.recipient_id ?? "");
     const actorId = String(body?.actor_id ?? "");
 
-    if (!["message", "mentorship_request", "mentorship_accepted"].includes(kind)) {
+    if (!["message", "mentorship_request", "mentorship_accepted", "session_scheduled"].includes(kind)) {
       return json(400, { success: false, error: "Invalid kind" });
     }
     if (!UUID_RE.test(recipientId) || !UUID_RE.test(actorId) || recipientId === actorId) {

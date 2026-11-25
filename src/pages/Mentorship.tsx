@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,6 +63,9 @@ const Mentorship = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>({});
   const [selectedMentor, setSelectedMentor] = useState<MentorProfile | null>(null);
+  const [activeTab, setActiveTab] = useState("find-mentors");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryClient = useQueryClient();
   // Favorites: mentors are professionals, so they share the Professionals list.
   const favoritesQuery = useFavoriteProfessionals(user?.id);
   const favoriteIds = useMemo(
@@ -111,7 +115,8 @@ const Mentorship = () => {
         notes: scheduleNotes || null,
       });
       if (error) throw error;
-      toast({ title: "Session scheduled", description: "Your mentorship session has been scheduled." });
+      toast({ title: "Session scheduled", description: "We emailed the other person, and it's listed under Upcoming sessions." });
+      queryClient.invalidateQueries({ queryKey: ["mentorship-sessions", user?.id] });
       setScheduleTarget(null);
       setScheduleDate("");
       setScheduleTime("");
@@ -134,6 +139,63 @@ const Mentorship = () => {
 
   const mentorsQuery = useMentors(user?.id);
   const requestsQuery = useMentorshipRequests(user?.id);
+
+  // Upcoming sessions for any of my mentorships (RLS: participants only).
+  const sessionsQuery = useQuery({
+    queryKey: ["mentorship-sessions", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("mentorship_sessions")
+        .select("id, request_id, scheduled_at, duration_minutes, meeting_link, notes, status")
+        .gte("scheduled_at", new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString())
+        .order("scheduled_at", { ascending: true })
+        .limit(50);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  // Am I a mentor? Then show people who are looking for one.
+  const myProfileQuery = useQuery({
+    queryKey: ["my-mentor-flag", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.from("professional_profiles").select("is_mentor").eq("user_id", user!.id).maybeSingle();
+      return !!data?.is_mentor;
+    },
+  });
+  const isMentor = myProfileQuery.data === true;
+
+  // Deep link from a profile's "Request mentorship" button: /mentorship?mentor=<id>
+  useEffect(() => {
+    const mentorId = searchParams.get("mentor");
+    if (!mentorId || !mentorsQuery.data || !requestsQuery.data) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete("mentor");
+    setSearchParams(next, { replace: true });
+    const mentor = mentorsQuery.data.find((m) => m.user_id === mentorId);
+    if (mentor) {
+      setActiveTab("find-mentors");
+      setSelectedMentor(mentor);
+      return;
+    }
+    const existing = requestsQuery.data.find((r) => r.mentor_id === mentorId && (r.status === "pending" || r.status === "accepted"));
+    setActiveTab("my-requests");
+    toast({
+      title: existing ? "You already have a request with this mentor" : "This mentor isn't available",
+      description: existing ? "It's listed under My Requests." : "They may have stopped accepting mentorship requests.",
+    });
+  }, [searchParams, setSearchParams, mentorsQuery.data, requestsQuery.data, toast]);
+  const seekersQuery = useQuery({
+    queryKey: ["mentorship-seekers", user?.id],
+    enabled: !!user && isMentor,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("list_professional_directory", { _is_seeking_mentor: true, _limit: 100 });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
 
   const requestMentorship = useRequestMentorship(user?.id);
   const updateStatus = useUpdateMentorshipRequestStatus(user?.id);
@@ -359,8 +421,8 @@ const Mentorship = () => {
             </p>
           </div>
 
-          <Tabs defaultValue="find-mentors" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className={`grid w-full h-auto ${isMentor ? "grid-cols-3" : "grid-cols-2"}`}>
               <TabsTrigger value="find-mentors" className="flex items-center gap-2">
                 <Search className="w-4 h-4" />
                 Find Mentors
@@ -369,6 +431,12 @@ const Mentorship = () => {
                 <Users className="w-4 h-4" />
                 My Requests
               </TabsTrigger>
+              {isMentor && (
+                <TabsTrigger value="seekers" className="flex items-center gap-2">
+                  <Heart className="w-4 h-4" />
+                  Seeking a mentor
+                </TabsTrigger>
+              )}
             </TabsList>
 
             <TabsContent value="find-mentors" className="space-y-6">
@@ -505,10 +573,15 @@ const Mentorship = () => {
                               <div className="flex items-center gap-2 mb-2">
                                 {getStatusIcon(request.status)}
                                 <h3 className="font-medium">
-                                  {request.mentor_id === user?.id
-                                    ? `Request from ${`${request.profiles.first_name || ''} ${request.profiles.last_name || ''}`.trim() || 'Unknown'}`
-                                    : `Request to ${`${request.mentor_profile?.profiles.first_name || ''} ${request.mentor_profile?.profiles.last_name || ''}`.trim() || 'Unknown'}`
-                                  }
+                                  {request.mentor_id === user?.id ? "Request from " : "Request to "}
+                                  <Link
+                                    to={`/profile/${request.mentor_id === user?.id ? request.mentee_id : request.mentor_id}`}
+                                    className="text-primary hover:underline"
+                                  >
+                                    {request.mentor_id === user?.id
+                                      ? `${request.profiles.first_name || ''} ${request.profiles.last_name || ''}`.trim() || 'Unknown'
+                                      : `${request.mentor_profile?.profiles.first_name || ''} ${request.mentor_profile?.profiles.last_name || ''}`.trim() || 'Unknown'}
+                                  </Link>
                                 </h3>
                                 <Badge variant={
                                   request.status === 'accepted' ? 'default' :
@@ -532,6 +605,23 @@ const Mentorship = () => {
                               <p className="text-xs text-muted-foreground">
                                 Sent {new Date(request.created_at).toLocaleDateString()}
                               </p>
+
+                              {(sessionsQuery.data ?? []).filter((s) => s.request_id === request.id).length > 0 && (
+                                <div className="mt-3 space-y-1">
+                                  <p className="text-sm font-medium flex items-center gap-1">
+                                    <Calendar className="w-4 h-4" /> Upcoming sessions
+                                  </p>
+                                  {(sessionsQuery.data ?? []).filter((s) => s.request_id === request.id).map((s) => (
+                                    <p key={s.id} className="text-sm text-muted-foreground">
+                                      {new Date(s.scheduled_at).toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                                      {s.duration_minutes ? ` · ${s.duration_minutes} min` : ""}
+                                      {s.meeting_link && /^https?:\/\//i.test(s.meeting_link) && (
+                                        <> · <a href={s.meeting_link} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Join link</a></>
+                                      )}
+                                    </p>
+                                  ))}
+                                </div>
+                              )}
                             </div>
 
                             {request.mentor_id === user?.id && request.status === 'pending' && (
@@ -569,7 +659,20 @@ const Mentorship = () => {
                             )}
 
                             {request.status === 'accepted' && (
-                              <div className="flex gap-2 ml-4">
+                              <div className="flex flex-wrap gap-2 ml-4 justify-end">
+                                <Button
+                                  size="sm"
+                                  onClick={() => {
+                                    const otherId = request.mentor_id === user?.id ? request.mentee_id : request.mentor_id;
+                                    const otherName = request.mentor_id === user?.id
+                                      ? `${request.profiles.first_name || ''} ${request.profiles.last_name || ''}`.trim()
+                                      : `${request.mentor_profile?.profiles.first_name || ''} ${request.mentor_profile?.profiles.last_name || ''}`.trim();
+                                    navigate(`/messages?recipient=${otherId}&name=${encodeURIComponent(otherName || 'Conversation')}`);
+                                  }}
+                                >
+                                  <MessageCircle className="w-4 h-4 mr-2" />
+                                  Message
+                                </Button>
                                 <Button size="sm" variant="outline" onClick={() => setScheduleTarget(request)}>
                                   <Calendar className="w-4 h-4 mr-2" />
                                   Schedule Session
@@ -606,6 +709,50 @@ const Mentorship = () => {
                 </CardContent>
               </Card>
             </TabsContent>
+            {isMentor && (
+              <TabsContent value="seekers" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Members looking for a mentor</CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      These members marked "Seeking a mentor" on their profile. Say salaam and offer to help.
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    {(seekersQuery.data ?? []).length === 0 ? (
+                      <p className="text-muted-foreground text-center py-8">No one is looking for a mentor right now.</p>
+                    ) : (
+                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {(seekersQuery.data ?? []).map((m) => {
+                          const name = `${m.first_name || ''} ${m.last_name || ''}`.trim() || 'Member';
+                          return (
+                            <Card key={m.user_id} className="shadow-soft">
+                              <CardContent className="pt-6 space-y-3">
+                                <div>
+                                  <Link to={`/profile/${m.user_id}`} className="font-semibold text-foreground hover:underline">{name}</Link>
+                                  {m.occupation && <p className="text-sm text-muted-foreground">{m.occupation}</p>}
+                                  {(m.city || m.country) && (
+                                    <p className="text-xs text-muted-foreground">{[m.city, m.country].filter(Boolean).join(", ")}</p>
+                                  )}
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <Button asChild size="sm" variant="outline">
+                                    <Link to={`/profile/${m.user_id}`}>View profile</Link>
+                                  </Button>
+                                  <Button size="sm" onClick={() => navigate(`/messages?recipient=${m.user_id}&name=${encodeURIComponent(name)}`)}>
+                                    <MessageCircle className="w-4 h-4 mr-2" /> Message
+                                  </Button>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </main>
