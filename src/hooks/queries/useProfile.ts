@@ -28,12 +28,8 @@ export type MemberProfile = {
 export async function fetchMemberProfiles(ids: string[]): Promise<MemberProfile[]> {
   const unique = Array.from(new Set(ids.filter(Boolean))).slice(0, 200);
   if (unique.length === 0) return [];
-  // Not in generated types yet; cast through unknown.
-  const rpc = supabase.rpc as unknown as (
-    fn: string,
-    args: Record<string, unknown>,
-  ) => Promise<{ data: unknown; error: Error | null }>;
-  const { data, error } = await rpc("get_member_profiles", { _user_ids: unique });
+  // Keep the client receiver: rpc uses this.rest internally.
+  const { data, error } = await supabase.rpc("get_member_profiles", { _user_ids: unique });
   if (error) throw error;
   return ((data ?? []) as Array<{ profile: ProfileRow; professional: ProfessionalProfileRow | null }>).map(
     (r) => ({ profile: r.profile, professionalProfile: r.professional ?? null }),
@@ -46,7 +42,8 @@ export function useProfile(userId: string | undefined, viewerId: string | undefi
     queryKey: qk.profile.detail(userId),
     enabled: !!userId && !!viewerId,
     queryFn: async (): Promise<ProfileResult> => {
-      const [row] = await fetchMemberProfiles([userId!]);
+      if (!userId || !viewerId) return { profile: null, professionalProfile: null, isLimitedView: false };
+      const [row] = await fetchMemberProfiles([userId]);
       if (!row) return { profile: null, professionalProfile: null, isLimitedView: false };
       return { profile: row.profile, professionalProfile: row.professionalProfile, isLimitedView: false };
     },
