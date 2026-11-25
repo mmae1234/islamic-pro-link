@@ -84,6 +84,7 @@ const Terms = lazyWithRetry(() => import("./pages/Terms"));
 const Help = lazyWithRetry(() => import("./pages/Help"));
 const Feedback = lazyWithRetry(() => import("./pages/Feedback"));
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
+const AuthConfirm = lazyWithRetry(() => import("./pages/AuthConfirm"));
 const ForgotPassword = lazyWithRetry(() => import("./pages/ForgotPassword"));
 const ResetPassword = lazyWithRetry(() => import("./pages/ResetPassword"));
 const Donations = lazyWithRetry(() => import("./pages/Donations"));
@@ -249,6 +250,7 @@ const App = () => {
                       }
                     />
                     <Route path="/auth-gate" element={<AuthGate />} />
+                    <Route path="/auth/confirm" element={<AuthConfirm />} />
                     <Route path="/diag" element={<Diag />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
