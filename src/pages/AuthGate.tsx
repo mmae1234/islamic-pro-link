@@ -66,7 +66,13 @@ const AuthGate = () => {
         <div className="space-y-8 text-center lg:text-left">
           <div className="space-y-4">
             <h1 className="text-4xl lg:text-5xl font-bold text-foreground">
-              Create a free account to search professionals
+              {redirect.startsWith('/mentorship')
+                ? 'Create a free account to find a mentor'
+                : redirect.startsWith('/messages')
+                  ? 'Create a free account to message professionals'
+                  : redirect.startsWith('/businesses') || redirect.startsWith('/business/')
+                    ? 'Create a free account to browse businesses'
+                    : 'Create a free account to search professionals'}
             </h1>
             <p className="text-xl text-muted-foreground">
               Join Muslim Pros to connect with professionals in your field and grow your network.
@@ -117,7 +123,7 @@ const AuthGate = () => {
                 Get Started
               </CardTitle>
               <CardDescription>
-                Join thousands of Muslim professionals
+                Join a growing community of Muslim professionals
               </CardDescription>
             </CardHeader>
             

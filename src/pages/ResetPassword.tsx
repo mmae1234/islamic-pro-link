@@ -121,10 +121,10 @@ const ResetPassword = () => {
       return;
     }
 
-    if (password.length < 8) {
+    if (password.length < 10) {
       toast({
         title: "Password too short",
-        description: "Password must be at least 8 characters long.",
+        description: "Password must be at least 10 characters long.",
         variant: "destructive",
       });
       return;
@@ -241,7 +241,7 @@ const ResetPassword = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-9 pr-9"
                     required
-                    minLength={8}
+                    minLength={10}
                   />
                   <Button
                     type="button"
@@ -267,7 +267,7 @@ const ResetPassword = () => {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className="pl-9 pr-9"
                     required
-                    minLength={8}
+                    minLength={10}
                   />
                   <Button
                     type="button"

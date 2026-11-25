@@ -62,7 +62,7 @@ const Hero = () => {
             </h1>
             
             <p className="hero-subtitle text-sm sm:text-base md:text-lg lg:text-xl text-primary-foreground/90 max-w-xl mx-auto lg:mx-0">
-              Join the largest professional network for the Muslim community. Find mentors, 
+              A growing network for Muslim professionals. Find mentors, 
               build connections, and advance your career while staying true to your values.
             </p>
 
@@ -106,16 +106,16 @@ const Hero = () => {
             {/* Stats - Responsive Grid */}
             <div className="grid grid-cols-3 gap-2 sm:gap-4 mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-primary-foreground/30">
               <div className="text-center">
-                <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-primary-foreground">10K+</div>
-                <div className="text-xs sm:text-sm text-primary-foreground/90">Professionals</div>
+                <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-primary-foreground">Free</div>
+                <div className="text-xs sm:text-sm text-primary-foreground/90">to join</div>
               </div>
               <div className="text-center">
-                <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-primary-foreground">50+</div>
-                <div className="text-xs sm:text-sm text-primary-foreground/90">Countries</div>
+                <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-primary-foreground">1:1</div>
+                <div className="text-xs sm:text-sm text-primary-foreground/90">mentorship</div>
               </div>
               <div className="text-center">
-                <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-primary-foreground">200+</div>
-                <div className="text-xs sm:text-sm text-primary-foreground/90">Industries</div>
+                <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-primary-foreground">Private</div>
+                <div className="text-xs sm:text-sm text-primary-foreground/90">messaging</div>
               </div>
             </div>
           </div>

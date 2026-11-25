@@ -22,7 +22,7 @@ const features = [
   {
     icon: Users,
     title: "Professional Network",
-    description: "Connect with Muslim professionals from over 200 industries and 50+ countries worldwide.",
+    description: "Connect with Muslim professionals across industries and countries.",
     color: "text-accent"
   },
   {
@@ -34,13 +34,13 @@ const features = [
   {
     icon: MapPin,
     title: "Location-Based Search",
-    description: "Find professionals near you with our interactive map and location-based filtering.",
+    description: "Filter by country, state and city to find professionals near you.",
     color: "text-accent"
   },
   {
     icon: Award,
     title: "Mentorship Programs",
-    description: "Access structured mentorship programs designed for career growth and professional development.",
+    description: "Find a mentor for your career, or offer to mentor someone else.",
     color: "text-primary"
   },
   {
@@ -113,8 +113,8 @@ const Features = () => {
               Ready to Join Our Global Community?
             </h3>
             <p className="text-lg text-primary-foreground/90 mb-8">
-              Connect with Muslim professionals from over 200 industries and 50+ countries worldwide 
-              building successful careers while staying true to their faith.
+              Connect with Muslim professionals building successful careers 
+              while staying true to their faith.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button variant="accent" size="lg" className="font-semibold" asChild>
