@@ -26,8 +26,11 @@ const Signup = () => {
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const preselectedParam = (searchParams.get('type') as AccountType) || (searchParams.get('account_type') as AccountType);
-  const preselected: AccountType = preselectedParam || 'visitor';
+  const rawType = searchParams.get('type') || searchParams.get('account_type');
+  const preselectedParam: AccountType | null =
+    rawType === 'visitor' || rawType === 'professional' || rawType === 'business' ? rawType : null;
+  // Default to professional: the directory only grows from professional profiles.
+  const preselected: AccountType = preselectedParam || 'professional';
   const src = searchParams.get('src') || 'generic';
   const stepFromUrl = searchParams.get('step');
 
