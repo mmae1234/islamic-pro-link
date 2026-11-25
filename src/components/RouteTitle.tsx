@@ -38,6 +38,7 @@ const TITLES: Record<string, string> = {
   admin: "Admin",
   "auth-gate": "Sign In to Continue",
   diag: "Diagnostics",
+  auth: "Confirming",
 };
 
 const RouteTitle = () => {
