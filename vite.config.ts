@@ -5,29 +5,53 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 
-// Lovable's cloud builder ("oj build") calls some Rollup output hooks without
-// the output-options argument. @vitejs/plugin-legacy keys a WeakMap on that
-// argument, so the whole build crashed ("Invalid value used as weak map key")
-// and Lovable silently kept serving the last good build.
-// Guard those hooks: with a real Vite/Rollup build the argument is always an
-// object, so behaviour is unchanged; under a builder that omits it, the legacy
-// post-processing is skipped instead of crashing the build.
+// Lovable's cloud builder ("oj build", Rolldown-based) runs @vitejs/plugin-legacy
+// with output options that don't line up between hooks (renderStart gets none,
+// later hooks get a different object). The plugin then throws ("discovered
+// polyfills should exist" / "Invalid value used as weak map key"), the whole
+// build fails, and Lovable silently keeps serving the last good build.
+// Guard: each legacy hook only runs for an output whose renderStart actually
+// ran, and the HTML step only runs if chunk processing ran. A normal Vite build
+// always satisfies both, so its output is unchanged; under oj the legacy
+// post-processing is skipped instead of crashing (modern bundle still ships).
 type AnyHook = (...args: unknown[]) => unknown;
 function guardLegacyPlugins(plugins: PluginOption[]): PluginOption[] {
-  const guarded: Record<string, number> = { renderStart: 0, renderChunk: 2, generateBundle: 0 };
+  const startedOutputs = new WeakSet<object>();
+  let processedChunks = false;
+  const isObj = (v: unknown): v is object => v !== null && typeof v === "object";
   return plugins.map((p) => {
     if (!p || typeof p !== "object" || Array.isArray(p) || !("name" in p)) return p;
     if (!String(p.name).startsWith("vite:legacy")) return p;
-    const copy: Record<string, unknown> = { ...(p as unknown as Record<string, unknown>) };
-    for (const [hook, optsIndex] of Object.entries(guarded)) {
-      const orig = (p as unknown as Record<string, unknown>)[hook];
-      if (typeof orig !== "function") continue;
+    const src = p as unknown as Record<string, unknown>;
+    const copy: Record<string, unknown> = { ...src };
+    const wrap = (hook: string, run: (orig: AnyHook, self: unknown, args: unknown[]) => unknown) => {
+      const orig = src[hook];
+      if (typeof orig !== "function") return;
       copy[hook] = function (this: unknown, ...args: unknown[]) {
-        const opts = args[optsIndex];
-        if (opts === null || typeof opts !== "object") return null;
-        return (orig as AnyHook).apply(this, args);
+        return run(orig as AnyHook, this, args);
       };
-    }
+    };
+    wrap("renderStart", (orig, self, args) => {
+      if (!isObj(args[0])) return null;
+      startedOutputs.add(args[0]);
+      return orig.apply(self, args);
+    });
+    wrap("renderChunk", (orig, self, args) => {
+      // Only the post-process plugin's renderChunk takes output options.
+      if (String(p.name) === "vite:legacy-post-process") {
+        if (!isObj(args[2]) || !startedOutputs.has(args[2])) return null;
+        processedChunks = true;
+      }
+      return orig.apply(self, args);
+    });
+    wrap("generateBundle", (orig, self, args) => {
+      if (!isObj(args[0]) || !startedOutputs.has(args[0])) return null;
+      return orig.apply(self, args);
+    });
+    wrap("transformIndexHtml", (orig, self, args) => {
+      if (!processedChunks) return undefined;
+      return orig.apply(self, args);
+    });
     return copy as unknown as PluginOption;
   });
 }
