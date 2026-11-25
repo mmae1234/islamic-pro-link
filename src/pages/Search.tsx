@@ -9,6 +9,7 @@ import SearchFilters from "@/components/SearchFilters";
 import SearchSorting from "@/components/SearchSorting";
 import ProfessionalCard from "@/components/ProfessionalCard";
 import ProfileSetup from "@/components/ProfileSetup";
+import PublicDirectoryPreview from "@/components/PublicDirectoryPreview";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
@@ -206,6 +207,7 @@ const Search = () => {
             </CardContent>
           </Card>
         )}
+        {!user && <PublicDirectoryPreview />}
 
         {/* Results */}
         {user && (
