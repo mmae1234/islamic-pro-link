@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import GlobalErrorBoundary from "@/components/GlobalErrorBoundary";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AdminRoute from "@/components/AdminRoute";
+import RouteTitle from "@/components/RouteTitle";
 import LazyRouteErrorBoundary from "@/components/LazyRouteErrorBoundary";
 
 // Detects dynamic-import / chunk-load failures across browsers (Chrome,
@@ -137,6 +139,7 @@ const App = () => {
             <Sonner />
             <BrowserRouter>
               <AuthProvider>
+                <RouteTitle />
                 <LazyRouteErrorBoundary>
                   <Suspense fallback={<AppLoading />}>
                     <Routes>
@@ -229,7 +232,9 @@ const App = () => {
                       path="/admin/release-notes"
                       element={
                         <ProtectedRoute>
-                          <AdminReleaseNotes />
+                          <AdminRoute>
+                            <AdminReleaseNotes />
+                          </AdminRoute>
                         </ProtectedRoute>
                       }
                     />
@@ -237,7 +242,9 @@ const App = () => {
                       path="/admin/reports"
                       element={
                         <ProtectedRoute>
-                          <AdminReports />
+                          <AdminRoute>
+                            <AdminReports />
+                          </AdminRoute>
                         </ProtectedRoute>
                       }
                     />
