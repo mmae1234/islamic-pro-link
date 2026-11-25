@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import {
   loadCountry,
   loadState,
-  loadCity,
+  loadCitiesOfState,
   type CountryItem,
   type StateItem,
   type CityItem,
@@ -363,16 +363,16 @@ export const CitySelect = ({ value, onValueChange, country, stateProvince, place
     if (!country || !stateProvince) { setCities([]); return; }
     let mounted = true;
     setLoading(true);
-    Promise.all([loadCountry(), loadState(), loadCity()])
-      .then(([CountryMod, StateMod, CityMod]) => {
+    Promise.all([loadCountry(), loadState()])
+      .then(async ([CountryMod, StateMod]) => {
         if (!mounted) return;
         const countryData = CountryMod.getAllCountries().find(c => c.name === country);
         if (!countryData) { setCities([]); setLoading(false); return; }
         const stateData = StateMod.getStatesOfCountry(countryData.isoCode).find(s => s.name === stateProvince);
         if (!stateData) { setCities([]); setLoading(false); return; }
-        const list = CityMod.getCitiesOfState(countryData.isoCode, stateData.isoCode)
-          .slice().sort((a, b) => a.name.localeCompare(b.name));
-        setCities(list);
+        const list = await loadCitiesOfState(countryData.isoCode, stateData.isoCode);
+        if (!mounted) return;
+        setCities(list); // already sorted and de-duplicated
         setLoading(false);
       })
       .catch((err) => {
