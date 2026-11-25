@@ -30,7 +30,9 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci --no-audit --no-fund
+        # --legacy-peer-deps mirrors Lovable (bun), which ignores the known
+        # @vitejs/plugin-legacy 7 (wants Vite 7) vs Vite 5 peer mismatch.
+        run: npm ci --no-audit --no-fund --legacy-peer-deps
 
       - name: Type check (app)
         run: npx tsc -p tsconfig.app.json --noEmit
