@@ -30,6 +30,7 @@ import {
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import MessagingPrivacySettings from "@/components/MessagingPrivacySettings";
+import EmailAlertSettings from "@/components/EmailAlertSettings";
 import { User, Briefcase, Users, X, Loader2, Shield, Bell, Settings as SettingsIcon, Mail, Phone } from "lucide-react";
 
 const SKILLS_OPTIONS = [
@@ -467,20 +468,7 @@ const Settings = () => {
             </TabsContent>
 
             <TabsContent value="notifications" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Bell className="w-5 h-5" />
-                    Email Notifications
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Granular notification preferences are coming soon. For now, you'll receive
-                    email notifications for direct messages and mentorship requests by default.
-                  </p>
-                </CardContent>
-              </Card>
+              <EmailAlertSettings />
             </TabsContent>
 
             <TabsContent value="privacy">
