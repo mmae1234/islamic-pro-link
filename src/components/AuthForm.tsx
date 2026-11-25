@@ -41,6 +41,7 @@ const AuthForm = ({ mode, onToggleMode, selectedRole, values, onValuesChange }: 
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   
   const { signIn, signUp } = useAuth();
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -111,13 +112,15 @@ useEffect(() => {
     setLoading(true);
     try {
       if (mode === 'signup') {
+        let result: { alreadyRegistered: boolean };
         if (selectedRole === 'business') {
-          await signUp(emailValidation.sanitized, password, "", "", selectedRole);
+          result = await signUp(emailValidation.sanitized, password, "", "", selectedRole);
         } else {
           const firstNameValidation = validateName(firstName);
           const lastNameValidation = validateName(lastName);
-          await signUp(emailValidation.sanitized, password, firstNameValidation.sanitized, lastNameValidation.sanitized, selectedRole);
+          result = await signUp(emailValidation.sanitized, password, firstNameValidation.sanitized, lastNameValidation.sanitized, selectedRole);
         }
+        setAlreadyRegistered(result.alreadyRegistered);
         setSignupSuccess(true);
       } else {
         await signIn(emailValidation.sanitized, password);
@@ -179,13 +182,27 @@ useEffect(() => {
                   <CheckCircle className="w-8 h-8 text-success" />
                 </div>
               </div>
-              <div className="space-y-2">
-                <h3 className="text-xl font-semibold text-foreground">Check Your Email</h3>
-                <p className="text-muted-foreground">
-                  A confirmation email has been sent to <strong>{email}</strong>. 
-                  Please check your inbox to complete your registration.
-                </p>
-              </div>
+              {alreadyRegistered ? (
+                <div className="space-y-2">
+                  <h3 className="text-xl font-semibold text-foreground">You already have an account</h3>
+                  <p className="text-muted-foreground">
+                    <strong>{email}</strong> is already registered, so we didn't create a new account
+                    or change its password. Sign in with your existing password, or reset it if you
+                    don't remember it.
+                  </p>
+                  <Button asChild variant="link" className="px-0">
+                    <Link to="/forgot-password">Reset my password</Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <h3 className="text-xl font-semibold text-foreground">Check Your Email</h3>
+                  <p className="text-muted-foreground">
+                    A confirmation email has been sent to <strong>{email}</strong>.
+                    Please check your inbox (and spam folder) to complete your registration.
+                  </p>
+                </div>
+              )}
               <div className="pt-4">
                 <Button 
                   variant="outline" 
