@@ -26,29 +26,29 @@ const Footer = () => {
           {/* Quick Links */}
           <div>
             <h3 className="font-semibold text-lg mb-4">Quick Links</h3>
-            <ul className="space-y-2">
+            <ul className="space-y-1">
               <li>
-                <Link to="/search" className="text-primary-foreground/80 hover:text-accent transition-smooth">
+                <Link to="/search" className="inline-block py-1.5 text-primary-foreground/80 hover:text-accent transition-smooth">
                   Find Professionals
                 </Link>
               </li>
               <li>
-                <Link to="/mentorship" className="text-primary-foreground/80 hover:text-accent transition-smooth">
+                <Link to="/mentorship" className="inline-block py-1.5 text-primary-foreground/80 hover:text-accent transition-smooth">
                   Mentorship
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="text-primary-foreground/80 hover:text-accent transition-smooth">
+                <Link to="/about" className="inline-block py-1.5 text-primary-foreground/80 hover:text-accent transition-smooth">
                   About Us
                 </Link>
               </li>
               <li>
-                <Link to="/news" className="text-primary-foreground/80 hover:text-accent transition-smooth">
+                <Link to="/news" className="inline-block py-1.5 text-primary-foreground/80 hover:text-accent transition-smooth">
                   News
                 </Link>
               </li>
               <li>
-                <Link to="/donations" className="text-primary-foreground/80 hover:text-accent transition-smooth">
+                <Link to="/donations" className="inline-block py-1.5 text-primary-foreground/80 hover:text-accent transition-smooth">
                   Donations
                 </Link>
               </li>
@@ -58,24 +58,24 @@ const Footer = () => {
           {/* Support */}
           <div>
             <h3 className="font-semibold text-lg mb-4">Support</h3>
-            <ul className="space-y-2">
+            <ul className="space-y-1">
               <li>
-                <Link to="/help" className="text-primary-foreground/80 hover:text-accent transition-smooth">
+                <Link to="/help" className="inline-block py-1.5 text-primary-foreground/80 hover:text-accent transition-smooth">
                   Help Center
                 </Link>
               </li>
               <li>
-                <Link to="/privacy" className="text-primary-foreground/80 hover:text-accent transition-smooth">
+                <Link to="/privacy" className="inline-block py-1.5 text-primary-foreground/80 hover:text-accent transition-smooth">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link to="/terms" className="text-primary-foreground/80 hover:text-accent transition-smooth">
+                <Link to="/terms" className="inline-block py-1.5 text-primary-foreground/80 hover:text-accent transition-smooth">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-primary-foreground/80 hover:text-accent transition-smooth">
+                <Link to="/contact" className="inline-block py-1.5 text-primary-foreground/80 hover:text-accent transition-smooth">
                   Contact Us
                 </Link>
               </li>

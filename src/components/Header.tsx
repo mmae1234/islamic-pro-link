@@ -85,7 +85,7 @@ const Header = () => {
             <span className="text-lg sm:text-xl font-bold text-foreground truncate hidden xs:block">
               Muslim Professionals Network
             </span>
-            <span className="text-lg font-bold text-foreground xs:hidden">MP</span>
+            <span className="text-base font-bold text-foreground xs:hidden leading-tight">Muslim Pros Network</span>
             <span
               className="ml-1 inline-flex items-center rounded-full border border-accent/40 bg-accent/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent"
               aria-label="Beta version"
