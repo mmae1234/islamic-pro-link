@@ -56,8 +56,8 @@ export const RoleSelection = ({ defaultValue = "professional", onSubmit, onBack 
           >
             <RadioGroupItem id={`role-${id}`} value={id} className="mt-1" aria-labelledby={`label-${id}`} />
             <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <Icon className="w-5 h-5 text-primary" aria-hidden="true" />
+              <div className="flex flex-wrap items-center gap-2">
+                <Icon className="w-5 h-5 text-primary shrink-0" aria-hidden="true" />
                 <span id={`label-${id}`} className="font-semibold text-foreground">
                   {title}
                 </span>
