@@ -11,39 +11,44 @@ interface RoleSelectionProps {
   onBack?: () => void;
 }
 
+// Professional first and preselected: the directory only grows from
+// professional profiles.
 const roleOptions: Array<{
   id: AccountType;
   title: string;
   description: string;
   Icon: React.ComponentType<{ className?: string }>;
+  recommended?: boolean;
 }> = [
   {
-    id: "visitor",
-    title: "Visitor",
-    description: "Discover professionals and services. Message and bookmark favorites.",
-    Icon: Users,
-  },
-  {
     id: "professional",
-    title: "Professional",
-    description: "Create a professional profile, get discovered, and opt into mentorship.",
+    title: "I'm a working professional",
+    description:
+      "Get a profile in the directory, connect with other Muslim professionals, and find or offer mentorship. Students and job seekers welcome.",
     Icon: Briefcase,
+    recommended: true,
   },
   {
     id: "business",
-    title: "Business",
-    description: "Create and manage a business profile to showcase services and team.",
+    title: "I represent a business",
+    description: "List your business so members can find your services and team.",
     Icon: Building2,
+  },
+  {
+    id: "visitor",
+    title: "I'm just looking",
+    description: "Browse and message members without a profile of your own. You can add one later.",
+    Icon: Users,
   },
 ];
 
-export const RoleSelection = ({ defaultValue = "visitor", onSubmit, onBack }: RoleSelectionProps) => {
+export const RoleSelection = ({ defaultValue = "professional", onSubmit, onBack }: RoleSelectionProps) => {
   const [value, setValue] = useState<AccountType>(defaultValue);
 
   return (
     <div className="space-y-6" role="region" aria-label="Select account type">
       <RadioGroup value={value} onValueChange={(v) => setValue(v as AccountType)} className="grid gap-4">
-        {roleOptions.map(({ id, title, description, Icon }) => (
+        {roleOptions.map(({ id, title, description, Icon, recommended }) => (
           <label
             key={id}
             htmlFor={`role-${id}`}
@@ -56,6 +61,11 @@ export const RoleSelection = ({ defaultValue = "visitor", onSubmit, onBack }: Ro
                 <span id={`label-${id}`} className="font-semibold text-foreground">
                   {title}
                 </span>
+                {recommended && (
+                  <span className="text-xs font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5">
+                    Recommended
+                  </span>
+                )}
               </div>
               <p className="text-sm text-muted-foreground mt-1">{description}</p>
             </div>
