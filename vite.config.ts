@@ -5,6 +5,33 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 
+// Lovable's cloud builder ("oj build") calls some Rollup output hooks without
+// the output-options argument. @vitejs/plugin-legacy keys a WeakMap on that
+// argument, so the whole build crashed ("Invalid value used as weak map key")
+// and Lovable silently kept serving the last good build.
+// Guard those hooks: with a real Vite/Rollup build the argument is always an
+// object, so behaviour is unchanged; under a builder that omits it, the legacy
+// post-processing is skipped instead of crashing the build.
+type AnyHook = (...args: unknown[]) => unknown;
+function guardLegacyPlugins(plugins: PluginOption[]): PluginOption[] {
+  const guarded: Record<string, number> = { renderStart: 0, renderChunk: 2, generateBundle: 0 };
+  return plugins.map((p) => {
+    if (!p || typeof p !== "object" || Array.isArray(p) || !("name" in p)) return p;
+    if (!String(p.name).startsWith("vite:legacy")) return p;
+    const copy: Record<string, unknown> = { ...(p as unknown as Record<string, unknown>) };
+    for (const [hook, optsIndex] of Object.entries(guarded)) {
+      const orig = (p as unknown as Record<string, unknown>)[hook];
+      if (typeof orig !== "function") continue;
+      copy[hook] = function (this: unknown, ...args: unknown[]) {
+        const opts = args[optsIndex];
+        if (opts === null || typeof opts !== "object") return null;
+        return (orig as AnyHook).apply(this, args);
+      };
+    }
+    return copy as unknown as PluginOption;
+  });
+}
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
@@ -16,9 +43,11 @@ export default defineConfig(({ mode }) => ({
     react(),
     // Ensures compatibility with older iOS Safari/WebKit builds that can otherwise blank-screen.
     // NOTE: targets here are for the *legacy* bundle; keep them broad to support older iPhones.
-    legacy({
-      targets: ["defaults", "not IE 11"],
-    }),
+    ...guardLegacyPlugins(
+      legacy({
+        targets: ["defaults", "not IE 11"],
+      }),
+    ),
     mode === "development" && componentTagger(),
     // Sentry source-map upload + release creation. Only registered when
     // SENTRY_AUTH_TOKEN is present at build time — local dev builds and
