@@ -31,21 +31,8 @@ const BlockUserButton = ({
 
     setLoading(true);
     try {
-      // First check if the target user has a profile
-      const { data: targetProfile, error: profileError } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .eq('user_id', targetUserId)
-        .single();
-
-      if (profileError && profileError.code !== 'PGRST116') {
-        throw new Error('Error checking user profile');
-      }
-
-      if (!targetProfile) {
-        throw new Error('Cannot block this user - profile not found');
-      }
-
+      // No pre-check: profiles of people you haven't talked to aren't
+      // readable directly, which made blocking them fail.
       const { error } = await supabase
         .from('blocked_users')
         .insert({

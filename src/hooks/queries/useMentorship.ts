@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { qk } from "./keys";
+import { fetchMemberProfiles } from "./useProfile";
 import type { FnRow } from "./types";
 
 type DirectoryRow = FnRow<"list_professional_directory">;
@@ -65,12 +66,16 @@ export function useMentors(userId: string | undefined) {
           .map((r) => r.mentor_id),
       );
 
-      return (mentorsData ?? [])
-        .filter((m: DirectoryRow) => !excluded.has(m.user_id))
-        .map((m: DirectoryRow) => ({
-          ...m,
-          profiles: { first_name: m.first_name, last_name: m.last_name },
-        })) as unknown as MentorProfile[];
+      const rows = (mentorsData ?? []).filter((m: DirectoryRow) => !excluded.has(m.user_id));
+      // Directory rows have no bio/skills/availability; load full profiles.
+      const full = await fetchMemberProfiles(rows.map((m: DirectoryRow) => m.user_id));
+      const fullById = new Map(full.map((f) => [f.profile.user_id, f.professionalProfile]));
+      return rows.map((m: DirectoryRow) => ({
+        ...m,
+        ...(fullById.get(m.user_id) ?? {}),
+        user_id: m.user_id,
+        profiles: { first_name: m.first_name, last_name: m.last_name },
+      })) as unknown as MentorProfile[];
     },
   });
 }

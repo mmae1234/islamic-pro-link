@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { qk } from "./keys";
 import type { BusinessAccount } from "./useBusinesses";
+import { fetchMemberProfiles } from "./useProfile";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Reads
@@ -105,20 +106,25 @@ export function useFavoriteProfessionals(userId: string | undefined) {
 
       if (professionalIds.length === 0) return [];
 
-      const { data: professionals, error: profError } = await supabase
-        .from("professional_profiles")
-        .select(
-          `*, profiles!professional_profiles_user_id_fkey(first_name, last_name)`,
-        )
-        .in("user_id", professionalIds);
-      if (profError) throw profError;
+      // Members' profiles via get_member_profiles (direct table reads only
+      // return people you already have a conversation/mentorship with).
+      const members = await fetchMemberProfiles(professionalIds);
+      const byId = new Map(
+        members
+          .filter((m) => m.professionalProfile)
+          .map((m) => [
+            m.profile.user_id,
+            {
+              ...m.professionalProfile!,
+              profiles: { first_name: m.profile.first_name ?? "", last_name: m.profile.last_name ?? "" },
+            },
+          ]),
+      );
 
       return favProfs
         .map((fav) => {
           if (!fav.professional_id) return null;
-          const profile = professionals?.find(
-            (p) => p.user_id === fav.professional_id,
-          );
+          const profile = byId.get(fav.professional_id);
           if (!profile) return null;
           return {
             id: fav.id,
@@ -133,71 +139,6 @@ export function useFavoriteProfessionals(userId: string | undefined) {
   });
 }
 
-export type FavoriteMentor = {
-  id: string;
-  mentor_id: string;
-  mentee_id: string;
-  status: string;
-  created_at: string;
-  mentor_profile: {
-    user_id: string;
-    occupation: string;
-    sector: string;
-    city: string;
-    country: string;
-    bio: string;
-    avatar_url: string;
-    skills: string[];
-    availability: string;
-    profiles: { first_name: string; last_name: string };
-  };
-};
-
-export function useFavoriteMentors(userId: string | undefined) {
-  return useQuery({
-    queryKey: qk.favorites.mentorRequests(userId),
-    enabled: !!userId,
-    queryFn: async (): Promise<FavoriteMentor[]> => {
-      const { data: mentorRequests, error } = await supabase
-        .from("mentorship_requests")
-        .select("*")
-        .eq("mentee_id", userId!);
-      if (error) throw error;
-
-      if (!mentorRequests || mentorRequests.length === 0) return [];
-
-      const mentorIds = mentorRequests.map((req) => req.mentor_id);
-      const { data: mentorProfiles, error: profErr } = await supabase
-        .from("professional_profiles")
-        .select(
-          `*, profiles!professional_profiles_user_id_fkey(first_name, last_name)`,
-        )
-        .in("user_id", mentorIds);
-      if (profErr) throw profErr;
-
-      return mentorRequests
-        .map((req) => {
-          const profile = mentorProfiles?.find((p) => p.user_id === req.mentor_id);
-          if (!profile) return null;
-          return {
-            id: req.id,
-            mentor_id: req.mentor_id,
-            mentee_id: req.mentee_id,
-            status: req.status ?? "pending",
-            created_at: req.created_at,
-            mentor_profile:
-              profile as unknown as FavoriteMentor["mentor_profile"],
-          } satisfies FavoriteMentor;
-        })
-        .filter((f): f is FavoriteMentor => !!f);
-    },
-  });
-}
-
-/**
- * Single-row check: is this professional in the current user's favorites?
- * Cheap query; cached by (user, target).
- */
 export function useFavoriteStatus(
   userId: string | undefined,
   professionalUserId: string | undefined,

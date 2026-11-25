@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +22,7 @@ import {
   CheckCircle,
   Clock,
   XCircle,
+  Heart,
 } from "lucide-react";
 import {
   useMentors,
@@ -30,6 +31,8 @@ import {
   useUpdateMentorshipRequestStatus,
   useCancelMentorshipRequest,
   useDisconnectFromMentor,
+  useFavoriteProfessionals,
+  useToggleProfessionalFavorite,
   type MentorProfile,
   type MentorshipRequest,
 } from "@/hooks/queries";
@@ -59,6 +62,28 @@ const Mentorship = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>({});
   const [selectedMentor, setSelectedMentor] = useState<MentorProfile | null>(null);
+  // Favorites: mentors are professionals, so they share the Professionals list.
+  const favoritesQuery = useFavoriteProfessionals(user?.id);
+  const favoriteIds = useMemo(
+    () => new Set((favoritesQuery.data ?? []).map((f) => f.professional_id)),
+    [favoritesQuery.data],
+  );
+  const toggleFavorite = useToggleProfessionalFavorite(user?.id);
+  const handleToggleFavorite = (mentorId: string, name: string) => {
+    const currentlyFavorited = favoriteIds.has(mentorId);
+    toggleFavorite.mutate(
+      { professionalUserId: mentorId, currentlyFavorited },
+      {
+        onSuccess: () => {
+          favoritesQuery.refetch();
+          toast({
+            title: currentlyFavorited ? "Removed from favorites" : "Saved to favorites",
+            description: currentlyFavorited ? `${name} was removed from your favorites.` : `${name} is now in your Favorites.`,
+          });
+        },
+      },
+    );
+  };
   const [requestMessage, setRequestMessage] = useState("");
   const [disconnectTarget, setDisconnectTarget] = useState<{ id: string; name: string } | null>(null);
   const [scheduleTarget, setScheduleTarget] = useState<MentorshipRequest | null>(null);
@@ -377,10 +402,25 @@ const Mentorship = () => {
                                 {`${mentor.profiles.first_name || ''} ${mentor.profiles.last_name || ''}`.trim().split(' ').map(n => n[0]).join('')}
                               </span>
                             </div>
-                            <div>
-                              <h3 className="font-semibold text-foreground">{`${mentor.profiles.first_name || ''} ${mentor.profiles.last_name || ''}`.trim() || 'Unknown'}</h3>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-foreground">
+                                <Link to={`/profile/${mentor.user_id}`} className="hover:underline">
+                                  {`${mentor.profiles.first_name || ''} ${mentor.profiles.last_name || ''}`.trim() || 'Unknown'}
+                                </Link>
+                              </h3>
                               <p className="text-sm text-muted-foreground">{mentor.occupation}</p>
                             </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="shrink-0"
+                              aria-label={favoriteIds.has(mentor.user_id) ? "Remove from favorites" : "Save to favorites"}
+                              aria-pressed={favoriteIds.has(mentor.user_id)}
+                              disabled={toggleFavorite.isPending}
+                              onClick={() => handleToggleFavorite(mentor.user_id, `${mentor.profiles.first_name || ''}`.trim() || 'This mentor')}
+                            >
+                              <Heart className={`w-5 h-5 ${favoriteIds.has(mentor.user_id) ? 'fill-current text-favorite' : ''}`} />
+                            </Button>
                           </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -423,13 +463,15 @@ const Mentorship = () => {
                             </p>
                           )}
 
-                          <Button
-                            className="w-full"
-                            onClick={() => setSelectedMentor(mentor)}
-                          >
-                            <MessageCircle className="w-4 h-4 mr-2" />
-                            Request Mentorship
-                          </Button>
+                          <div className="grid grid-cols-2 gap-2">
+                            <Button asChild variant="outline">
+                              <Link to={`/profile/${mentor.user_id}`}>View profile</Link>
+                            </Button>
+                            <Button onClick={() => setSelectedMentor(mentor)}>
+                              <MessageCircle className="w-4 h-4 mr-2" />
+                              Request
+                            </Button>
+                          </div>
                         </CardContent>
                       </Card>
                     ))}

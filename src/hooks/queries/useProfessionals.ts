@@ -116,23 +116,18 @@ export function useComposePickerProfessionals(userId: string | undefined) {
     queryKey: qk.professionals.composePicker(userId),
     enabled: !!userId,
     queryFn: async (): Promise<ComposePickerRow[]> => {
-      const { data, error } = await supabase
-        .from("professional_profiles")
-        .select(
-          `user_id, occupation, sector,
-           profiles!professional_profiles_user_id_fkey(first_name, last_name)`,
-        )
-        .neq("user_id", userId!)
-        .limit(100);
-
+      // The directory RPC lists every named professional (not just people
+      // you already talk to) and respects blocks.
+      const { data, error } = await supabase.rpc("list_professional_directory", { _limit: 100 });
       if (error) throw error;
-      const rows = (data ?? []) as unknown as EmbeddedProfilePayload[];
-      return rows.map((r) => ({
-        user_id: r.user_id,
-        occupation: r.occupation,
-        sector: r.sector,
-        profiles: Array.isArray(r.profiles) ? r.profiles[0] ?? null : r.profiles,
-      }));
+      return (data ?? [])
+        .filter((r) => r.user_id !== userId)
+        .map((r) => ({
+          user_id: r.user_id,
+          occupation: r.occupation,
+          sector: r.sector,
+          profiles: { first_name: r.first_name ?? "", last_name: r.last_name ?? "" },
+        }));
     },
   });
 }
