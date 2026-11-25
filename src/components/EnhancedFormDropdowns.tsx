@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   loadCountry,
-  loadState,
+  loadStatesOfCountry,
   loadCitiesOfState,
   type CountryItem,
   type StateItem,
@@ -301,13 +301,13 @@ export const StateProvinceSelect = ({ value, onValueChange, country, placeholder
     if (!country) { setStates([]); return; }
     let mounted = true;
     setLoading(true);
-    Promise.all([loadCountry(), loadState()])
-      .then(([CountryMod, StateMod]) => {
+    loadCountry()
+      .then(async (CountryMod) => {
         if (!mounted) return;
         const countryData = CountryMod.getAllCountries().find(c => c.name === country);
         if (!countryData) { setStates([]); setLoading(false); return; }
-        const list = StateMod.getStatesOfCountry(countryData.isoCode)
-          .slice().sort((a, b) => a.name.localeCompare(b.name));
+        const list = await loadStatesOfCountry(countryData.isoCode); // sorted
+        if (!mounted) return;
         setStates(list);
         setLoading(false);
       })
@@ -363,12 +363,12 @@ export const CitySelect = ({ value, onValueChange, country, stateProvince, place
     if (!country || !stateProvince) { setCities([]); return; }
     let mounted = true;
     setLoading(true);
-    Promise.all([loadCountry(), loadState()])
-      .then(async ([CountryMod, StateMod]) => {
+    loadCountry()
+      .then(async (CountryMod) => {
         if (!mounted) return;
         const countryData = CountryMod.getAllCountries().find(c => c.name === country);
         if (!countryData) { setCities([]); setLoading(false); return; }
-        const stateData = StateMod.getStatesOfCountry(countryData.isoCode).find(s => s.name === stateProvince);
+        const stateData = (await loadStatesOfCountry(countryData.isoCode)).find(s => s.name === stateProvince);
         if (!stateData) { setCities([]); setLoading(false); return; }
         const list = await loadCitiesOfState(countryData.isoCode, stateData.isoCode);
         if (!mounted) return;
