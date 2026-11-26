@@ -49,45 +49,31 @@ const MessagingPrivacySettings = () => {
       
       setMessagingPrivacy(profile.messaging_privacy || 'open');
 
-      // Load blocked users
-      const { data: blockedData, error: blockedError } = await supabase
-        .from('blocked_users')
-        .select(`
-          id,
-          blocked_id,
-          created_at,
-          profiles:blocked_id(first_name, last_name, avatar_url)
-        `)
-        .eq('blocker_id', user.id);
+      // Load blocked users (RPC: profiles RLS hides people you've blocked)
+      const { data: blockedData, error: blockedError } = await supabase.rpc(
+        "get_my_blocked_users" as never,
+      );
 
       if (blockedError) throw blockedError;
 
-      if (blockedData) {
-        // PostgREST may return the embedded `profiles` as an array or single
-        // object depending on cardinality inference. Narrow to a single slice.
-        type BlockedRow = {
-          id: string;
-          blocked_id: string;
-          created_at: string;
-          profiles:
-            | { first_name: string | null; last_name: string | null; avatar_url: string | null }
-            | { first_name: string | null; last_name: string | null; avatar_url: string | null }[]
-            | null;
-        };
-        const rows = blockedData as unknown as BlockedRow[];
-        const blocked = rows.map((item) => {
-          const profile = Array.isArray(item.profiles) ? item.profiles[0] : item.profiles;
-          return {
-            id: item.id,
-            blocked_id: item.blocked_id,
-            first_name: profile?.first_name || 'Unknown',
-            last_name: profile?.last_name || 'User',
-            avatar_url: profile?.avatar_url ?? undefined,
-            blocked_at: item.created_at,
-          };
-        });
-        setBlockedUsers(blocked);
-      }
+      const rows = (blockedData ?? []) as unknown as Array<{
+        id: string;
+        blocked_id: string;
+        created_at: string;
+        first_name: string | null;
+        last_name: string | null;
+        avatar_url: string | null;
+      }>;
+      setBlockedUsers(
+        rows.map((item) => ({
+          id: item.id,
+          blocked_id: item.blocked_id,
+          first_name: item.first_name || 'Unknown',
+          last_name: item.last_name || 'User',
+          avatar_url: item.avatar_url ?? undefined,
+          blocked_at: item.created_at,
+        })),
+      );
     } catch (error) {
       console.error('Error loading privacy settings:', error);
       toast({
