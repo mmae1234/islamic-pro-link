@@ -8,11 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { Send, ArrowLeft, Trash2, Archive, Flag } from 'lucide-react';
+import { Send, ArrowLeft, Trash2, Flag } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import ReportDialog from '@/components/ReportDialog';
 import { getErrorMessage } from "@/lib/errors";
+import { fetchMyHides, hideMessageForMe, hideThreadForMe, isHiddenForMe } from "@/lib/messageHides";
 
 interface Message {
   id: string;
@@ -135,7 +136,9 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
       if (outErr) throw outErr;
       if (inErr) throw inErr;
 
+      const hides = await fetchMyHides(user.id);
       const merged = [...(outData || []), ...(inData || [])]
+        .filter((m) => !isHiddenForMe(m, user.id, hides))
         .sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at));
       setMessages(merged);
     } catch (error) {
@@ -167,17 +170,12 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
 
   const deleteMessage = async (messageId: string) => {
     try {
-      const { error } = await supabase
-        .from('messages')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('id', messageId);
-
-      if (error) throw error;
-      
+      if (!user) return;
+      await hideMessageForMe(user.id, messageId);
       loadConversation();
       toast({
         title: "Message deleted",
-        description: "The message has been deleted.",
+        description: "Deleted for you. The other person still has their copy.",
       });
     } catch (error: unknown) {
       toast({
@@ -188,54 +186,6 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
     } finally {
       setShowDeleteDialog(false);
       setMessageToDelete(null);
-    }
-  };
-
-  const archiveMessage = async (messageId: string) => {
-    try {
-      const { error } = await supabase
-        .from('messages')
-        .update({ archived_at: new Date().toISOString() })
-        .eq('id', messageId);
-
-      if (error) throw error;
-      
-      loadConversation();
-      toast({
-        title: "Message archived",
-        description: "The message has been archived.",
-      });
-    } catch (error: unknown) {
-      toast({
-        title: "Error",
-        description: getErrorMessage(error) || "Failed to archive message.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const reportMessage = async (messageId: string) => {
-    try {
-      const { error } = await supabase
-        .from('messages')
-        .update({ 
-          reported_at: new Date().toISOString(),
-          report_reason: 'Inappropriate content'
-        })
-        .eq('id', messageId);
-
-      if (error) throw error;
-      
-      toast({
-        title: "Message reported",
-        description: "The message has been reported to moderators.",
-      });
-    } catch (error: unknown) {
-      toast({
-        title: "Error",
-        description: getErrorMessage(error) || "Failed to report message.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -288,27 +238,11 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
   const deleteThread = async () => {
     if (!user) return;
     try {
-      // Two parallel writes instead of a nested .or() (iOS-safe).
-      const nowIso = new Date().toISOString();
-      const [outRes, inRes] = await Promise.all([
-        supabase
-          .from('messages')
-          .update({ deleted_at: nowIso })
-          .eq('sender_id', user.id)
-          .eq('recipient_id', partnerId),
-        supabase
-          .from('messages')
-          .update({ deleted_at: nowIso })
-          .eq('sender_id', partnerId)
-          .eq('recipient_id', user.id),
-      ]);
-
-      const error = outRes.error || inRes.error;
-      if (error) throw error;
+      await hideThreadForMe(user.id, partnerId);
 
       toast({
         title: "Thread deleted",
-        description: "The conversation has been deleted.",
+        description: "Deleted for you. The other person still has their copy.",
       });
       onBack();
     } catch (error: unknown) {
@@ -419,10 +353,6 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => archiveMessage(message.id)}>
-                              <Archive className="w-4 h-4 mr-2" />
-                              Archive
-                            </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => {
                                 setMessageToDelete(message.id);
@@ -505,9 +435,9 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Message</AlertDialogTitle>
+            <AlertDialogTitle>Delete for you?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this message? This action cannot be undone.
+              This removes the message from your view only. The other person still has their copy, and you can find it under Archived.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

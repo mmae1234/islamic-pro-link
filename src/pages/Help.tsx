@@ -126,7 +126,7 @@ const Help = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold mb-2">Managing Conversations</h3>
-                  <p className="text-muted-foreground">Access all your conversations from the Messages page. You can delete, archive, or report messages as needed.</p>
+                  <p className="text-muted-foreground">Access all your conversations from the Messages page. You can delete messages for yourself or report them.</p>
                 </div>
               </div>
             </CardContent>
@@ -241,7 +241,7 @@ const Help = () => {
                 <AccordionItem value="item-2h">
                   <AccordionTrigger>How do I delete message conversations?</AccordionTrigger>
                   <AccordionContent>
-                    On the Messages page, click the "Delete" button next to any conversation. This will permanently delete the entire conversation thread for both you and the other user.
+                    On the Messages page, click the "Delete" button next to any conversation. It is removed from your view only. The other person keeps their copy, so a report can still be reviewed. If they message you again, the conversation comes back with just the new messages.
                   </AccordionContent>
                 </AccordionItem>
 

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { qk } from "./keys";
+import { fetchMyHides, hideMessageForMe, hideThreadForMe, isHiddenForMe } from "@/lib/messageHides";
 import type { Tbl, ProfileNameSlice } from "./types";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -28,7 +29,7 @@ type ConversationJoinedRow = Pick<
 /** A bare message row used purely for last-message + unread-count rollups. */
 type MessageRollupRow = Pick<
   Tbl<"messages">,
-  "content" | "created_at" | "sender_id" | "recipient_id" | "read_at"
+  "id" | "content" | "created_at" | "sender_id" | "recipient_id" | "read_at"
 >;
 
 export type ConversationSummary = {
@@ -103,13 +104,15 @@ export function useConversations(userId: string | undefined) {
         };
       });
 
+      const hides = await fetchMyHides(userId!);
+
       // Fold in last message + unread count per conversation, batched.
       if (conversationsList.length > 0) {
         const partnerIds = conversationsList.map((c) => c.partner_id);
         const [outRes, inRes] = await Promise.all([
           supabase
             .from("messages")
-            .select("content, created_at, sender_id, recipient_id, read_at")
+            .select("id, content, created_at, sender_id, recipient_id, read_at")
             .eq("sender_id", userId!)
             .in("recipient_id", partnerIds)
             .is("deleted_at", null)
@@ -117,7 +120,7 @@ export function useConversations(userId: string | undefined) {
             .limit(500),
           supabase
             .from("messages")
-            .select("content, created_at, sender_id, recipient_id, read_at")
+            .select("id, content, created_at, sender_id, recipient_id, read_at")
             .eq("recipient_id", userId!)
             .in("sender_id", partnerIds)
             .is("deleted_at", null)
@@ -128,7 +131,9 @@ export function useConversations(userId: string | undefined) {
         const allMessages: MessageRollupRow[] = [
           ...((outRes.data ?? []) as MessageRollupRow[]),
           ...((inRes.data ?? []) as MessageRollupRow[]),
-        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        ]
+          .filter((msg) => !isHiddenForMe(msg, userId!, hides))
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
         for (const conv of conversationsList) {
           const convMessages = allMessages.filter(
@@ -149,7 +154,10 @@ export function useConversations(userId: string | undefined) {
         }
       }
 
-      return conversationsList;
+      // A thread you deleted stays out of your list until a new message arrives.
+      return conversationsList.filter(
+        (c) => !hides.threadBefore.has(c.partner_id) || c.last_message !== "",
+      );
     },
   });
 }
@@ -168,7 +176,8 @@ export function useInboxMessages(userId: string | undefined) {
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as MessageRow[];
+      const hides = await fetchMyHides(userId!);
+      return ((data ?? []) as MessageRow[]).filter((m) => !isHiddenForMe(m, userId!, hides));
     },
   });
 }
@@ -187,11 +196,13 @@ export function useSentMessages(userId: string | undefined) {
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as MessageRow[];
+      const hides = await fetchMyHides(userId!);
+      return ((data ?? []) as MessageRow[]).filter((m) => !isHiddenForMe(m, userId!, hides));
     },
   });
 }
 
+/** Messages you deleted for yourself (plus older ones deleted before per-user delete). */
 export function useArchivedMessages(userId: string | undefined) {
   return useQuery({
     queryKey: qk.messages.archived(userId),
@@ -202,29 +213,32 @@ export function useArchivedMessages(userId: string | undefined) {
         sender_profile:profiles!messages_sender_id_fkey(first_name, last_name),
         recipient_profile:profiles!messages_recipient_id_fkey(first_name, last_name)
       `;
-      const [{ data: archSent, error: errSent }, { data: archReceived, error: errReceived }] =
+      const [{ data: sent, error: errSent }, { data: received, error: errReceived }, hides] =
         await Promise.all([
           supabase
             .from("messages")
             .select(archivedSelect)
             .eq("sender_id", userId!)
-            .not("deleted_at", "is", null)
-            .order("created_at", { ascending: false }),
+            .order("created_at", { ascending: false })
+            .limit(500),
           supabase
             .from("messages")
             .select(archivedSelect)
             .eq("recipient_id", userId!)
-            .not("deleted_at", "is", null)
-            .order("created_at", { ascending: false }),
+            .order("created_at", { ascending: false })
+            .limit(500),
+          fetchMyHides(userId!),
         ]);
 
       if (errSent) throw errSent;
       if (errReceived) throw errReceived;
 
       return [
-        ...((archSent ?? []) as unknown as MessageRow[]),
-        ...((archReceived ?? []) as unknown as MessageRow[]),
-      ].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+        ...((sent ?? []) as unknown as MessageRow[]),
+        ...((received ?? []) as unknown as MessageRow[]),
+      ]
+        .filter((m) => m.deleted_at !== null || isHiddenForMe(m, userId!, hides))
+        .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
     },
   });
 }
@@ -276,16 +290,13 @@ export function useMarkMessageRead(userId: string | undefined) {
   });
 }
 
-/** Soft-delete a single message (moves it to Archived). */
+/** Delete a single message for yourself only (moves it to Archived; the other person keeps it). */
 export function useDeleteMessage(userId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (messageId: string) => {
-      const { error } = await supabase
-        .from("messages")
-        .update({ deleted_at: new Date().toISOString() })
-        .eq("id", messageId);
-      if (error) throw error;
+      if (!userId) throw new Error("Not authenticated");
+      await hideMessageForMe(userId, messageId);
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: qk.messages.all(userId) });
@@ -294,39 +305,15 @@ export function useDeleteMessage(userId: string | undefined) {
 }
 
 /**
- * Delete an entire conversation: removes the conversations row and soft-deletes
- * all messages between the two users. Conversations are stored with
- * `user_a < user_b` so the pair lookup is a single ordered eq().eq() — no `.or()`.
+ * Delete a conversation for yourself only. The other person keeps their copy,
+ * and the conversation's request status and message limits stay as they were.
  */
 export function useDeleteConversation(userId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (partnerId: string) => {
       if (!userId) throw new Error("Not authenticated");
-      const [orderedA, orderedB] = [userId, partnerId].sort();
-
-      const { error: convErr } = await supabase
-        .from("conversations")
-        .delete()
-        .eq("user_a", orderedA)
-        .eq("user_b", orderedB);
-      if (convErr) throw convErr;
-
-      const nowIso = new Date().toISOString();
-      const [outRes, inRes] = await Promise.all([
-        supabase
-          .from("messages")
-          .update({ deleted_at: nowIso })
-          .eq("sender_id", userId)
-          .eq("recipient_id", partnerId),
-        supabase
-          .from("messages")
-          .update({ deleted_at: nowIso })
-          .eq("sender_id", partnerId)
-          .eq("recipient_id", userId),
-      ]);
-      if (outRes.error) throw outRes.error;
-      if (inRes.error) throw inRes.error;
+      await hideThreadForMe(userId, partnerId);
     },
     onMutate: async (partnerId) => {
       const key = qk.messages.conversations(userId);
