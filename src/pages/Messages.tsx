@@ -248,13 +248,13 @@ const Messages = () => {
             }}
             className="space-y-6"
           >
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="inbox" className="flex items-center gap-2">
-                <Inbox className="w-4 h-4" />
+            <TabsList className="grid w-full h-auto grid-cols-3 sm:grid-cols-5 gap-1">
+              <TabsTrigger value="inbox" className="flex items-center gap-1.5 px-2">
+                <Inbox className="hidden sm:block w-4 h-4" />
                 Inbox
               </TabsTrigger>
-              <TabsTrigger value="requests" className="flex items-center gap-2">
-                <Shield className="w-4 h-4" />
+              <TabsTrigger value="requests" className="flex items-center gap-1.5 px-2">
+                <Shield className="hidden sm:block w-4 h-4" />
                 Requests
                 {requestCount > 0 && (
                   <Badge variant="destructive" className="h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs ml-1">
@@ -262,16 +262,16 @@ const Messages = () => {
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="sent" className="flex items-center gap-2">
-                <SendIcon className="w-4 h-4" />
+              <TabsTrigger value="sent" className="flex items-center gap-1.5 px-2">
+                <SendIcon className="hidden sm:block w-4 h-4" />
                 Sent
               </TabsTrigger>
-              <TabsTrigger value="archived" className="flex items-center gap-2">
-                <Archive className="w-4 h-4" />
+              <TabsTrigger value="archived" className="flex items-center gap-1.5 px-2">
+                <Archive className="hidden sm:block w-4 h-4" />
                 Archived
               </TabsTrigger>
-              <TabsTrigger value="compose" className="flex items-center gap-2">
-                <Plus className="w-4 h-4" />
+              <TabsTrigger value="compose" className="flex items-center gap-1.5 px-2">
+                <Plus className="hidden sm:block w-4 h-4" />
                 Compose
               </TabsTrigger>
             </TabsList>

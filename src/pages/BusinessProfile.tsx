@@ -1,3 +1,4 @@
+import { formatPhone } from "@/lib/formatPhone";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Header from "@/components/Header";
@@ -317,12 +318,14 @@ const handleRequestLink = async () => {
       </a>
     </Button>
   )}
-  <Button variant={isFavorited ? "default" : "outline"} onClick={toggleFavorite}>
-    <Heart className={`w-4 h-4 mr-2 ${isFavorited ? 'fill-current' : ''}`} /> {isFavorited ? 'Favorited' : 'Favorite'}
-  </Button>
+  {(!user || user.id !== business.owner_id) && (
+    <Button variant={isFavorited ? "default" : "outline"} onClick={toggleFavorite}>
+      <Heart className={`w-4 h-4 mr-2 ${isFavorited ? 'fill-current' : ''}`} /> {isFavorited ? 'Favorited' : 'Favorite'}
+    </Button>
+  )}
   {user && user.id === business.owner_id && (
     <Button variant="accent" asChild>
-      <Link to="/dashboard/business">Edit Business Profile</Link>
+      <Link to="/edit-business-profile">Edit Business Profile</Link>
     </Button>
   )}
   {!user && (
@@ -386,7 +389,7 @@ const handleRequestLink = async () => {
                   )}
                   {business.phone && (
                     <p>
-                      <a href={`tel:${business.phone}`} className="text-primary hover:underline inline-flex items-center gap-2"><Phone className="w-4 h-4" /> {business.phone}</a>
+                      <a href={`tel:${business.phone}`} className="text-primary hover:underline inline-flex items-center gap-2"><Phone className="w-4 h-4" /> {formatPhone(business.phone)}</a>
                     </p>
                   )}
                   {business.website && (
@@ -462,7 +465,7 @@ const handleRequestLink = async () => {
               <Card className="shadow-soft">
                 <CardContent className="pt-6 flex justify-end">
 <Button variant="hero" onClick={handleRequestLink} disabled={linking || alreadyLinked || linkBlocked}>
-  {alreadyLinked ? 'Request Sent' : linkBlocked ? 'Linking disabled' : 'Request to link profile'}
+  {alreadyLinked ? 'Request sent' : linkBlocked ? 'Linking disabled' : 'I work here'}
 </Button>
                 </CardContent>
               </Card>

@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CountrySelect, SectorSelect, OccupationSelect } from "@/components/EnhancedFormDropdowns";
 import { StateProvinceSelect } from "@/components/StateProvinceSelect";
@@ -93,6 +92,10 @@ const MentorshipSearchFilters = ({ onSearch, loading = false }: MentorshipSearch
     });
   };
 
+  const [showMore, setShowMore] = useState(false);
+  const more = showMore ? '' : 'hidden md:block';
+  const moreGrid = showMore ? 'grid' : 'hidden md:grid';
+
   return (
     <Card className="shadow-soft hover-lift transition-all duration-300">
       <CardHeader>
@@ -105,7 +108,7 @@ const MentorshipSearchFilters = ({ onSearch, loading = false }: MentorshipSearch
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Basic Search */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className={`grid md:grid-cols-2 ${filters.country === 'all' ? 'lg:grid-cols-4' : 'lg:grid-cols-5'} gap-4`}>
           <div>
             <Label htmlFor="search">Name or Keyword</Label>
             <Input
@@ -116,7 +119,7 @@ const MentorshipSearchFilters = ({ onSearch, loading = false }: MentorshipSearch
             />
           </div>
           
-          <div>
+          <div className={more}>
             <Label>Country</Label>
             <CountrySelect
               value={filters.country === 'all' ? '' : filters.country}
@@ -129,7 +132,7 @@ const MentorshipSearchFilters = ({ onSearch, loading = false }: MentorshipSearch
             />
           </div>
 
-          <div>
+          <div className={filters.country === 'all' ? 'hidden' : more}>
             <Label>State/Province</Label>
             <StateProvinceSelect
               value={filters.stateProvince === 'all' ? '' : filters.stateProvince}
@@ -140,7 +143,7 @@ const MentorshipSearchFilters = ({ onSearch, loading = false }: MentorshipSearch
             />
           </div>
 
-          <div>
+          <div className={more}>
             <Label>Sector</Label>
             <SectorSelect 
               value={filters.sector === 'all' ? '' : filters.sector} 
@@ -155,7 +158,7 @@ const MentorshipSearchFilters = ({ onSearch, loading = false }: MentorshipSearch
             />
           </div>
 
-          <div>
+          <div className={more}>
             <Label>Occupation</Label>
             <OccupationSelect 
               value={filters.occupation === 'all' ? '' : filters.occupation} 
@@ -168,7 +171,7 @@ const MentorshipSearchFilters = ({ onSearch, loading = false }: MentorshipSearch
         </div>
 
         {/* University, Language, and Gender Filters */}
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className={`${moreGrid} md:grid-cols-3 gap-4`}>
           <div>
             <Label>Universities</Label>
             <UniversitySearchSelect
@@ -207,7 +210,7 @@ const MentorshipSearchFilters = ({ onSearch, loading = false }: MentorshipSearch
         </div>
 
         {/* Skills Filter */}
-        <div>
+        <div className={more}>
           <Label>Skills</Label>
           <div className="flex flex-wrap gap-2 mb-2">
             {SKILLS_OPTIONS.map(skill => (
@@ -237,29 +240,8 @@ const MentorshipSearchFilters = ({ onSearch, loading = false }: MentorshipSearch
           )}
         </div>
 
-        {/* Mentorship Type */}
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="isMentor"
-              checked={filters.isMentor}
-              onCheckedChange={(checked) => setFilters(prev => ({ ...prev, isMentor: checked as boolean }))}
-            />
-            <Label htmlFor="isMentor">Looking for mentors</Label>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="isSeekingMentor"
-              checked={filters.isSeekingMentor}
-              onCheckedChange={(checked) => setFilters(prev => ({ ...prev, isSeekingMentor: checked as boolean }))}
-            />
-            <Label htmlFor="isSeekingMentor">Available mentors</Label>
-          </div>
-        </div>
-
         {/* Experience Range */}
-        <div>
+        <div className={more}>
           <Label>Years of Experience</Label>
           <div className="grid grid-cols-2 gap-2">
             <Input
@@ -276,6 +258,17 @@ const MentorshipSearchFilters = ({ onSearch, loading = false }: MentorshipSearch
             />
           </div>
         </div>
+
+        {/* Phones: keep the long filter list folded */}
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full md:hidden"
+          onClick={() => setShowMore((v) => !v)}
+          aria-expanded={showMore}
+        >
+          {showMore ? 'Fewer filters' : 'More filters'}
+        </Button>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-2">
