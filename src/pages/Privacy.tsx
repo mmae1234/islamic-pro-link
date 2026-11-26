@@ -105,7 +105,7 @@ const Privacy = () => {
             <h2 className="text-2xl font-semibold mb-4">6. Data Retention</h2>
             <ul className="list-disc pl-6 mb-4">
               <li>Account and profile data: retained while your account is active.</li>
-              <li>Messages: retained until you or your counterpart delete the conversation, or your account is deleted.</li>
+              <li>Messages: deleting a message or conversation hides it from your view only; the other person keeps their copy. Messages are removed when an account is deleted.</li>
               <li>Abuse reports: retained for moderation, audit, and legal purposes.</li>
               <li>Authentication logs and security events: retained for a limited period for fraud and abuse prevention.</li>
               <li>When you delete your account, your profile and personally identifying data are removed; some records (e.g., abuse reports, audit logs) may be retained as required by law or legitimate business interest.</li>

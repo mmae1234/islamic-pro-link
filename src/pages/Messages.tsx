@@ -146,7 +146,7 @@ const Messages = () => {
       onSuccess: () =>
         toast({
           title: "Message deleted",
-          description: "The message has been moved to archived.",
+          description: "Deleted for you and moved to Archived. The other person still has their copy.",
         }),
       onError: (err: Error) =>
         toast({
@@ -161,7 +161,7 @@ const Messages = () => {
       onSuccess: () =>
         toast({
           title: "Conversation deleted",
-          description: "The entire conversation has been deleted.",
+          description: "Deleted for you. The other person still has their copy.",
         }),
       onError: (err: Error) =>
         toast({
@@ -443,7 +443,7 @@ const Messages = () => {
                       <SendIcon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                       <h3 className="text-lg font-medium text-foreground mb-2">No archived messages</h3>
                       <p className="text-muted-foreground">
-                        Deleted, declined, and archived messages will appear here.
+                        Messages you delete appear here. Deleting only removes them from your view.
                       </p>
                     </div>
                   ) : (
