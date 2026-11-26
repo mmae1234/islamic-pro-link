@@ -31,7 +31,7 @@ const Privacy = () => {
               <li>Business profile information (for business accounts): business name, description, location, website, contact details, logo and images, social links.</li>
               <li>Messages you send through the in-app messaging system.</li>
               <li>Mentorship requests and responses.</li>
-              <li>Reports you file about other users or messages.</li>
+              <li>Reports you file about other users or messages. When you report someone, a copy of the most recent messages between you and that person (up to 30) is saved with the report so our moderators can review what happened.</li>
               <li>Contact-form and feedback submissions.</li>
               <li>Donations: when you donate via PayPal, PayPal processes the payment; we do not receive or store your card details.</li>
             </ul>
@@ -106,7 +106,7 @@ const Privacy = () => {
             <ul className="list-disc pl-6 mb-4">
               <li>Account and profile data: retained while your account is active.</li>
               <li>Messages: deleting a message or conversation hides it from your view only; the other person keeps their copy. Messages are removed when an account is deleted.</li>
-              <li>Abuse reports: retained for moderation, audit, and legal purposes.</li>
+              <li>Abuse reports, including the message copy saved with them: retained for moderation, audit, and legal purposes.</li>
               <li>Authentication logs and security events: retained for a limited period for fraud and abuse prevention.</li>
               <li>When you delete your account, your profile and personally identifying data are removed; some records (e.g., abuse reports, audit logs) may be retained as required by law or legitimate business interest.</li>
             </ul>

@@ -80,8 +80,11 @@ const ReportDialog = ({
           accused_id: accusedId,
           reason: selectedReason,
           details: details.trim() || null,
-          conversation_id: conversationId || null
-        })
+          conversation_id: conversationId || null,
+          // Recorded so the admin sees exactly which message was reported
+          // (column added in 20261126140000; ignored by older databases' types).
+          ...(messageId ? { message_id: messageId } : {}),
+        } as never)
         .select('id')
         .single();
 
