@@ -127,6 +127,9 @@ const Search = () => {
     searchTerm: string;
     experienceMin: string;
     experienceMax: string;
+    universities: string[];
+    languages: string[];
+    skills: string[];
   }>;
 
   const handleSearch = (next: SearchFilterPayload = {}) => {
@@ -141,6 +144,9 @@ const Search = () => {
       searchTerm: next.searchTerm,
       experienceMin: next.experienceMin,
       experienceMax: next.experienceMax,
+      universities: next.universities,
+      languages: next.languages,
+      skills: next.skills,
     });
   };
 
