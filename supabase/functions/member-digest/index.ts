@@ -89,7 +89,7 @@ function buildEmail(firstName: string, shown: NewMember[], total: number, sameFi
         </td></tr>
         <tr><td style="padding:16px 24px;border-top:1px solid #e7e5e4;font-size:12px;line-height:1.5;color:#78716c;">
           You get this weekly summary because it's on for your account. We only send it in weeks when someone new joins.
-          <a href="${SITE}/settings" style="color:#78716c;">Turn it off in Settings</a>.
+          <a href="${SITE}/settings?tab=notifications" style="color:#78716c;">Turn it off in Settings</a>.
         </td></tr>
       </table>
     </td></tr>
@@ -108,7 +108,7 @@ function buildEmail(firstName: string, shown: NewMember[], total: number, sameFi
     total > shown.length ? `and ${total - shown.length} more.` : "",
     "",
     `Browse members: ${SITE}/search`,
-    `Turn off this weekly email in Settings: ${SITE}/settings`,
+    `Turn off this weekly email in Settings: ${SITE}/settings?tab=notifications`,
   ].join("\n");
 
   const subject = total === 1

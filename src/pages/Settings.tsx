@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -51,6 +51,10 @@ const Settings = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  // ?tab=notifications etc. (email footers link straight to the right tab)
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get("tab");
+  const activeTab = requestedTab === "account" || requestedTab === "notifications" ? requestedTab : "privacy";
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -392,7 +396,11 @@ const Settings = () => {
             </p>
           </div>
 
-            <Tabs defaultValue="privacy" className="w-full">
+            <Tabs
+              value={activeTab}
+              onValueChange={(v) => setSearchParams(v === "privacy" ? {} : { tab: v }, { replace: true })}
+              className="w-full"
+            >
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="privacy">Privacy</TabsTrigger>
               <TabsTrigger value="account">Account</TabsTrigger>

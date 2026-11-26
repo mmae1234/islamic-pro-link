@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, User, MapPin, Briefcase } from "lucide-react";
 import { getErrorMessage } from "@/lib/errors";
+import { fetchMemberProfiles } from "@/hooks/queries/useProfile";
 
 interface RequestSender {
   id: string;
@@ -60,7 +61,8 @@ export default function MessageRequests({ onAcceptRequest, onRequestCountChange 
           user_b,
           status,
           created_at,
-          messages(content, created_at)
+          requested_by,
+          messages(content, created_at, sender_id)
         `;
       const [{ data: convA, error: errA }, { data: convB, error: errB }] = await Promise.all([
         supabase
@@ -80,45 +82,64 @@ export default function MessageRequests({ onAcceptRequest, onRequestCountChange 
       if (errA) throw errA;
       if (errB) throw errB;
 
-      const conversations = [...(convA || []), ...(convB || [])]
+      type ReqRow = {
+        id: string;
+        user_a: string;
+        user_b: string;
+        status: string;
+        created_at: string;
+        requested_by: string | null;
+        messages: Array<{ content: string; created_at: string; sender_id: string }> | null;
+      };
+      const byTime = (a: { created_at: string }, b: { created_at: string }) =>
+        +new Date(a.created_at) - +new Date(b.created_at);
+
+      // Only requests someone sent TO you. (Your own outgoing requests used to
+      // show here with Accept/Decline buttons.) Older rows without
+      // requested_by: whoever sent the first message made the request.
+      const conversations = ([...(convA || []), ...(convB || [])] as unknown as ReqRow[])
+        .filter((conv) => {
+          const requester = conv.requested_by ?? [...(conv.messages ?? [])].sort(byTime)[0]?.sender_id;
+          return requester !== undefined && requester !== user.id;
+        })
         .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
 
-      // Get sender profiles and professional profiles
-      const requestsWithSenders = await Promise.all(
-        conversations?.map(async (conv) => {
-          const senderId = conv.user_a === user.id ? conv.user_b : conv.user_a;
-          
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("id, first_name, last_name, avatar_url")
-            .eq("user_id", senderId)
-            .maybeSingle();
+      // Sender profiles in one call (works for anyone, unlike direct table reads).
+      const senderIds = conversations.map((conv) => (conv.user_a === user.id ? conv.user_b : conv.user_a));
+      const members = await fetchMemberProfiles(senderIds);
+      const memberById = new Map(members.map((m) => [m.profile.user_id, m]));
 
-          const { data: professionalProfile } = await supabase
-            .from("professional_profiles")
-            .select("occupation, sector, city, state_province, country")
-            .eq("user_id", senderId)
-            .maybeSingle();
-
-          const latestMessage = conv.messages?.[0];
-
-          return {
-            id: conv.id,
-            user_a: conv.user_a,
-            user_b: conv.user_b,
-            status: conv.status,
-            created_at: conv.created_at,
-            sender: {
-              id: senderId,
-              first_name: profile?.first_name || "",
-              last_name: profile?.last_name || "",
-              avatar_url: profile?.avatar_url,
-              professional_profile: professionalProfile
-            },
-            latest_message: latestMessage
-          };
-        }) || []
-      );
+      const requestsWithSenders: MessageRequest[] = conversations.map((conv) => {
+        const senderId = conv.user_a === user.id ? conv.user_b : conv.user_a;
+        const member = memberById.get(senderId);
+        const pro = member?.professionalProfile;
+        const latestMessage = [...(conv.messages ?? [])].sort(byTime).pop();
+        return {
+          id: conv.id,
+          user_a: conv.user_a,
+          user_b: conv.user_b,
+          status: conv.status,
+          created_at: conv.created_at,
+          sender: {
+            id: senderId,
+            first_name: member?.profile.first_name || "",
+            last_name: member?.profile.last_name || "",
+            avatar_url: member?.profile.avatar_url ?? undefined,
+            professional_profile: pro
+              ? {
+                  occupation: pro.occupation ?? undefined,
+                  sector: pro.sector ?? undefined,
+                  city: pro.city ?? undefined,
+                  state_province: pro.state_province ?? undefined,
+                  country: pro.country ?? undefined,
+                }
+              : undefined,
+          },
+          latest_message: latestMessage
+            ? { content: latestMessage.content, created_at: latestMessage.created_at }
+            : undefined,
+        };
+      });
 
       setRequests(requestsWithSenders);
       onRequestCountChange?.(requestsWithSenders.length);
@@ -188,7 +209,7 @@ export default function MessageRequests({ onAcceptRequest, onRequestCountChange 
 
       toast({
         title: "Request declined",
-        description: "This conversation has been blocked",
+        description: "They can't message you again.",
       });
 
       setRequests(prev => {
