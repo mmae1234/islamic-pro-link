@@ -1,3 +1,4 @@
+import { formatPhone } from "@/lib/formatPhone";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
@@ -169,16 +170,16 @@ const BusinessDashboard = () => {
                   {account.phone && (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Phone className="w-4 h-4" />
-                      <span>{account.phone}</span>
+                      <span>{formatPhone(account.phone)}</span>
                     </div>
                   )}
                 </div>
 
                 {/* Status */}
                 <div className="flex items-center gap-2 pt-4 border-t">
-                  <span className="text-sm text-muted-foreground">Status:</span>
+                  <span className="text-sm text-muted-foreground">Listing:</span>
                   <Badge variant={account.status === 'published' ? 'default' : 'secondary'}>
-                    {account.status}
+                    {account.status === 'published' ? 'Live in the directory' : account.status === 'draft' ? 'Draft (not listed yet)' : account.status}
                   </Badge>
                 </div>
 
@@ -192,6 +193,9 @@ const BusinessDashboard = () => {
                   </Button>
                   <Button asChild variant="outline">
                     <Link to={`/business/${account.id}`}>View Public Profile</Link>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <Link to="/messages">Messages</Link>
                   </Button>
                 </div>
               </div>

@@ -160,23 +160,41 @@ const MessagingPrivacySettings = () => {
             value={messagingPrivacy} 
             onValueChange={(value: 'open' | 'mentorship_only' | 'closed') => setMessagingPrivacy(value)}
           >
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="open" id="open" />
-                <Label htmlFor="open">Open (recommended) - Anyone can send you a message request; you choose whether to accept</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="mentorship_only" id="mentorship_only" />
-                <Label htmlFor="mentorship_only">Mentorship only - Only your mentors and mentees can message you</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="closed" id="closed" />
-                <Label htmlFor="closed">Closed - Only people you already have a conversation with can message you</Label>
-              </div>
+            <div className="space-y-3">
+              <Label
+                htmlFor="open"
+                className="flex items-start gap-3 rounded-lg border p-3 cursor-pointer font-normal has-[:checked]:border-primary has-[[data-state=checked]]:border-primary"
+              >
+                <RadioGroupItem value="open" id="open" className="mt-0.5" />
+                <span>
+                  <span className="block font-medium text-foreground">Open (recommended)</span>
+                  <span className="block text-sm text-muted-foreground">Anyone can send you a message request. You choose whether to accept.</span>
+                </span>
+              </Label>
+              <Label
+                htmlFor="mentorship_only"
+                className="flex items-start gap-3 rounded-lg border p-3 cursor-pointer font-normal has-[:checked]:border-primary has-[[data-state=checked]]:border-primary"
+              >
+                <RadioGroupItem value="mentorship_only" id="mentorship_only" className="mt-0.5" />
+                <span>
+                  <span className="block font-medium text-foreground">Mentorship only</span>
+                  <span className="block text-sm text-muted-foreground">Only your mentors and mentees can message you.</span>
+                </span>
+              </Label>
+              <Label
+                htmlFor="closed"
+                className="flex items-start gap-3 rounded-lg border p-3 cursor-pointer font-normal has-[:checked]:border-primary has-[[data-state=checked]]:border-primary"
+              >
+                <RadioGroupItem value="closed" id="closed" className="mt-0.5" />
+                <span>
+                  <span className="block font-medium text-foreground">Closed</span>
+                  <span className="block text-sm text-muted-foreground">Only people you already have a conversation with can message you.</span>
+                </span>
+              </Label>
             </div>
           </RadioGroup>
           
-          <Button onClick={savePrivacySetting} disabled={saving}>
+          <Button onClick={savePrivacySetting} disabled={saving} className="mt-4">
             {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
             Save Changes
           </Button>

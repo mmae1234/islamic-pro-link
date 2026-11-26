@@ -124,6 +124,9 @@ const BusinessLinkRequests = ({ businessId }: BusinessLinkRequestsProps) => {
         <Card className="shadow-soft">
           <CardHeader>
             <CardTitle id="link-requests-heading">Link Requests</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Members who say they work at your business. Approve them to show them on your business page.
+            </p>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -185,12 +188,15 @@ const BusinessLinkRequests = ({ businessId }: BusinessLinkRequestsProps) => {
         <Card className="shadow-soft">
           <CardHeader>
             <CardTitle id="linked-pros-heading">Linked Professionals</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Your team as shown on your business page.
+            </p>
           </CardHeader>
           <CardContent>
             {loading ? (
               <p className="text-muted-foreground">Loading linked professionals…</p>
             ) : approved.length === 0 ? (
-              <p className="text-muted-foreground">No linked professionals.</p>
+              <p className="text-muted-foreground">No linked professionals yet. Ask your team to open your business page and tap "I work here".</p>
             ) : (
               <ul className="space-y-3">
                 {approved.map((link) => {

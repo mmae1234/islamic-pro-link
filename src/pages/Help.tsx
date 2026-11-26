@@ -213,7 +213,7 @@ const Help = () => {
                 <AccordionItem value="item-2d">
                   <AccordionTrigger>How do I link my profile to a business?</AccordionTrigger>
                   <AccordionContent>
-                    Visit the business profile and use "Request to link profile" at the bottom. The business owner reviews and approves your request.
+                    Visit the business profile and tap "I work here" at the bottom. The business owner reviews and approves your request.
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-2e">

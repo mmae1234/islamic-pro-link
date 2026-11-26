@@ -60,7 +60,6 @@ const Mentorship = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [searchTerm, setSearchTerm] = useState("");
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>({});
   const [selectedMentor, setSelectedMentor] = useState<MentorProfile | null>(null);
   const [activeTab, setActiveTab] = useState("find-mentors");
@@ -217,19 +216,6 @@ const Mentorship = () => {
   const filteredMentors = useMemo(() => {
     let mentors: MentorProfile[] = mentorsQuery.data ?? [];
 
-    if (searchTerm) {
-      const q = searchTerm.toLowerCase();
-      mentors = mentors.filter((mentor) => {
-        const fullName = `${mentor.profiles.first_name || ""} ${mentor.profiles.last_name || ""}`.trim().toLowerCase();
-        return (
-          fullName.includes(q) ||
-          mentor.sector?.toLowerCase().includes(q) ||
-          mentor.occupation?.toLowerCase().includes(q) ||
-          mentor.skills?.some((s) => s.toLowerCase().includes(q))
-        );
-      });
-    }
-
     const f = advancedFilters;
 
     if (f.searchTerm) {
@@ -289,7 +275,7 @@ const Mentorship = () => {
     }
 
     return mentors;
-  }, [mentorsQuery.data, searchTerm, advancedFilters]);
+  }, [mentorsQuery.data, advancedFilters]);
 
   const requests = requestsQuery.data ?? [];
   const isLoading = mentorsQuery.isLoading || requestsQuery.isLoading;
@@ -414,10 +400,10 @@ const Mentorship = () => {
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Muslim Professionals Mentorship - السلام عليكم
+              Mentorship
             </h1>
             <p className="text-lg text-muted-foreground">
-              Connect with experienced Muslim professionals and grow your career with Islamic values. Build meaningful relationships guided by Islamic principles of helping one another.
+              Find an experienced Muslim professional to guide your career, or offer your own experience to someone starting out.
             </p>
           </div>
 
@@ -440,21 +426,6 @@ const Mentorship = () => {
             </TabsList>
 
             <TabsContent value="find-mentors" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center gap-4">
-                    <div className="flex-1">
-                      <Input
-                        placeholder="Search by name, sector, occupation, or skills..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="max-w-md"
-                      />
-                    </div>
-                  </div>
-                </CardHeader>
-              </Card>
-
               {/* Advanced Filters */}
               <MentorshipSearchFilters onSearch={setAdvancedFilters} loading={false} />
 
