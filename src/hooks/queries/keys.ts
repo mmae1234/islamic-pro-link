@@ -23,6 +23,7 @@ export type ProfessionalFilters = {
   universities?: string[];
   languages?: string[];
   skills?: string[];
+  gender?: string;
 };
 
 export type BusinessFilters = {

@@ -130,6 +130,7 @@ const Search = () => {
     universities: string[];
     languages: string[];
     skills: string[];
+    gender: string;
   }>;
 
   const handleSearch = (next: SearchFilterPayload = {}) => {
@@ -147,6 +148,7 @@ const Search = () => {
       universities: next.universities,
       languages: next.languages,
       skills: next.skills,
+      gender: next.gender,
     });
   };
 

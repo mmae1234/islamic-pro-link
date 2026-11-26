@@ -4,7 +4,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle, Search, MessageCircle, Heart, ArrowLeft } from "lucide-react";
+import { CheckCircle, Search, MessageCircle, Heart } from "lucide-react";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import AuthForm from "@/components/AuthForm";
 import { RoleSelection, type AccountType } from "@/components/RoleSelection";
 
@@ -48,24 +50,16 @@ const AuthGate = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      {/* Back Button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate(-1)}
-        className="absolute top-4 left-4 flex items-center gap-2"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back
-      </Button>
-      
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-muted">
+      {/* Normal site header (the old floating "Back" button sat on top of the heading on phones) */}
+      <Header />
+      <main className="flex-1 flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-4xl grid lg:grid-cols-2 gap-8 items-center">
         
         {/* Left side - Benefits */}
-        <div className="space-y-8 text-center lg:text-left">
-          <div className="space-y-4">
-            <h1 className="text-4xl lg:text-5xl font-bold text-foreground">
+        <div className="space-y-8">
+          <div className="space-y-4 text-center lg:text-left">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">
               {redirect.startsWith('/mentorship')
                 ? 'Create a free account to find a mentor'
                 : redirect.startsWith('/messages')
@@ -74,12 +68,13 @@ const AuthGate = () => {
                     ? 'Create a free account to browse businesses'
                     : 'Create a free account to search professionals'}
             </h1>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-lg sm:text-xl text-muted-foreground">
               Join Muslim Pros to connect with professionals in your field and grow your network.
             </p>
           </div>
           
-          <div className="space-y-6">
+          {/* Benefit list: desktop only, so on phones the sign-up form is right under the heading */}
+          <div className="hidden lg:block space-y-6">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
                 <Search className="w-6 h-6 text-primary" />
@@ -169,6 +164,8 @@ const AuthGate = () => {
           </Card>
         </div>
       </div>
+      </main>
+      <Footer />
     </div>
   );
 };

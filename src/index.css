@@ -127,8 +127,12 @@ body {
     appearance: none;
   }
   
-  /* Improve touch targets */
-  button, a, [role="button"] {
+  /* Improve touch targets. Checkboxes, radios and switches are excluded:
+     forcing them to 44px turned them into large empty squares (the
+     label already makes the tap target big enough). */
+  button:not([role="checkbox"]):not([role="radio"]):not([role="switch"]),
+  a,
+  [role="button"] {
     min-height: 44px;
     min-width: 44px;
   }

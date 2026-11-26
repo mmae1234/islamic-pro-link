@@ -1,3 +1,4 @@
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface StateProvinceSelectProps {
@@ -46,8 +47,27 @@ const stateProvinceData: Record<string, string[]> = {
 export const StateProvinceSelect = ({ value, onValueChange, country, disabled = false, placeholder = "Select state/province" }: StateProvinceSelectProps) => {
   const options = stateProvinceData[country] || [];
 
+  // No country yet: show a disabled box (it used to render nothing, leaving a
+  // bare "State/Province" label). Country without a built-in list: free text.
+  if (!country) {
+    return (
+      <Select disabled>
+        <SelectTrigger>
+          <SelectValue placeholder="Select country first" />
+        </SelectTrigger>
+      </Select>
+    );
+  }
   if (options.length === 0) {
-    return null;
+    return (
+      <Input
+        value={value}
+        onChange={(e) => onValueChange(e.target.value)}
+        disabled={disabled}
+        placeholder="State / province / region"
+        maxLength={100}
+      />
+    );
   }
 
   return (

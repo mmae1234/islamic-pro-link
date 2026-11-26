@@ -229,7 +229,7 @@ const Businesses = () => {
                     onValueChange={(value) => setFormFilters({ ...formFilters, country: value, state: "", city: "" })}
                   />
                 </div>
-                <div>
+                <div className={formFilters.country ? "" : "hidden"}>
                   <Label htmlFor="state">State/Province</Label>
                   <StateProvinceSelect
                     value={formFilters.state}
