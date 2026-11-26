@@ -39,6 +39,10 @@ const Messages = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
+  // ?tab=requests etc. (request emails link straight to the Requests tab)
+  const tabParam = searchParams.get("tab");
+  const activeTab =
+    tabParam && ["inbox", "requests", "sent", "archived", "compose"].includes(tabParam) ? tabParam : "inbox";
   const queryClient = useQueryClient();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -234,7 +238,16 @@ const Messages = () => {
             </p>
           </div>
 
-          <Tabs defaultValue="inbox" className="space-y-6">
+          <Tabs
+            value={activeTab}
+            onValueChange={(v) => {
+              const next = new URLSearchParams(searchParams);
+              if (v === "inbox") next.delete("tab");
+              else next.set("tab", v);
+              setSearchParams(next, { replace: true });
+            }}
+            className="space-y-6"
+          >
             <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="inbox" className="flex items-center gap-2">
                 <Inbox className="w-4 h-4" />

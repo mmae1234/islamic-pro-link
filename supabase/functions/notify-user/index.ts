@@ -18,7 +18,7 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
 );
 
-type Kind = "message" | "mentorship_request" | "mentorship_accepted" | "session_scheduled";
+type Kind = "message" | "message_request" | "mentorship_request" | "mentorship_accepted" | "session_scheduled";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -55,6 +55,13 @@ function content(kind: Kind, actor: string) {
         line: `${actor} sent you a message.`,
         cta: "Read and reply",
         path: "/messages",
+      };
+    case "message_request":
+      return {
+        subject: `${actor} wants to connect with you on Muslim Pros Network`,
+        line: `${actor} sent you a message request. Accept it to reply, or decline if you don't want to hear from them.`,
+        cta: "See the request",
+        path: "/messages?tab=requests",
       };
     case "mentorship_request":
       return {
@@ -119,7 +126,7 @@ serve(async (req) => {
     const recipientId = String(body?.recipient_id ?? "");
     const actorId = String(body?.actor_id ?? "");
 
-    if (!["message", "mentorship_request", "mentorship_accepted", "session_scheduled"].includes(kind)) {
+    if (!["message", "message_request", "mentorship_request", "mentorship_accepted", "session_scheduled"].includes(kind)) {
       return json(400, { success: false, error: "Invalid kind" });
     }
     if (!UUID_RE.test(recipientId) || !UUID_RE.test(actorId) || recipientId === actorId) {
