@@ -75,6 +75,7 @@ const Privacy = () => {
             </p>
             <ul className="list-disc pl-6 mb-4">
               <li><strong>With other members:</strong> profile information is visible to other signed-in members in directory results and on your public profile. Visitors who are not signed in can see only a limited directory preview: your first name, last initial, occupation, field and city, never your photo, full name, profile page or contact details. You can opt out of the preview at any time in Settings &gt; Privacy.</li>
+              <li><strong>Contact details:</strong> WhatsApp and Telegram details on a member profile are shown only to members whose message you have accepted, or to your mentors and mentees. Business contact details (email, phone, address, social links) are shown to signed-in members only, never to visitors who are not signed in.</li>
               <li><strong>Service providers (data processors):</strong>
                 <ul className="list-[circle] pl-6 mt-1">
                   <li>Supabase — database, authentication, storage, edge functions (hosted in the United States).</li>

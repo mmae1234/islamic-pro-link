@@ -258,6 +258,13 @@ const EditProfile = () => {
 
       if (professionalError) throw professionalError;
 
+      // A "just looking" (visitor) account that fills in a professional
+      // profile becomes a professional account.
+      const { data: roleRow } = await supabase.from('profiles').select('role').eq('user_id', user.id).maybeSingle();
+      if (roleRow?.role === 'visitor') {
+        await supabase.rpc('set_account_type', { _type: 'professional' });
+      }
+
       toast({
         title: "Profile updated",
         description: "Your profile has been updated successfully.",
