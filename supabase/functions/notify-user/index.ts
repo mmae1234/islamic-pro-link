@@ -95,7 +95,7 @@ function buildHtml(firstName: string, line: string, cta: string, url: string) {
         </td></tr>
         <tr><td style="padding:16px 24px;border-top:1px solid #e7e5e4;font-size:12px;line-height:1.5;color:#78716c;">
           You're getting this because email alerts are on for your account.
-          <a href="${SITE}/settings" style="color:#78716c;">Turn them off in Settings</a>.
+          <a href="${SITE}/settings?tab=notifications" style="color:#78716c;">Turn them off in Settings</a>.
         </td></tr>
       </table>
     </td></tr>
@@ -145,7 +145,7 @@ serve(async (req) => {
     const actor = await displayName(actorId);
     const c = content(kind, actor);
     const html = buildHtml((prefs.first_name ?? "").trim(), c.line, c.cta, `${SITE}${c.path}`);
-    const text = `${c.line}\n\n${c.cta}: ${SITE}${c.path}\n\nTurn off email alerts in Settings: ${SITE}/settings`;
+    const text = `${c.line}\n\n${c.cta}: ${SITE}${c.path}\n\nTurn off email alerts in Settings: ${SITE}/settings?tab=notifications`;
 
     const { data, error } = await resend.emails.send({
       from: FROM,
