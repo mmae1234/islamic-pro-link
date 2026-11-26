@@ -17,30 +17,48 @@ export type Database = {
       abuse_reports: {
         Row: {
           accused_id: string
+          admin_note: string | null
           conversation_id: string | null
           created_at: string
           details: string | null
+          evidence: Json | null
           id: string
+          message_id: string | null
           reason: string
           reporter_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
         }
         Insert: {
           accused_id: string
+          admin_note?: string | null
           conversation_id?: string | null
           created_at?: string
           details?: string | null
+          evidence?: Json | null
           id?: string
+          message_id?: string | null
           reason: string
           reporter_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
         }
         Update: {
           accused_id?: string
+          admin_note?: string | null
           conversation_id?: string | null
           created_at?: string
           details?: string | null
+          evidence?: Json | null
           id?: string
+          message_id?: string | null
           reason?: string
           reporter_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
         }
         Relationships: [
           {
@@ -48,6 +66,13 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "abuse_reports_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
             referencedColumns: ["id"]
           },
         ]
@@ -210,6 +235,24 @@ export type Database = {
           },
         ]
       }
+      conversation_hides: {
+        Row: {
+          hidden_before: string
+          partner_id: string
+          user_id: string
+        }
+        Insert: {
+          hidden_before?: string
+          partner_id: string
+          user_id: string
+        }
+        Update: {
+          hidden_before?: string
+          partner_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           created_at: string
@@ -305,6 +348,27 @@ export type Database = {
           },
         ]
       }
+      member_suspensions: {
+        Row: {
+          reason: string | null
+          suspended_at: string
+          suspended_by: string | null
+          user_id: string
+        }
+        Insert: {
+          reason?: string | null
+          suspended_at?: string
+          suspended_by?: string | null
+          user_id: string
+        }
+        Update: {
+          reason?: string | null
+          suspended_at?: string
+          suspended_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       mentorship_requests: {
         Row: {
           created_at: string
@@ -393,6 +457,32 @@ export type Database = {
             columns: ["request_id"]
             isOneToOne: false
             referencedRelation: "mentorship_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_hides: {
+        Row: {
+          hidden_at: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          hidden_at?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          hidden_at?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_hides_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
             referencedColumns: ["id"]
           },
         ]
@@ -780,6 +870,14 @@ export type Database = {
       }
     }
     Functions: {
+      admin_set_business_verified: {
+        Args: { _business_id: string; _verified: boolean }
+        Returns: boolean
+      }
+      admin_update_report: {
+        Args: { _note?: string; _report_id: string; _status: string }
+        Returns: boolean
+      }
       can_send_message: {
         Args: { recipient_id_param: string; sender_id_param: string }
         Returns: string
@@ -811,6 +909,26 @@ export type Database = {
           website: string
         }[]
       }
+      get_business_contact: {
+        Args: { _business_id: string }
+        Returns: {
+          address_line1: string
+          address_line2: string
+          booking_url: string
+          email: string
+          facebook_url: string
+          instagram_url: string
+          linkedin_url: string
+          owner_id: string
+          phone: string
+          postal_code: string
+          telegram_url: string
+          tiktok_url: string
+          twitter_url: string
+          whatsapp_number: string
+          youtube_url: string
+        }[]
+      }
       get_business_owner_id: { Args: { _business_id: string }; Returns: string }
       get_business_sectors: {
         Args: never
@@ -830,6 +948,17 @@ export type Database = {
         }[]
       }
       get_member_profiles: { Args: { _user_ids: string[] }; Returns: Json[] }
+      get_my_blocked_users: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          blocked_id: string
+          created_at: string
+          first_name: string
+          id: string
+          last_name: string
+        }[]
+      }
       get_or_create_conversation: {
         Args: { user_a_param: string; user_b_param: string }
         Returns: string
@@ -878,6 +1007,7 @@ export type Database = {
         Args: { _business_id: string; _user_id: string }
         Returns: boolean
       }
+      is_suspended: { Args: { _user_id: string }; Returns: boolean }
       list_professional_directory: {
         Args: {
           _city?: string
@@ -921,6 +1051,19 @@ export type Database = {
       }
       public_directory_preview: {
         Args: { _limit?: number }
+        Returns: {
+          city: string
+          country: string
+          first_name: string
+          is_mentor: boolean
+          last_initial: string
+          occupation: string
+          sector: string
+          state_province: string
+        }[]
+      }
+      public_profile_preview: {
+        Args: { _user_id: string }
         Returns: {
           city: string
           country: string
