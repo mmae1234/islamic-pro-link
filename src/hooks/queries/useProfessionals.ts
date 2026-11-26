@@ -70,6 +70,7 @@ export function useProfessionals(
         _skills: many(filters.skills),
         _min_experience: int(filters.experienceMin),
         _max_experience: int(filters.experienceMax),
+        _gender: normalizeFilter(filters.gender) ?? undefined,
       } as never);
 
       if (error) throw error;

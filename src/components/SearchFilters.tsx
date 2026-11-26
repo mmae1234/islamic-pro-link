@@ -94,6 +94,10 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
   };
 
 
+  const [showMore, setShowMore] = useState(false);
+  const more = showMore ? '' : 'hidden md:block';
+  const moreGrid = showMore ? 'grid' : 'hidden md:grid';
+
   return (
     <Card className="shadow-soft hover-lift transition-all duration-300">
       <CardHeader>
@@ -106,7 +110,7 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Basic Search */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className={`grid md:grid-cols-2 ${filters.country === 'all' ? 'lg:grid-cols-4' : 'lg:grid-cols-5'} gap-4`}>
           <div>
             <Label htmlFor="search">Name or Keyword</Label>
             <Input
@@ -117,7 +121,7 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
             />
           </div>
           
-          <div>
+          <div className={more}>
             <Label>Country</Label>
             <CountrySelect
               value={filters.country === 'all' ? '' : filters.country}
@@ -130,7 +134,8 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
             />
           </div>
 
-          <div>
+          {/* Only once a country is picked (it rendered an empty, label-only box before) */}
+          <div className={filters.country === 'all' ? 'hidden' : more}>
             <Label>State/Province</Label>
             <StateProvinceSelect
               value={filters.stateProvince === 'all' ? '' : filters.stateProvince}
@@ -141,7 +146,7 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
             />
           </div>
 
-          <div>
+          <div className={more}>
             <Label>Sector</Label>
             <SectorSelect 
               value={filters.sector === 'all' ? '' : filters.sector} 
@@ -156,7 +161,7 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
             />
           </div>
 
-          <div>
+          <div className={more}>
             <Label>Occupation</Label>
             <OccupationSelect 
               value={filters.occupation === 'all' ? '' : filters.occupation} 
@@ -169,7 +174,7 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
         </div>
 
         {/* University, Language, and Gender Filters */}
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className={`${moreGrid} md:grid-cols-3 gap-4`}>
           <div>
             <Label>Universities</Label>
             <UniversitySearchSelect
@@ -208,7 +213,7 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
         </div>
 
         {/* Skills Filter */}
-        <div>
+        <div className={`${more}`}>
           <Label>Skills</Label>
           <div className="flex flex-wrap gap-2 mb-2">
             {SKILLS_OPTIONS.map(skill => (
@@ -239,7 +244,7 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
         </div>
 
         {/* Mentorship Type */}
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className={`${moreGrid} md:grid-cols-2 gap-4`}>
           <div className="flex items-center space-x-2">
             <Checkbox
               id="isSeekingMentor"
@@ -260,7 +265,7 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
         </div>
 
         {/* Experience Range */}
-        <div>
+        <div className={`${more}`}>
           <Label>Years of Experience</Label>
           <div className="grid grid-cols-2 gap-2">
             <Input
@@ -277,6 +282,17 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
             />
           </div>
         </div>
+
+        {/* Phones: keep the long filter list folded so results aren't pushed off screen */}
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full md:hidden"
+          onClick={() => setShowMore((v) => !v)}
+          aria-expanded={showMore}
+        >
+          {showMore ? 'Fewer filters' : 'More filters'}
+        </Button>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-2">
