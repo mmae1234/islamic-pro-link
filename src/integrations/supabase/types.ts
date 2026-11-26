@@ -1014,12 +1014,17 @@ export type Database = {
           _country?: string
           _is_mentor?: boolean
           _is_seeking_mentor?: boolean
+          _languages?: string[]
           _limit?: number
+          _max_experience?: number
+          _min_experience?: number
           _occupation?: string
           _offset?: number
           _search?: string
           _sector?: string
+          _skills?: string[]
           _state_province?: string
+          _universities?: string[]
         }
         Returns: {
           avatar_url: string
