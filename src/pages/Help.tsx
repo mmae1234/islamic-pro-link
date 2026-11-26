@@ -118,9 +118,10 @@ const Help = () => {
                   <h3 className="font-semibold mb-2">Sending Messages</h3>
                   <p className="text-muted-foreground mb-2">Connect with other professionals through our secure messaging system:</p>
                   <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
-                    <li>Visit a professional's profile and click "Send Message"</li>
-                    <li>Compose a clear, professional introduction</li>
-                    <li>Be specific about how you'd like to connect or collaborate</li>
+                    <li>Visit a professional's profile and click "Message" (or "Send message request" if you haven't talked before)</li>
+                    <li>Your first message arrives as a request; they can accept or decline it. You can send up to 3 messages until they accept</li>
+                    <li>Write a clear introduction and say how you'd like to connect or collaborate</li>
+                    <li>Choose who can message you in Settings → Privacy: Open (anyone can send a request), Mentorship only, or Closed</li>
                   </ul>
                 </div>
                 <div>
@@ -145,7 +146,8 @@ const Help = () => {
                   <h3 className="font-semibold mb-2">Your Privacy</h3>
                   <p className="text-muted-foreground mb-2">We protect your information:</p>
                   <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
-                    <li>Your personal contact information is never shared publicly</li>
+                    <li>Signed-out visitors only see a short preview (first name, last initial, job, city); you can turn it off in Settings → Privacy</li>
+                    <li>Your WhatsApp and Telegram are shown only to members whose message you've accepted, or your mentors and mentees</li>
                     <li>You control what information appears on your profile</li>
                     <li>Messages are private and transmitted over secure (TLS) connections</li>
                     <li>Uploaded profile and business images are automatically screened for inappropriate content</li>
@@ -211,7 +213,7 @@ const Help = () => {
                 <AccordionItem value="item-2d">
                   <AccordionTrigger>How do I link my profile to a business?</AccordionTrigger>
                   <AccordionContent>
-                    Visit the business profile and use "Request to link profile" at the bottom. An admin will review and approve your request.
+                    Visit the business profile and use "Request to link profile" at the bottom. The business owner reviews and approves your request.
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-2e">
@@ -224,7 +226,7 @@ const Help = () => {
                 <AccordionItem value="item-2f">
                   <AccordionTrigger>How do I add social media links to my profile?</AccordionTrigger>
                   <AccordionContent>
-                    Professionals: open Edit Profile and add your Facebook, Instagram, and LinkedIn URLs.
+                    Professionals: open Edit Profile and add your LinkedIn, website, and social links (Facebook, Instagram, X, YouTube, TikTok), plus WhatsApp or Telegram if you like. Links are shown to signed-in members; WhatsApp and Telegram only after you accept someone's message.
                     Businesses: open the Business Dashboard and use the Social Links section to add Facebook, Instagram, LinkedIn, X, YouTube, TikTok, WhatsApp, or Telegram.
                   </AccordionContent>
                 </AccordionItem>
@@ -247,9 +249,10 @@ const Help = () => {
                   <AccordionTrigger>What is the mentorship program?</AccordionTrigger>
                   <AccordionContent>
                     Our mentorship program connects experienced professionals with those seeking guidance.
-                    You can either offer mentorship or request a mentor through the Mentorship section in your dashboard.
-                    To start a mentorship, browse mentors and send a request directly from their profile —
-                    once accepted, you can coordinate sessions through our private messaging.
+                    To offer mentorship, check "I want to be a mentor" in Edit Profile. To find a mentor, open the
+                    Mentorship page (or a mentor's profile) and click "Request mentorship". Once they accept, you can
+                    message each other and schedule sessions; both of you see upcoming sessions on the Mentorship page
+                    and the other person gets an email.
                   </AccordionContent>
                 </AccordionItem>
 
@@ -277,8 +280,7 @@ const Help = () => {
                   <AccordionContent>
                     On the Login page, click "Forgot password?" and enter your email. You'll receive a
                     secure link that takes you directly to a reset page where you can set a new password.
-                    If the link doesn't open the reset page, make sure you click it from the same device
-                    and browser, and check that it hasn't expired.
+                    The link works once and expires after 1 hour; if it has expired, request a new one.
                   </AccordionContent>
                 </AccordionItem>
 

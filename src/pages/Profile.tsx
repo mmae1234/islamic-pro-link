@@ -279,7 +279,9 @@ const Profile = () => {
                         {messageStatus === "closed" ? (
                           <Button variant="secondary" size="sm" disabled title="This member isn't accepting new messages">
                             <Lock className="w-4 h-4 mr-2" />
-                            Not accepting messages
+                            {(profile as { messaging_privacy?: string } | null)?.messaging_privacy === "mentorship_only"
+                              ? "Messages from mentors & mentees only"
+                              : "Not accepting messages"}
                           </Button>
                         ) : messageStatus !== "blocked" && (
                           <Button
@@ -419,6 +421,8 @@ const Profile = () => {
                 const pp = professionalProfile as typeof professionalProfile & {
                   linkedin_url?: string | null; website?: string | null;
                   whatsapp_number?: string | null; telegram_url?: string | null;
+                  facebook_url?: string | null; instagram_url?: string | null; twitter_url?: string | null;
+                  youtube_url?: string | null; tiktok_url?: string | null;
                 };
                 const safeUrl = (u?: string | null) => {
                   if (!u) return null;
@@ -430,8 +434,15 @@ const Profile = () => {
                 const website = safeUrl(pp.website);
                 const telegram = safeUrl(pp.telegram_url);
                 const whatsapp = pp.whatsapp_number?.trim() || null;
+                const socials = ([
+                  ["Facebook", safeUrl(pp.facebook_url)],
+                  ["Instagram", safeUrl(pp.instagram_url)],
+                  ["X (Twitter)", safeUrl(pp.twitter_url)],
+                  ["YouTube", safeUrl(pp.youtube_url)],
+                  ["TikTok", safeUrl(pp.tiktok_url)],
+                ] as const).filter(([, u]) => !!u) as Array<readonly [string, string]>;
                 const connected = isOwnProfile || messageStatus === "allowed";
-                if (!linkedin && !website && !telegram && !whatsapp && connected) return null;
+                if (!linkedin && !website && !telegram && !whatsapp && socials.length === 0 && connected) return null;
                 return (
                   <Card className="shadow-soft">
                     <CardHeader>
@@ -451,6 +462,11 @@ const Profile = () => {
                           <Globe className="w-4 h-4 shrink-0" /> {new URL(website).hostname}
                         </a>
                       )}
+                      {socials.map(([label, url]) => (
+                        <a key={label} href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline">
+                          <Globe className="w-4 h-4" /> {label}
+                        </a>
+                      ))}
                       {whatsapp && (
                         <p className="flex items-center gap-2"><Phone className="w-4 h-4" /> WhatsApp: {whatsapp}</p>
                       )}
