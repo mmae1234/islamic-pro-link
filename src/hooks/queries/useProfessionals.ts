@@ -47,6 +47,13 @@ export function useProfessionals(
     queryKey: qk.professionals.list(filters),
     enabled: options.enabled ?? true,
     queryFn: async (): Promise<ProfessionalListRow[]> => {
+      const many = (v?: string[]) => (v && v.length > 0 ? v : undefined);
+      const int = (v?: string) => {
+        const n = v ? parseInt(v, 10) : NaN;
+        return Number.isNaN(n) ? undefined : n;
+      };
+      // Universities / languages / skills / experience are filtered on the
+      // server (20261126170000); the generated types don't list them yet.
       const { data, error } = await supabase.rpc("list_professional_directory", {
         _country: normalizeFilter(filters.country) ?? undefined,
         _state_province: normalizeFilter(filters.stateProvince) ?? undefined,
@@ -58,12 +65,17 @@ export function useProfessionals(
         _search: filters.searchTerm || undefined,
         _limit: 100,
         _offset: 0,
-      });
+        _universities: many(filters.universities),
+        _languages: many(filters.languages),
+        _skills: many(filters.skills),
+        _min_experience: int(filters.experienceMin),
+        _max_experience: int(filters.experienceMax),
+      } as never);
 
       if (error) throw error;
 
       // Shape rows so ProfessionalCard's `professional.profiles.*` lookups work.
-      let rows: ProfessionalListRow[] = (data ?? []).map((r) => ({
+      const rows: ProfessionalListRow[] = ((data ?? []) as DirectoryRpcRow[]).map((r) => ({
         ...r,
         profiles: {
           first_name: r.first_name,
@@ -71,20 +83,6 @@ export function useProfessionals(
           avatar_url: r.avatar_url,
         },
       }));
-
-      // Client-side post-filters not yet exposed by the RPC.
-      if (filters.experienceMin) {
-        const min = parseInt(filters.experienceMin, 10);
-        if (!Number.isNaN(min)) {
-          rows = rows.filter((r) => (r.experience_years ?? 0) >= min);
-        }
-      }
-      if (filters.experienceMax) {
-        const max = parseInt(filters.experienceMax, 10);
-        if (!Number.isNaN(max)) {
-          rows = rows.filter((r) => (r.experience_years ?? 0) <= max);
-        }
-      }
 
       return rows;
     },

@@ -20,6 +20,9 @@ export type ProfessionalFilters = {
   searchTerm?: string;
   experienceMin?: string;
   experienceMax?: string;
+  universities?: string[];
+  languages?: string[];
+  skills?: string[];
 };
 
 export type BusinessFilters = {
