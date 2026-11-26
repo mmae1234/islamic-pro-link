@@ -158,7 +158,7 @@ const Help = () => {
                   <p className="text-muted-foreground mb-2">You have tools to keep your experience safe:</p>
                   <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
                     <li>Block any user from their profile or from professional cards (three-dot menu)</li>
-                    <li>Report fake profiles or abusive messages — our moderation team reviews all reports</li>
+                    <li>Report fake profiles or abusive messages — our moderation team reviews all reports. A copy of your recent messages with that person is kept with the report, so deleting them later doesn't affect the review</li>
                     <li>Manage blocked users in Settings → Privacy</li>
                   </ul>
                 </div>
