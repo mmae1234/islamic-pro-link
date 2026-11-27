@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { qk } from "./keys";
-import { fetchMemberProfiles } from "./useProfile";
+import { fetchMemberProfiles, type MemberProfile } from "./useProfile";
 import type { FnRow } from "./types";
 
 type DirectoryRow = FnRow<"list_professional_directory">;
@@ -32,6 +32,7 @@ export type MentorshipRequest = {
   mentor_id: string;
   mentee_id: string;
   profiles: { first_name: string; last_name: string };
+  mentee_profile?: { sector: string; occupation: string };
   mentor_profile?: {
     profiles: { first_name: string; last_name: string };
     sector: string;
@@ -110,44 +111,33 @@ export function useMentorshipRequests(userId: string | undefined) {
       );
       if (requestsData.length === 0) return [];
 
-      const menteeIds = requestsData.map((r) => r.mentee_id);
-      const mentorIds = requestsData.map((r) => r.mentor_id);
+      // Names + job for both sides via get_member_profiles (direct table reads
+      // are relationship-scoped, and business accounts have no personal name:
+      // fall back to the business name instead of "Unknown").
+      const members = await fetchMemberProfiles(
+        requestsData.flatMap((r) => [r.mentee_id, r.mentor_id]),
+      );
+      const byId = new Map(members.map((m) => [m.profile.user_id, m]));
+      const nameOf = (id: string) => {
+        const p = byId.get(id)?.profile as (MemberProfile["profile"] & { business_name?: string | null }) | undefined;
+        const personal = `${p?.first_name ?? ""} ${p?.last_name ?? ""}`.trim();
+        return { first_name: personal || p?.business_name || "A former member", last_name: personal ? p?.last_name ?? "" : "" };
+      };
+      const jobOf = (id: string) => {
+        const pro = byId.get(id)?.professionalProfile;
+        return { sector: pro?.sector ?? "", occupation: pro?.occupation ?? "" };
+      };
 
-      const [{ data: menteesData }, { data: mentorsData }, { data: mentorNamesData }] =
-        await Promise.all([
-          supabase
-            .from("profiles")
-            .select("user_id, first_name, last_name")
-            .in("user_id", menteeIds),
-          supabase
-            .from("professional_profiles")
-            .select("user_id, sector, occupation")
-            .in("user_id", mentorIds),
-          supabase
-            .from("profiles")
-            .select("user_id, first_name, last_name")
-            .in("user_id", mentorIds),
-        ]);
-
-      return requestsData.map((request) => ({
-        ...request,
-        profiles:
-          menteesData?.find((m) => m.user_id === request.mentee_id) ?? {
-            first_name: "Unknown",
-            last_name: "",
-          },
-        mentor_profile: {
-          profiles:
-            mentorNamesData?.find((m) => m.user_id === request.mentor_id) ?? {
-              first_name: "Unknown",
-              last_name: "",
-            },
-          ...(mentorsData?.find((m) => m.user_id === request.mentor_id) ?? {
-            sector: "",
-            occupation: "",
-          }),
-        },
-      })) as unknown as MentorshipRequest[];
+      return requestsData.map((request) => {
+        const menteeName = nameOf(request.mentee_id);
+        const mentorName = nameOf(request.mentor_id);
+        return {
+          ...request,
+          profiles: menteeName,
+          mentee_profile: jobOf(request.mentee_id),
+          mentor_profile: { profiles: mentorName, ...jobOf(request.mentor_id) },
+        };
+      }) as unknown as MentorshipRequest[];
     },
   });
 }

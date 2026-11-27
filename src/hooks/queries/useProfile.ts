@@ -49,3 +49,16 @@ export function useProfile(userId: string | undefined, viewerId: string | undefi
     },
   });
 }
+
+/** The signed-in user's account role ('professional' | 'business' | 'visitor' ...). */
+export function useMyRole(userId: string | undefined) {
+  return useQuery({
+    queryKey: ["my-role", userId],
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<string | null> => {
+      const { data } = await supabase.from("profiles").select("role").eq("user_id", userId!).maybeSingle();
+      return (data?.role as string | undefined) ?? null;
+    },
+  });
+}

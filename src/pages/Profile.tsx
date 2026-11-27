@@ -35,6 +35,7 @@ import { useState } from "react";
 import { useCanonicalUrl } from "@/hooks/useCanonicalUrl";
 import {
   useProfile,
+  useMyRole,
   useFavoriteStatus,
   useToggleProfessionalFavorite,
 } from "@/hooks/queries";
@@ -80,6 +81,8 @@ const Profile = () => {
   const messageStatus = messageStatusQuery.data;
 
   const profileQuery = useProfile(userId, user?.id);
+  // Mentorship is people-only: business accounts don't get "Request mentorship".
+  const myRole = useMyRole(user?.id).data;
   const profile = profileQuery.data?.profile ?? null;
   const professionalProfile = profileQuery.data?.professionalProfile ?? null;
   const loading = authLoading || profileQuery.isLoading;
@@ -297,7 +300,7 @@ const Profile = () => {
                             {messageStatus === "request" ? "Send message request" : "Message"}
                           </Button>
                         )}
-                        {professionalProfile?.is_mentor && (
+                        {professionalProfile?.is_mentor && myRole !== 'business' && user?.id !== userId && (
                           <Button asChild variant="hero" size="sm">
                             <Link to={`/mentorship?mentor=${userId}`}>
                               <Users className="w-4 h-4 mr-2" />
