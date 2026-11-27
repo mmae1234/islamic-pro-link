@@ -7,8 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, Globe, Building2, Users, ExternalLink, ArrowRight, Heart, MessageCircle } from "lucide-react";
+import { Mail, Phone, Globe, Building2, Users, ExternalLink, ArrowRight, Heart, MessageCircle, Flag } from "lucide-react";
 import BlockUserButton from "@/components/BlockUserButton";
+import ReportDialog from "@/components/ReportDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -84,6 +85,7 @@ const BusinessProfile = () => {
   const { toast } = useToast();
 
 const [business, setBusiness] = useState<BusinessAccount | null>(null);
+const [reportOpen, setReportOpen] = useState(false);
 const [team, setTeam] = useState<TeamMemberProfile[]>([]);
 const [loading, setLoading] = useState(true);
 const [linking, setLinking] = useState(false);
@@ -322,6 +324,11 @@ const handleRequestLink = async () => {
           size="sm"
         />
       )}
+      {business.owner_id && user.id !== business.owner_id && (
+        <Button variant="outline" size="sm" onClick={() => setReportOpen(true)}>
+          <Flag className="w-4 h-4 mr-2" /> Report
+        </Button>
+      )}
     </>
   )}
   {business.website && (
@@ -490,6 +497,16 @@ const handleRequestLink = async () => {
             </section>
           )}
         </article>
+        {user && business.owner_id && user.id !== business.owner_id && (
+          <ReportDialog
+            open={reportOpen}
+            onOpenChange={setReportOpen}
+            accusedId={business.owner_id}
+            accusedName={business.name || (isOrg ? 'this organization' : 'this business')}
+            businessId={business.id}
+            reportType="listing"
+          />
+        )}
       </main>
       <Footer />
     </div>
