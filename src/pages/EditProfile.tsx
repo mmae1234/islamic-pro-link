@@ -22,6 +22,7 @@ import {
   AvailabilitySelect 
 } from "@/components/EnhancedFormDropdowns";
 import { SearchableMultiSelect } from "@/components/SearchableMultiSelect";
+import WorkEmailVerify from "@/components/WorkEmailVerify";
 import { validateHttpUrl, validatePhoneNumber } from "@/lib/url-validation";
 
 const LANGUAGES = [
@@ -71,6 +72,8 @@ const EditProfile = () => {
   const [isMentor, setIsMentor] = useState(false);
   const [isSeekingMentor, setIsSeekingMentor] = useState(false);
   const [openTo, setOpenTo] = useState<string[]>([]);
+  const [workDomain, setWorkDomain] = useState<string | null>(null);
+  const [hasProfessional, setHasProfessional] = useState(false);
   const [preferredCommunication, setPreferredCommunication] = useState<string[]>(['in_app_messaging']);
   const [website, setWebsite] = useState('');
   const [facebookUrl, setFacebookUrl] = useState('');
@@ -135,6 +138,7 @@ const EditProfile = () => {
       }
 
       if (professionalData) {
+        setHasProfessional(true);
         setBio(professionalData.bio || '');
         setGender(professionalData.gender || '');
         setCountry(professionalData.country || '');
@@ -150,6 +154,7 @@ const EditProfile = () => {
         setIsMentor(professionalData.is_mentor || false);
         setIsSeekingMentor(professionalData.is_seeking_mentor || false);
         setOpenTo(((professionalData as { open_to?: string[] | null }).open_to) ?? []);
+        setWorkDomain((professionalData as { verified_work_domain?: string | null }).verified_work_domain ?? null);
         setPreferredCommunication(professionalData.preferred_communication || ['in_app_messaging']);
         setWebsite(professionalData.website || '');
         setFacebookUrl(professionalData.facebook_url || '');
@@ -561,6 +566,8 @@ const EditProfile = () => {
                   })}
                 </div>
               </div>
+
+              {hasProfessional && <WorkEmailVerify verifiedDomain={workDomain} onChange={setWorkDomain} />}
 
               {/* Mentorship */}
               <div className="space-y-4">
