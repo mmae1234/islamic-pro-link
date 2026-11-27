@@ -892,6 +892,10 @@ export type Database = {
       }
       consolidate_conversations: { Args: never; Returns: undefined }
       delete_user_account: { Args: { user_id_param: string }; Returns: boolean }
+      display_name: {
+        Args: { p: Database["public"]["Tables"]["profiles"]["Row"] }
+        Returns: string
+      }
       get_business_by_id: {
         Args: { _id: string }
         Returns: {
@@ -954,6 +958,7 @@ export type Database = {
           avatar_url: string
           blocked_id: string
           created_at: string
+          display_name: string
           first_name: string
           id: string
           last_name: string
@@ -1012,6 +1017,7 @@ export type Database = {
         Args: {
           _city?: string
           _country?: string
+          _gender?: string
           _is_mentor?: boolean
           _is_seeking_mentor?: boolean
           _languages?: string[]
