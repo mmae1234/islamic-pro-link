@@ -34,6 +34,7 @@ import {
   useDisconnectFromMentor,
   useFavoriteProfessionals,
   useToggleProfessionalFavorite,
+  useMyRole,
   type MentorProfile,
   type MentorshipRequest,
 } from "@/hooks/queries";
@@ -165,6 +166,9 @@ const Mentorship = () => {
     },
   });
   const isMentor = myProfileQuery.data === true;
+  // Mentorship is people-only (owner decision): business accounts can browse
+  // and see past requests, but can't request or offer mentorship.
+  const isBusinessAccount = useMyRole(user?.id).data === 'business';
 
   // Deep link from a profile's "Request mentorship" button: /mentorship?mentor=<id>
   useEffect(() => {
@@ -405,6 +409,12 @@ const Mentorship = () => {
             <p className="text-lg text-muted-foreground">
               Find an experienced Muslim professional to guide your career, or offer your own experience to someone starting out.
             </p>
+            {isBusinessAccount && (
+              <p className="mt-4 rounded-lg border border-accent/40 bg-accent/10 p-3 text-sm text-foreground">
+                Mentorship is between people. You're signed in with a business account, so you can browse mentors but not
+                request or offer mentorship. Sign in with your personal account to take part.
+              </p>
+            )}
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -506,7 +516,7 @@ const Mentorship = () => {
                             <Button asChild variant="outline">
                               <Link to={`/profile/${mentor.user_id}`}>View profile</Link>
                             </Button>
-                            <Button onClick={() => setSelectedMentor(mentor)}>
+                            <Button onClick={() => setSelectedMentor(mentor)} disabled={isBusinessAccount}>
                               <MessageCircle className="w-4 h-4 mr-2" />
                               Request
                             </Button>
@@ -563,11 +573,12 @@ const Mentorship = () => {
                                 </Badge>
                               </div>
 
-                              {request.mentor_profile && (
-                                <p className="text-sm text-muted-foreground mb-2">
-                                  {request.mentor_profile.occupation} • {request.mentor_profile.sector}
-                                </p>
-                              )}
+                              {(() => {
+                                // The OTHER person's job (it used to show the mentor's own job on incoming requests)
+                                const other = request.mentor_id === user?.id ? request.mentee_profile : request.mentor_profile;
+                                const line = [other?.occupation, other?.sector].filter(Boolean).join(" • ");
+                                return line ? <p className="text-sm text-muted-foreground mb-2">{line}</p> : null;
+                              })()}
 
                               <p className="text-sm text-muted-foreground mb-4">
                                 {request.message}
