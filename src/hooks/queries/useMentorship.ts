@@ -1,3 +1,4 @@
+import { personName, personInitials } from "@/lib/displayName";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { qk } from "./keys";
@@ -119,9 +120,8 @@ export function useMentorshipRequests(userId: string | undefined) {
       );
       const byId = new Map(members.map((m) => [m.profile.user_id, m]));
       const nameOf = (id: string) => {
-        const p = byId.get(id)?.profile as (MemberProfile["profile"] & { business_name?: string | null }) | undefined;
-        const personal = `${p?.first_name ?? ""} ${p?.last_name ?? ""}`.trim();
-        return { first_name: personal || p?.business_name || "A former member", last_name: personal ? p?.last_name ?? "" : "" };
+        const p = byId.get(id)?.profile as (MemberProfile["profile"] & { display_name?: string | null }) | undefined;
+        return { first_name: personName(p, "A former member"), last_name: "" };
       };
       const jobOf = (id: string) => {
         const pro = byId.get(id)?.professionalProfile;

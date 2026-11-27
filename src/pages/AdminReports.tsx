@@ -1,3 +1,4 @@
+import { personName, personInitials } from "@/lib/displayName";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -61,7 +62,7 @@ const pickProfile = (
 ): ProfileNameSlice =>
   Array.isArray(p) ? p[0] ?? FALLBACK_NAME : p ?? FALLBACK_NAME;
 
-const fullName = (p: ProfileNameSlice) => `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || "Unknown";
+const fullName = (p: ProfileNameSlice) => personName(p) || "Unknown";
 
 const AdminReports = () => {
   const { user } = useAuth();
@@ -132,9 +133,10 @@ const AdminReports = () => {
       if (ids.length > 0) {
         const { data: profs } = await supabase
           .from("profiles")
-          .select("user_id, first_name, last_name")
+          .select("user_id, first_name, last_name, display_name")
           .in("user_id", ids);
-        for (const p of profs ?? []) names.set(p.user_id, { first_name: p.first_name, last_name: p.last_name });
+        for (const p of (profs ?? []) as Array<{ user_id: string; first_name: string | null; last_name: string | null; display_name: string | null }>)
+          names.set(p.user_id, { first_name: personName(p), last_name: "" });
       }
       const rows = base.map((r) => ({
         ...r,

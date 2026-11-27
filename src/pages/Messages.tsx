@@ -1,3 +1,4 @@
+import { personName, personInitials } from "@/lib/displayName";
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -113,7 +114,7 @@ const Messages = () => {
     if (!searchTerm) return professionals;
     const q = searchTerm.toLowerCase();
     return professionals.filter((prof) => {
-      const fullName = `${prof.profiles?.first_name || ""} ${prof.profiles?.last_name || ""}`.trim();
+      const fullName = personName(prof.profiles);
       return (
         fullName.toLowerCase().includes(q) ||
         (prof.occupation || "").toLowerCase().includes(q) ||
@@ -402,17 +403,17 @@ const Messages = () => {
                                 className="flex items-start gap-3 flex-1 cursor-pointer"
                                 onClick={() => setSelectedConversation({
                                   partnerId: message.recipient_id,
-                                  partnerName: `${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim() || 'Unknown'
+                                  partnerName: personName(message.recipient_profile) || 'Unknown'
                                 })}
                               >
                                 <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center">
                                   <span className="text-primary-foreground font-semibold text-sm">
-                                    {`${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim().split(' ').map(n => n[0]).join('') || 'U'}
+                                    {personInitials(message.recipient_profile) || 'U'}
                                   </span>
                                 </div>
                                 <div className="flex-1">
                                   <h3 className="font-medium text-foreground mb-1">
-                                    To: {`${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim() || 'Unknown'}
+                                    To: {personName(message.recipient_profile) || 'Unknown'}
                                   </h3>
                                   <p className="text-sm text-muted-foreground">
                                     {message.content}
@@ -469,16 +470,16 @@ const Messages = () => {
                                 <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center">
                                   <span className="text-primary-foreground font-semibold text-sm">
                                     {message.sender_id === user?.id
-                                      ? `${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim().split(' ').map(n => n[0]).join('') || 'U'
-                                      : `${message.sender_profile?.first_name || ''} ${message.sender_profile?.last_name || ''}`.trim().split(' ').map(n => n[0]).join('') || 'U'
+                                      ? personInitials(message.recipient_profile) || 'U'
+                                      : personInitials(message.sender_profile) || 'U'
                                     }
                                   </span>
                                 </div>
                                 <div className="flex-1">
                                   <h3 className="font-medium text-foreground mb-1">
                                     {message.sender_id === user?.id
-                                      ? `To: ${message.recipient_profile?.first_name || ''} ${message.recipient_profile?.last_name || ''}`.trim() || 'Unknown'
-                                      : `From: ${message.sender_profile?.first_name || ''} ${message.sender_profile?.last_name || ''}`.trim() || 'Unknown'
+                                      ? `To: ${personName(message.recipient_profile, 'Unknown')}`
+                                      : `From: ${personName(message.sender_profile, 'Unknown')}`
                                     }
                                   </h3>
                                   <p className="text-sm text-muted-foreground">
@@ -531,11 +532,11 @@ const Messages = () => {
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center">
                                 <span className="text-primary-foreground font-semibold text-xs">
-                                  {`${prof.profiles?.first_name || ''} ${prof.profiles?.last_name || ''}`.trim().split(' ').map(n => n[0]).join('') || 'U'}
+                                  {personInitials(prof.profiles) || 'U'}
                                 </span>
                               </div>
                               <div>
-                                <p className="font-medium text-sm">{`${prof.profiles?.first_name || ''} ${prof.profiles?.last_name || ''}`.trim() || 'Unknown'}</p>
+                                <p className="font-medium text-sm">{personName(prof.profiles) || 'Unknown'}</p>
                                 <p className="text-xs text-muted-foreground">{prof.occupation} • {prof.sector}</p>
                               </div>
                             </div>
@@ -549,7 +550,7 @@ const Messages = () => {
                     <div className="space-y-4">
                       <div className="p-3 bg-muted rounded-lg">
                         <p className="text-sm font-medium">
-                          Sending to: {`${selectedRecipient.profiles?.first_name || ''} ${selectedRecipient.profiles?.last_name || ''}`.trim() || 'Unknown'}
+                          Sending to: {personName(selectedRecipient.profiles) || 'Unknown'}
                         </p>
                       </div>
 

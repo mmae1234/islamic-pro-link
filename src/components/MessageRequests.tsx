@@ -1,3 +1,4 @@
+import { personName, personInitials } from "@/lib/displayName";
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -122,8 +123,8 @@ export default function MessageRequests({ onAcceptRequest, onRequestCountChange 
           created_at: conv.created_at,
           sender: {
             id: senderId,
-            first_name: member?.profile.first_name || "",
-            last_name: member?.profile.last_name || "",
+            first_name: personName(member?.profile, "A member"),
+            last_name: "",
             avatar_url: member?.profile.avatar_url ?? undefined,
             professional_profile: pro
               ? {
