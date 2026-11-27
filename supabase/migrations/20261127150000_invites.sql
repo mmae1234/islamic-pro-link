@@ -47,7 +47,7 @@ BEGIN
     BEGIN
       PERFORM set_config('app.invite_rpc', 'on', true);
       UPDATE public.profiles
-      SET invite_code = lower(substr(translate(encode(gen_random_bytes(8), 'base64'), '+/=', ''), 1, 8))
+      SET invite_code = lower(substr(translate(encode(extensions.gen_random_bytes(8), 'base64'), '+/=', ''), 1, 8))
       WHERE user_id = auth.uid()
       RETURNING invite_code INTO _code;
       PERFORM set_config('app.invite_rpc', 'off', true);
