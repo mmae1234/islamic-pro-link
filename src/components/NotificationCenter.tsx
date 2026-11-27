@@ -1,3 +1,4 @@
+import { personName, personInitials } from "@/lib/displayName";
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
@@ -64,7 +65,7 @@ const NotificationCenter = () => {
           content,
           created_at,
           sender_id,
-          profiles!messages_sender_id_fkey(first_name, last_name)
+          profiles!messages_sender_id_fkey(first_name, last_name, display_name)
         `)
         .eq('recipient_id', user.id)
         .is('read_at', null)
@@ -80,7 +81,7 @@ const NotificationCenter = () => {
           status,
           created_at,
           mentee_id,
-          profiles!mentorship_requests_mentee_id_fkey(first_name, last_name)
+          profiles!mentorship_requests_mentee_id_fkey(first_name, last_name, display_name)
         `)
         .eq('mentor_id', user.id)
         .eq('status', 'pending')
@@ -111,7 +112,7 @@ const NotificationCenter = () => {
       if (accepted && accepted.length > 0) {
         try {
           const rows = await fetchMemberProfiles(accepted.map((a) => a.mentor_id));
-          rows.forEach((r) => mentorNames.set(r.profile.user_id, `${r.profile.first_name || ''} ${r.profile.last_name || ''}`.trim()));
+          rows.forEach((r) => mentorNames.set(r.profile.user_id, personName(r.profile)));
         } catch {
           // names are optional
         }
@@ -148,7 +149,7 @@ const NotificationCenter = () => {
         // Handle profiles data - it might be an array or object
         const profileData = Array.isArray(msg.profiles) ? msg.profiles[0] : msg.profiles;
         const senderName = profileData 
-          ? `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim() 
+          ? personName(profileData) 
           : 'Someone';
           
         notificationsList.push({
@@ -167,7 +168,7 @@ const NotificationCenter = () => {
         // Handle profiles data - it might be an array or object
         const profileData = Array.isArray(req.profiles) ? req.profiles[0] : req.profiles;
         const requesterName = profileData 
-          ? `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim() 
+          ? personName(profileData) 
           : 'Someone';
           
         notificationsList.push({

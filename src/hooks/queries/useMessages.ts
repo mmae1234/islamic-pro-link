@@ -1,3 +1,4 @@
+import { personName, personInitials } from "@/lib/displayName";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { qk } from "./keys";
@@ -57,8 +58,8 @@ export function useConversations(userId: string | undefined) {
     queryFn: async (): Promise<ConversationSummary[]> => {
       const conversationSelect = `
         id, user_a, user_b, status, updated_at,
-        profiles_a:profiles!conversations_user_a_fkey(first_name, last_name),
-        profiles_b:profiles!conversations_user_b_fkey(first_name, last_name)
+        profiles_a:profiles!conversations_user_a_fkey(first_name, last_name, display_name),
+        profiles_b:profiles!conversations_user_b_fkey(first_name, last_name, display_name)
       `;
       const [{ data: convAData, error: convAError }, { data: convBData, error: convBError }] =
         await Promise.all([
@@ -96,7 +97,7 @@ export function useConversations(userId: string | undefined) {
         return {
           partner_id: partnerId,
           partner_name:
-            `${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim() ||
+            personName(profile) ||
             "Unknown",
           last_message: "",
           last_message_time: conv.updated_at,
@@ -170,7 +171,7 @@ export function useInboxMessages(userId: string | undefined) {
       const { data, error } = await supabase
         .from("messages")
         .select(
-          `*, sender_profile:profiles!messages_sender_id_fkey(first_name, last_name)`,
+          `*, sender_profile:profiles!messages_sender_id_fkey(first_name, last_name, display_name)`,
         )
         .eq("recipient_id", userId!)
         .is("deleted_at", null)
@@ -190,7 +191,7 @@ export function useSentMessages(userId: string | undefined) {
       const { data, error } = await supabase
         .from("messages")
         .select(
-          `*, recipient_profile:profiles!messages_recipient_id_fkey(first_name, last_name)`,
+          `*, recipient_profile:profiles!messages_recipient_id_fkey(first_name, last_name, display_name)`,
         )
         .eq("sender_id", userId!)
         .is("deleted_at", null)
@@ -210,8 +211,8 @@ export function useArchivedMessages(userId: string | undefined) {
     queryFn: async (): Promise<MessageRow[]> => {
       const archivedSelect = `
         *,
-        sender_profile:profiles!messages_sender_id_fkey(first_name, last_name),
-        recipient_profile:profiles!messages_recipient_id_fkey(first_name, last_name)
+        sender_profile:profiles!messages_sender_id_fkey(first_name, last_name, display_name),
+        recipient_profile:profiles!messages_recipient_id_fkey(first_name, last_name, display_name)
       `;
       const [{ data: sent, error: errSent }, { data: received, error: errReceived }, hides] =
         await Promise.all([

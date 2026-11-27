@@ -1,3 +1,4 @@
+import { personName, personInitials } from "@/lib/displayName";
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -63,13 +64,14 @@ const MessagingPrivacySettings = () => {
         first_name: string | null;
         last_name: string | null;
         avatar_url: string | null;
+        display_name: string | null;
       }>;
       setBlockedUsers(
         rows.map((item) => ({
           id: item.id,
           blocked_id: item.blocked_id,
-          first_name: item.first_name || 'Unknown',
-          last_name: item.last_name || 'User',
+          first_name: personName(item, 'Unknown'),
+          last_name: '',
           avatar_url: item.avatar_url ?? undefined,
           blocked_at: item.created_at,
         })),

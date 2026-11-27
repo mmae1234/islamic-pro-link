@@ -115,8 +115,8 @@ const ConversationView = ({ partnerId, partnerName, onBack }: ConversationViewPr
       // produces disjoint sets — send_message blocks self-messaging, so no dedupe needed.
       const selectStr = `
           *,
-          sender_profile:profiles!messages_sender_id_fkey(first_name, last_name),
-          recipient_profile:profiles!messages_recipient_id_fkey(first_name, last_name)
+          sender_profile:profiles!messages_sender_id_fkey(first_name, last_name, display_name),
+          recipient_profile:profiles!messages_recipient_id_fkey(first_name, last_name, display_name)
         `;
       const [{ data: outData, error: outErr }, { data: inData, error: inErr }] = await Promise.all([
         supabase

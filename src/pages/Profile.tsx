@@ -1,3 +1,4 @@
+import { personName, personInitials } from "@/lib/displayName";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link, useNavigate } from "react-router-dom";
@@ -234,7 +235,7 @@ const Profile = () => {
                 <Avatar className="w-24 h-24">
                   <AvatarImage src={(professionalProfile?.avatar_url ?? profile?.avatar_url) || undefined} />
                   <AvatarFallback className="text-2xl">
-                    {`${(profile?.first_name || '').charAt(0)}${(profile?.last_name || '').charAt(0)}`.toUpperCase() || 'U'}
+                    {personInitials(profile, 'U')}
                   </AvatarFallback>
                 </Avatar>
 
@@ -243,7 +244,7 @@ const Profile = () => {
                     <div>
                       <div className="flex items-center gap-4">
                         <h1 className="text-3xl font-bold text-foreground mb-2">
-                          {`${profile?.first_name || ''} ${profile?.last_name || ''}`.trim()}
+                          {personName(profile)}
                         </h1>
                         {isOwnProfile && (
                           <Button variant="outline" size="sm" asChild>
@@ -292,7 +293,7 @@ const Profile = () => {
                             size="sm"
                             disabled={messageStatusQuery.isLoading}
                             onClick={() => {
-                              const partnerName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'Conversation';
+                              const partnerName = personName(profile) || 'Conversation';
                               navigate(`/messages?recipient=${userId}&name=${encodeURIComponent(partnerName)}`);
                             }}
                           >
@@ -326,7 +327,7 @@ const Profile = () => {
                               <div className="w-full">
                                 <BlockUserButton
                                   targetUserId={userId!}
-                                  targetUserName={`${profile?.first_name || ''} ${profile?.last_name || ''}`.trim()}
+                                  targetUserName={personName(profile)}
                                   variant="ghost"
                                   size="sm"
                                   className="w-full justify-start p-0 h-auto text-destructive hover:text-destructive"
@@ -567,7 +568,7 @@ const Profile = () => {
         open={showReportDialog}
         onOpenChange={setShowReportDialog}
         accusedId={userId!}
-        accusedName={`${profile?.first_name || ''} ${profile?.last_name || ''}`.trim()}
+        accusedName={personName(profile)}
         reportType="profile"
       />
 

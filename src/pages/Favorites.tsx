@@ -1,3 +1,4 @@
+import { personName, personInitials } from "@/lib/displayName";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -155,7 +156,7 @@ const Favorites = () => {
                               <div className="flex-1">
                                 <h3 className="text-xl font-semibold text-foreground mb-1">
                                   <Link to={`/profile/${favorite.professional_profile.user_id}`} className="hover:underline">
-                                    {`${favorite.professional_profile.profiles.first_name || ''} ${favorite.professional_profile.profiles.last_name || ''}`.trim() || 'Anonymous User'}
+                                    {personName(favorite.professional_profile.profiles) || 'Anonymous User'}
                                   </Link>
                                 </h3>
                                 <p className="text-lg text-primary font-medium">
@@ -207,7 +208,7 @@ const Favorites = () => {
                               <Button
                                 onClick={() => sendMessage(
                                   favorite.professional_profile.user_id,
-                                  `${favorite.professional_profile.profiles.first_name || ''} ${favorite.professional_profile.profiles.last_name || ''}`.trim() || 'Anonymous User'
+                                  personName(favorite.professional_profile.profiles) || 'Anonymous User'
                                 )}
                                 className="flex items-center gap-2"
                               >

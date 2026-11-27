@@ -38,12 +38,13 @@ function json(status: number, body: Record<string, unknown>) {
 async function displayName(userId: string): Promise<string> {
   const { data } = await supabase
     .from("profiles")
-    .select("first_name, last_name")
+    .select("first_name, last_name, display_name")
     .eq("user_id", userId)
     .maybeSingle();
   const first = (data?.first_name ?? "").trim();
   const lastInitial = (data?.last_name ?? "").trim().charAt(0);
-  if (!first) return "A member";
+  // Business accounts usually have no personal name: use the business name.
+  if (!first) return ((data as { display_name?: string | null } | null)?.display_name ?? "").trim() || "A member";
   return lastInitial ? `${first} ${lastInitial}.` : first;
 }
 
