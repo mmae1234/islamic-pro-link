@@ -216,6 +216,22 @@ const Help = () => {
                     Visit the business profile and tap "I work here" at the bottom. The business owner reviews and approves your request.
                   </AccordionContent>
                 </AccordionItem>
+                <AccordionItem value="item-2org">
+                  <AccordionTrigger>Can my mosque, MSA or association join?</AccordionTrigger>
+                  <AccordionContent>
+                    Yes. Sign up and choose "I represent an organization". We check each organization before it's listed
+                    (usually within a few days). Once approved, it appears on the Organizations page and can post events.
+                    Members can tap "I'm a member" on your page. Mentorship is between people, so organization accounts
+                    can't offer or request it.
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="item-2ev">
+                  <AccordionTrigger>Who can see events?</AccordionTrigger>
+                  <AccordionContent>
+                    Anyone can see an event's title, date, city and description. The street address and RSVP link are shown
+                    only to signed-in members. RSVP links must be secure (https) and open the organizer's own page in a new tab.
+                  </AccordionContent>
+                </AccordionItem>
                 <AccordionItem value="item-2e">
                   <AccordionTrigger>How can a business delink a professional?</AccordionTrigger>
                   <AccordionContent>

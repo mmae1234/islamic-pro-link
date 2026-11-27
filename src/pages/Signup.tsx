@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AuthForm from "@/components/AuthForm";
-import RoleSelection, { AccountType } from "@/components/RoleSelection";
+import RoleSelection, { AccountType, backendAccountType } from "@/components/RoleSelection";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ const Signup = () => {
 
   const rawType = searchParams.get('type') || searchParams.get('account_type');
   const preselectedParam: AccountType | null =
-    rawType === 'visitor' || rawType === 'professional' || rawType === 'business' ? rawType : null;
+    rawType === 'visitor' || rawType === 'professional' || rawType === 'business' || rawType === 'organization' ? rawType : null;
   // Default to professional: the directory only grows from professional profiles.
   const preselected: AccountType = preselectedParam || 'professional';
   const src = searchParams.get('src') || 'generic';
@@ -51,7 +51,7 @@ const Signup = () => {
 
   // Log analytics for entry point
   useEffect(() => {
-    supabase.from('signup_events').insert({ user_id: user?.id ?? null, source: src, account_type: preselected }).then(() => {
+    supabase.from('signup_events').insert({ user_id: user?.id ?? null, source: src, account_type: backendAccountType(preselected) }).then(() => {
       // ignore errors silently
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -82,7 +82,8 @@ const Signup = () => {
         localStorage.setItem('pending_account_type', selected);
         
         // Store business details for later use when creating business account
-        if (selected === 'business') {
+        if (selected === 'business' || selected === 'organization') {
+          localStorage.setItem('pending_business_kind', selected);
           if (values.businessName) localStorage.setItem('pending_business_name', values.businessName);
           if (values.phone) localStorage.setItem('pending_business_phone', values.phone);
           if (values.website) localStorage.setItem('pending_business_website', values.website);
@@ -96,7 +97,7 @@ const Signup = () => {
 
         // Clear only fields that don't apply
         setValues((prev) =>
-          selected === 'business'
+          selected === 'business' || selected === 'organization'
             ? { ...prev, firstName: undefined, lastName: undefined }
             : { ...prev, businessName: undefined, phone: undefined, website: undefined }
         );
@@ -107,15 +108,16 @@ const Signup = () => {
       }
 
       // Update auth metadata
-      const { error: metaError } = await supabase.auth.updateUser({ data: { account_type: selected } });
+      if (selected === 'organization') localStorage.setItem('pending_business_kind', 'organization');
+      const { error: metaError } = await supabase.auth.updateUser({ data: { account_type: backendAccountType(selected) } });
       if (metaError) throw metaError;
 
       // profiles.role is not client-writable; the RPC validates the value server-side.
-      const { error: profileError } = await supabase.rpc('set_account_type', { _type: selected });
+      const { error: profileError } = await supabase.rpc('set_account_type', { _type: backendAccountType(selected) });
       if (profileError) throw profileError;
 
       // Analytics completion
-      await supabase.from('signup_events').insert({ user_id: user.id, source: src, account_type: selected });
+      await supabase.from('signup_events').insert({ user_id: user.id, source: src, account_type: backendAccountType(selected) });
 
       // Redirect per role
       if (selected === 'visitor') navigate('/');

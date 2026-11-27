@@ -1,3 +1,5 @@
+import { ORG_TYPES } from "@/lib/orgTypes";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -42,6 +44,8 @@ const EditBusinessProfile = () => {
   const [bio, setBio] = useState('');
   const [services, setServices] = useState('');
   const [sector, setSector] = useState('');
+  const [kind, setKind] = useState<string>('business');
+  const [orgType, setOrgType] = useState<string>('');
   const [country, setCountry] = useState('');
   const [state, setState] = useState('');
   const [city, setCity] = useState('');
@@ -102,6 +106,8 @@ const EditBusinessProfile = () => {
       setBio(businessData.bio || '');
       setServices(businessData.services || '');
       setSector(businessData.sector || '');
+      setKind((businessData as { kind?: string }).kind || 'business');
+      setOrgType((businessData as { org_type?: string | null }).org_type || '');
       setCountry(businessData.country || '');
       setState(businessData.state || '');
       setCity(businessData.city || '');
@@ -178,6 +184,7 @@ const EditBusinessProfile = () => {
           bio: bio || null,
           services: services || null,
           sector: sector || null,
+          ...(kind === 'organization' ? { org_type: orgType || 'other' } : {}),
           country: country || null,
           state: state || null,
           city: city || null,
@@ -252,10 +259,12 @@ const EditBusinessProfile = () => {
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground mb-2 flex items-center gap-3">
               <Building2 className="w-8 h-8" />
-              Edit Business Profile
+              {kind === 'organization' ? 'Edit Organization Profile' : 'Edit Business Profile'}
             </h1>
             <p className="text-muted-foreground">
-              Update your business information to help others find you.
+              {kind === 'organization'
+                ? 'Update your organization\'s details so members can find you.'
+                : 'Update your business information to help others find you.'}
             </p>
           </div>
 
@@ -303,7 +312,18 @@ const EditBusinessProfile = () => {
                 />
               </div>
 
-              {/* Sector */}
+              {/* Sector / organization type */}
+              {kind === 'organization' ? (
+                <div>
+                  <Label htmlFor="org-type">Type of organization</Label>
+                  <Select value={orgType} onValueChange={setOrgType}>
+                    <SelectTrigger id="org-type"><SelectValue placeholder="Choose a type" /></SelectTrigger>
+                    <SelectContent>
+                      {ORG_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : (
               <div>
                 <Label>Industry/Sector</Label>
                 <SectorSelect
@@ -312,6 +332,7 @@ const EditBusinessProfile = () => {
                   placeholder="Select your industry"
                 />
               </div>
+              )}
 
               {/* Services */}
               <div>

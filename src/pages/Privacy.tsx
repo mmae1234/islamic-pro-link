@@ -26,9 +26,10 @@ const Privacy = () => {
             <p className="mb-2"><strong>Information you provide:</strong></p>
             <ul className="list-disc pl-6 mb-4">
               <li>Account details: name, email address, password (stored hashed by our auth provider).</li>
-              <li>Account type: visitor, professional, or business.</li>
+              <li>Account type: visitor, professional, business, or organization.</li>
               <li>Profile information: occupation, industry, biography, location, profile photo, social media links.</li>
-              <li>Business profile information (for business accounts): business name, description, location, website, contact details, logo and images, social links.</li>
+              <li>Business and organization profile information: name, description, location, website, contact details, logo and images, social links. Organizations are listed only after we verify them.</li>
+              <li>Events posted by organizations: title, date and time, city and description are public; the street address and RSVP link are shown to signed-in members only.</li>
               <li>Messages you send through the in-app messaging system.</li>
               <li>Mentorship requests and responses.</li>
               <li>Reports you file about other users or messages. When you report someone, a copy of the most recent messages between you and that person (up to 30) is saved with the report so our moderators can review what happened.</li>
