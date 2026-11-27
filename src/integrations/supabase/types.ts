@@ -18,12 +18,15 @@ export type Database = {
         Row: {
           accused_id: string
           admin_note: string | null
+          business_id: string | null
           conversation_id: string | null
           created_at: string
           details: string | null
+          event_id: string | null
           evidence: Json | null
           id: string
           message_id: string | null
+          opportunity_id: string | null
           reason: string
           reporter_id: string
           resolved_at: string | null
@@ -33,12 +36,15 @@ export type Database = {
         Insert: {
           accused_id: string
           admin_note?: string | null
+          business_id?: string | null
           conversation_id?: string | null
           created_at?: string
           details?: string | null
+          event_id?: string | null
           evidence?: Json | null
           id?: string
           message_id?: string | null
+          opportunity_id?: string | null
           reason: string
           reporter_id: string
           resolved_at?: string | null
@@ -48,12 +54,15 @@ export type Database = {
         Update: {
           accused_id?: string
           admin_note?: string | null
+          business_id?: string | null
           conversation_id?: string | null
           created_at?: string
           details?: string | null
+          event_id?: string | null
           evidence?: Json | null
           id?: string
           message_id?: string | null
+          opportunity_id?: string | null
           reason?: string
           reporter_id?: string
           resolved_at?: string | null
@@ -62,6 +71,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "abuse_reports_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "abuse_reports_conversation_id_fkey"
             columns: ["conversation_id"]
             isOneToOne: false
@@ -69,10 +85,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "abuse_reports_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "org_events"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "abuse_reports_message_id_fkey"
             columns: ["message_id"]
             isOneToOne: false
             referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "abuse_reports_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
             referencedColumns: ["id"]
           },
         ]
@@ -112,11 +142,13 @@ export type Database = {
           facebook_url: string | null
           id: string
           instagram_url: string | null
+          kind: string
           languages: string[] | null
           linkedin_url: string | null
           logo_url: string | null
           name: string | null
           occupations: string[] | null
+          org_type: string | null
           owner_id: string
           phone: string | null
           postal_code: string | null
@@ -146,11 +178,13 @@ export type Database = {
           facebook_url?: string | null
           id?: string
           instagram_url?: string | null
+          kind?: string
           languages?: string[] | null
           linkedin_url?: string | null
           logo_url?: string | null
           name?: string | null
           occupations?: string[] | null
+          org_type?: string | null
           owner_id: string
           phone?: string | null
           postal_code?: string | null
@@ -180,11 +214,13 @@ export type Database = {
           facebook_url?: string | null
           id?: string
           instagram_url?: string | null
+          kind?: string
           languages?: string[] | null
           linkedin_url?: string | null
           logo_url?: string | null
           name?: string | null
           occupations?: string[] | null
+          org_type?: string | null
           owner_id?: string
           phone?: string | null
           postal_code?: string | null
@@ -347,6 +383,27 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      image_approvals: {
+        Row: {
+          approved_at: string
+          object_id: string
+          owner_id: string
+          path: string
+        }
+        Insert: {
+          approved_at?: string
+          object_id: string
+          owner_id: string
+          path: string
+        }
+        Update: {
+          approved_at?: string
+          object_id?: string
+          owner_id?: string
+          path?: string
+        }
+        Relationships: []
       }
       member_suspensions: {
         Row: {
@@ -561,6 +618,142 @@ export type Database = {
           },
         ]
       }
+      opportunities: {
+        Row: {
+          apply_url: string | null
+          business_id: string
+          city: string | null
+          closes_on: string | null
+          country: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          hidden: boolean
+          id: string
+          kind: string
+          pay: string | null
+          state: string | null
+          title: string
+          updated_at: string
+          workplace: string
+        }
+        Insert: {
+          apply_url?: string | null
+          business_id: string
+          city?: string | null
+          closes_on?: string | null
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          hidden?: boolean
+          id?: string
+          kind?: string
+          pay?: string | null
+          state?: string | null
+          title: string
+          updated_at?: string
+          workplace?: string
+        }
+        Update: {
+          apply_url?: string | null
+          business_id?: string
+          city?: string | null
+          closes_on?: string | null
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          hidden?: boolean
+          id?: string
+          kind?: string
+          pay?: string | null
+          state?: string | null
+          title?: string
+          updated_at?: string
+          workplace?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunities_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_events: {
+        Row: {
+          address: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          ends_at: string | null
+          hidden: boolean
+          id: string
+          mode: string
+          org_id: string
+          rsvp_url: string | null
+          starts_at: string
+          state: string | null
+          timezone: string
+          title: string
+          updated_at: string
+          venue_name: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string | null
+          hidden?: boolean
+          id?: string
+          mode?: string
+          org_id: string
+          rsvp_url?: string | null
+          starts_at: string
+          state?: string | null
+          timezone?: string
+          title: string
+          updated_at?: string
+          venue_name?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string | null
+          hidden?: boolean
+          id?: string
+          mode?: string
+          org_id?: string
+          rsvp_url?: string | null
+          starts_at?: string
+          state?: string | null
+          timezone?: string
+          title?: string
+          updated_at?: string
+          venue_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professional_business_links: {
         Row: {
           business_id: string
@@ -616,6 +809,7 @@ export type Database = {
           last_name: string | null
           linkedin_url: string | null
           occupation: string | null
+          open_to: string[]
           preferred_communication: string[] | null
           sector: string | null
           skills: string[] | null
@@ -626,6 +820,8 @@ export type Database = {
           university: string | null
           updated_at: string
           user_id: string
+          verified_work_at: string | null
+          verified_work_domain: string | null
           website: string | null
           whatsapp_number: string | null
           youtube_url: string | null
@@ -649,6 +845,7 @@ export type Database = {
           last_name?: string | null
           linkedin_url?: string | null
           occupation?: string | null
+          open_to?: string[]
           preferred_communication?: string[] | null
           sector?: string | null
           skills?: string[] | null
@@ -659,6 +856,8 @@ export type Database = {
           university?: string | null
           updated_at?: string
           user_id: string
+          verified_work_at?: string | null
+          verified_work_domain?: string | null
           website?: string | null
           whatsapp_number?: string | null
           youtube_url?: string | null
@@ -682,6 +881,7 @@ export type Database = {
           last_name?: string | null
           linkedin_url?: string | null
           occupation?: string | null
+          open_to?: string[]
           preferred_communication?: string[] | null
           sector?: string | null
           skills?: string[] | null
@@ -692,6 +892,8 @@ export type Database = {
           university?: string | null
           updated_at?: string
           user_id?: string
+          verified_work_at?: string | null
+          verified_work_domain?: string | null
           website?: string | null
           whatsapp_number?: string | null
           youtube_url?: string | null
@@ -742,9 +944,11 @@ export type Database = {
           first_login: boolean
           first_name: string | null
           id: string
+          invite_code: string | null
           last_name: string | null
           messaging_privacy: Database["public"]["Enums"]["messaging_privacy"]
           public_preview: boolean
+          referred_by: string | null
           role: string | null
           updated_at: string
           user_id: string
@@ -757,9 +961,11 @@ export type Database = {
           first_login?: boolean
           first_name?: string | null
           id?: string
+          invite_code?: string | null
           last_name?: string | null
           messaging_privacy?: Database["public"]["Enums"]["messaging_privacy"]
           public_preview?: boolean
+          referred_by?: string | null
           role?: string | null
           updated_at?: string
           user_id: string
@@ -772,9 +978,11 @@ export type Database = {
           first_login?: boolean
           first_name?: string | null
           id?: string
+          invite_code?: string | null
           last_name?: string | null
           messaging_privacy?: Database["public"]["Enums"]["messaging_privacy"]
           public_preview?: boolean
+          referred_by?: string | null
           role?: string | null
           updated_at?: string
           user_id?: string
@@ -857,6 +1065,39 @@ export type Database = {
         }
         Relationships: []
       }
+      work_email_codes: {
+        Row: {
+          attempts: number
+          code_hash: string
+          domain: string
+          email: string
+          expires_at: string
+          sends_in_window: number
+          sends_window_start: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          domain: string
+          email: string
+          expires_at: string
+          sends_in_window?: number
+          sends_window_start?: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          domain?: string
+          email?: string
+          expires_at?: string
+          sends_in_window?: number
+          sends_window_start?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       public_guest_profiles: {
@@ -870,14 +1111,41 @@ export type Database = {
       }
     }
     Functions: {
+      admin_list_organizations: {
+        Args: never
+        Returns: {
+          city: string
+          country: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+          org_type: string
+          owner_name: string
+          state: string
+          verified: boolean
+          website: string
+        }[]
+      }
       admin_set_business_verified: {
         Args: { _business_id: string; _verified: boolean }
         Returns: boolean
       }
+      admin_set_event_hidden: {
+        Args: { _event_id: string; _hidden: boolean }
+        Returns: boolean
+      }
+      admin_set_opportunity_hidden: {
+        Args: { _hidden: boolean; _id: string }
+        Returns: boolean
+      }
+      admin_stats: { Args: never; Returns: Json }
       admin_update_report: {
         Args: { _note?: string; _report_id: string; _status: string }
         Returns: boolean
       }
+      can_manage_listing: { Args: { _business_id: string }; Returns: boolean }
+      can_manage_org: { Args: { _org_id: string }; Returns: boolean }
       can_send_message: {
         Args: { recipient_id_param: string; sender_id_param: string }
         Returns: string
@@ -890,6 +1158,8 @@ export type Database = {
         Args: { user_id_param: string }
         Returns: boolean
       }
+      claim_invite: { Args: { _code: string }; Returns: boolean }
+      confirm_work_email: { Args: { _code: string }; Returns: string }
       consolidate_conversations: { Args: never; Returns: undefined }
       delete_user_account: { Args: { user_id_param: string }; Returns: boolean }
       display_name: {
@@ -904,8 +1174,10 @@ export type Database = {
           country: string
           created_at: string
           id: string
+          kind: string
           logo_url: string
           name: string
+          org_type: string
           sector: string
           services: string
           state: string
@@ -951,6 +1223,27 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_event: {
+        Args: { _id: string }
+        Returns: {
+          address: string
+          city: string
+          country: string
+          description: string
+          ends_at: string
+          id: string
+          mode: string
+          org_id: string
+          org_logo_url: string
+          org_name: string
+          rsvp_url: string
+          starts_at: string
+          state: string
+          timezone: string
+          title: string
+          venue_name: string
+        }[]
+      }
       get_member_profiles: { Args: { _user_ids: string[] }; Returns: Json[] }
       get_my_blocked_users: {
         Args: never
@@ -962,6 +1255,13 @@ export type Database = {
           first_name: string
           id: string
           last_name: string
+        }[]
+      }
+      get_my_invite: {
+        Args: never
+        Returns: {
+          code: string
+          joined: number
         }[]
       }
       get_or_create_conversation: {
@@ -1013,6 +1313,76 @@ export type Database = {
         Returns: boolean
       }
       is_suspended: { Args: { _user_id: string }; Returns: boolean }
+      list_events: {
+        Args: { _include_past?: boolean; _limit?: number; _org_id?: string }
+        Returns: {
+          address: string
+          city: string
+          country: string
+          description: string
+          ends_at: string
+          id: string
+          mode: string
+          org_id: string
+          org_logo_url: string
+          org_name: string
+          rsvp_url: string
+          starts_at: string
+          state: string
+          timezone: string
+          title: string
+          venue_name: string
+        }[]
+      }
+      list_opportunities: {
+        Args: {
+          _business_id?: string
+          _id?: string
+          _kind?: string
+          _limit?: number
+          _search?: string
+        }
+        Returns: {
+          apply_url: string
+          business_id: string
+          business_kind: string
+          business_logo_url: string
+          business_name: string
+          city: string
+          closes_on: string
+          country: string
+          created_at: string
+          description: string
+          id: string
+          kind: string
+          pay: string
+          state: string
+          title: string
+          workplace: string
+        }[]
+      }
+      list_organizations: {
+        Args: {
+          _city?: string
+          _country?: string
+          _limit?: number
+          _org_type?: string
+          _search?: string
+          _state?: string
+        }
+        Returns: {
+          bio: string
+          city: string
+          country: string
+          id: string
+          logo_url: string
+          name: string
+          org_type: string
+          state: string
+          upcoming_events: number
+          website: string
+        }[]
+      }
       list_professional_directory: {
         Args: {
           _city?: string
@@ -1026,6 +1396,7 @@ export type Database = {
           _min_experience?: number
           _occupation?: string
           _offset?: number
+          _open_to?: string[]
           _search?: string
           _sector?: string
           _skills?: string[]
@@ -1042,6 +1413,7 @@ export type Database = {
           is_seeking_mentor: boolean
           last_name: string
           occupation: string
+          open_to: string[]
           sector: string
           state_province: string
           user_id: string
@@ -1059,6 +1431,10 @@ export type Database = {
           sector: string
           user_id: string
         }[]
+      }
+      ping_org_approvals: {
+        Args: { _mode: string; _org_id?: string }
+        Returns: undefined
       }
       public_directory_preview: {
         Args: { _limit?: number }
@@ -1090,6 +1466,11 @@ export type Database = {
         Args: { _actor: string; _kind: string; _recipient: string }
         Returns: undefined
       }
+      record_image_approval: {
+        Args: { _owner: string; _path: string }
+        Returns: undefined
+      }
+      remove_work_verification: { Args: never; Returns: undefined }
       request_mentorship: {
         Args: {
           _mentor_id: string
