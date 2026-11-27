@@ -13,6 +13,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Building2, MapPin, Globe, Phone, Mail, Edit } from "lucide-react";
 import BusinessLinkRequests from "@/components/BusinessLinkRequests";
+import OrgEventsManager from "@/components/OrgEventsManager";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ORG_TYPES, orgTypeLabel } from "@/lib/orgTypes";
 
 interface BusinessAccount { 
   id: string; 
@@ -27,6 +30,9 @@ interface BusinessAccount {
   website?: string;
   email?: string;
   phone?: string;
+  kind?: string;
+  org_type?: string | null;
+  verified?: boolean;
 }
 
 const setSeo = (title: string, description?: string) => {
@@ -44,6 +50,10 @@ const BusinessDashboard = () => {
   const [name, setName] = useState("");
   const [account, setAccount] = useState<BusinessAccount | null>(null);
   const [isBusinessUser, setIsBusinessUser] = useState(false);
+  const [kind, setKind] = useState<'business' | 'organization'>(() => {
+    try { return localStorage.getItem('pending_business_kind') === 'organization' ? 'organization' : 'business'; } catch { return 'business'; }
+  });
+  const [orgType, setOrgType] = useState<string>('');
 
   useEffect(() => setSeo('Business Dashboard – Muslim Professionals Network', 'Create and manage your business profile'), []);
 
@@ -87,8 +97,10 @@ const BusinessDashboard = () => {
         name: name || pendingName || null, 
         phone: pendingPhone || null,
         website: pendingWebsite || null,
-        status: 'active' 
-      })
+        status: 'active',
+        kind,
+        org_type: kind === 'organization' ? orgType || 'other' : null,
+      } as never)
       .select('*')
       .maybeSingle();
     setCreating(false);
@@ -97,9 +109,12 @@ const BusinessDashboard = () => {
     localStorage.removeItem('pending_business_name');
     localStorage.removeItem('pending_business_phone');
     localStorage.removeItem('pending_business_website');
+    localStorage.removeItem('pending_business_kind');
     
     if (!error && data) setAccount(data as BusinessAccount);
   };
+
+  const isOrg = account ? account.kind === 'organization' : kind === 'organization';
 
   const getLocationString = () => {
     const parts = [account?.city, account?.state, account?.country].filter(Boolean);
@@ -110,13 +125,13 @@ const BusinessDashboard = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Business Dashboard</h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6">{isOrg ? 'Organization Dashboard' : 'Business Dashboard'}</h1>
 
         <Card className="shadow-soft">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Building2 className="w-5 h-5" />
-              {account ? 'Your Business Profile' : 'Create Business Profile'}
+              {account ? (isOrg ? 'Your Organization' : 'Your Business Profile') : 'Create Your Listing'}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -136,7 +151,9 @@ const BusinessDashboard = () => {
                   </Avatar>
                   <div className="flex-1">
                     <h2 className="text-2xl font-bold">{account.name || 'Unnamed Business'}</h2>
-                    {account.sector && (
+                    {isOrg ? (
+                      <Badge variant="secondary" className="mt-1">{orgTypeLabel(account.org_type)}</Badge>
+                    ) : account.sector && (
                       <Badge variant="secondary" className="mt-1">{account.sector}</Badge>
                     )}
                     {account.bio && (
@@ -176,19 +193,36 @@ const BusinessDashboard = () => {
                 </div>
 
                 {/* Status */}
+                {isOrg ? (
+                  <div className="pt-4 border-t space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Listing:</span>
+                      <Badge variant={account.verified ? 'default' : 'secondary'}>
+                        {account.verified ? 'Approved: listed in Organizations' : 'Waiting for approval'}
+                      </Badge>
+                    </div>
+                    {!account.verified && (
+                      <p className="text-sm text-muted-foreground">
+                        We check every organization before it's listed, usually within a few days. Meanwhile, finish
+                        your profile (logo, description, location) so it's ready.
+                      </p>
+                    )}
+                  </div>
+                ) : (
                 <div className="flex items-center gap-2 pt-4 border-t">
                   <span className="text-sm text-muted-foreground">Listing:</span>
                   <Badge variant={account.status === 'published' ? 'default' : 'secondary'}>
                     {account.status === 'published' ? 'Live in the directory' : account.status === 'draft' ? 'Draft (not listed yet)' : account.status}
                   </Badge>
                 </div>
+                )}
 
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-3 pt-4 border-t">
                   <Button asChild variant="accent">
                     <Link to="/edit-business-profile">
                       <Edit className="w-4 h-4 mr-2" />
-                      Edit Business Profile
+                      {isOrg ? 'Edit Organization Profile' : 'Edit Business Profile'}
                     </Link>
                   </Button>
                   <Button asChild variant="outline">
@@ -201,20 +235,48 @@ const BusinessDashboard = () => {
               </div>
             ) : isBusinessUser ? (
               <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Listing type">
+                  {(['business', 'organization'] as const).map((k) => (
+                    <Button
+                      key={k}
+                      type="button"
+                      variant={kind === k ? 'default' : 'outline'}
+                      onClick={() => setKind(k)}
+                      role="radio"
+                      aria-checked={kind === k}
+                    >
+                      {k === 'business' ? 'Business' : 'Organization'}
+                    </Button>
+                  ))}
+                </div>
                 <p className="text-muted-foreground">
-                  Create your business profile to get listed in the Muslim Business Directory.
+                  {kind === 'organization'
+                    ? 'Mosques, student associations, professional associations, charities and schools. Organizations are listed after a quick check, then can post events.'
+                    : 'Create your business profile to get listed in the Muslim Business Directory.'}
                 </p>
                 <div>
-                  <Label htmlFor="business-name">Business Name</Label>
-                  <Input 
-                    id="business-name" 
-                    value={name} 
-                    onChange={(e) => setName(e.target.value)} 
-                    placeholder="e.g., Crescent Consulting" 
+                  <Label htmlFor="business-name">{kind === 'organization' ? 'Organization name' : 'Business name'}</Label>
+                  <Input
+                    id="business-name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder={kind === 'organization' ? 'e.g., Islamic Center of Portland' : 'e.g., Crescent Consulting'}
+                    maxLength={120}
                   />
                 </div>
-                <Button onClick={createBusiness} disabled={creating} variant="accent" className="w-full">
-                  {creating ? 'Creating...' : 'Create Business Profile'}
+                {kind === 'organization' && (
+                  <div>
+                    <Label htmlFor="org-type">Type</Label>
+                    <Select value={orgType} onValueChange={setOrgType}>
+                      <SelectTrigger id="org-type"><SelectValue placeholder="Choose a type" /></SelectTrigger>
+                      <SelectContent>
+                        {ORG_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                <Button onClick={createBusiness} disabled={creating || (kind === 'organization' && !orgType)} variant="accent" className="w-full">
+                  {creating ? 'Creating...' : kind === 'organization' ? 'Create Organization' : 'Create Business Profile'}
                 </Button>
               </div>
             ) : (
@@ -228,9 +290,15 @@ const BusinessDashboard = () => {
           </CardContent>
         </Card>
 
+        {account && isOrg && (
+          <div className="mt-8">
+            <OrgEventsManager orgId={account.id} approved={!!account.verified} />
+          </div>
+        )}
+
         {account && (
           <div className="mt-8">
-            <BusinessLinkRequests businessId={account.id} />
+            <BusinessLinkRequests businessId={account.id} isOrganization={isOrg} />
           </div>
         )}
       </main>

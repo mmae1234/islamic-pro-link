@@ -84,9 +84,9 @@ useEffect(() => {
     }
     
     if (mode === 'signup') {
-      if (selectedRole === 'business') {
+      if (selectedRole === 'business' || selectedRole === 'organization') {
         if (!businessName.trim()) {
-          errors.businessName = 'Business name is required';
+          errors.businessName = selectedRole === 'organization' ? 'Organization name is required' : 'Business name is required';
         }
       } else {
         const firstNameValidation = validateName(firstName);
@@ -113,8 +113,13 @@ useEffect(() => {
     try {
       if (mode === 'signup') {
         let result: { alreadyRegistered: boolean };
-        if (selectedRole === 'business') {
-          result = await signUp(emailValidation.sanitized, password, "", "", selectedRole);
+        if (selectedRole === 'business' || selectedRole === 'organization') {
+          // Picked up by the dashboard when the account is created.
+          try {
+            localStorage.setItem('pending_business_name', businessName.trim());
+            localStorage.setItem('pending_business_kind', selectedRole === 'organization' ? 'organization' : 'business');
+          } catch { /* storage unavailable */ }
+          result = await signUp(emailValidation.sanitized, password, "", "", 'business');
         } else {
           const firstNameValidation = validateName(firstName);
           const lastNameValidation = validateName(lastName);
@@ -221,16 +226,16 @@ useEffect(() => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 {mode === 'signup' && (
                   <>
-                    {selectedRole === 'business' ? (
+                    {selectedRole === 'business' || selectedRole === 'organization' ? (
                       <>
                         <div className="space-y-2">
-                          <Label htmlFor="businessName">Business Name</Label>
+                          <Label htmlFor="businessName">{selectedRole === 'organization' ? 'Organization Name' : 'Business Name'}</Label>
                           <div className="relative">
                             <Building2 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                             <Input
                               id="businessName"
                               type="text"
-                              placeholder="Enter your business name"
+                              placeholder={selectedRole === 'organization' ? 'e.g. Islamic Center of Portland' : 'Enter your business name'}
                               value={businessName}
                               onChange={(e) => update('businessName', e.target.value)}
                               className={`pl-9 ${validationErrors.businessName ? 'border-destructive' : ''}`}

@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
-import { Users, Briefcase, Building2 } from "lucide-react";
+import { Users, Briefcase, Building2, Landmark } from "lucide-react";
 
-export type AccountType = "visitor" | "professional" | "business";
+// "organization" is a business account with kind = organization (mosque, MSA,
+// association, charity, school). Stored server-side as role "business".
+export type AccountType = "visitor" | "professional" | "business" | "organization";
+
+/** Account type as stored in profiles.role. */
+export const backendAccountType = (t: AccountType) => (t === "organization" ? "business" : t);
 
 interface RoleSelectionProps {
   defaultValue?: AccountType;
@@ -33,6 +38,12 @@ const roleOptions: Array<{
     title: "I represent a business",
     description: "List your business so members can find your services and team.",
     Icon: Building2,
+  },
+  {
+    id: "organization",
+    title: "I represent an organization",
+    description: "Mosque, student association, professional association, charity or school. Get listed and post events.",
+    Icon: Landmark,
   },
   {
     id: "visitor",

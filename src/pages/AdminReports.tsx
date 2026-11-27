@@ -23,6 +23,7 @@ import { Shield, AlertTriangle, User, MessageCircle, Calendar, FileText, Ban } f
 import { formatDistanceToNow } from "date-fns";
 import Header from "@/components/Header";
 import AdminBusinessVerification from "@/components/AdminBusinessVerification";
+import AdminOrganizations from "@/components/AdminOrganizations";
 import Footer from "@/components/Footer";
 import { getErrorMessage } from "@/lib/errors";
 import type { ProfileNameSlice } from "@/hooks/queries/types";
@@ -273,6 +274,7 @@ const AdminReports = () => {
             </p>
           </div>
 
+          <AdminOrganizations />
           <AdminBusinessVerification />
 
           <div className="flex gap-2 mb-4">

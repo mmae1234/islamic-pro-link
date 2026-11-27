@@ -139,6 +139,9 @@ const Header = () => {
                 <DropdownMenuItem asChild>
                   <Link to="/organizations" className="text-foreground text-sm">Organizations</Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/organizations?tab=events" className="text-foreground text-sm">Events</Link>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <DropdownMenu>
@@ -402,6 +405,13 @@ const Header = () => {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Organizations
+                  </Link>
+                  <Link
+                    to="/organizations?tab=events"
+                    className="block text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-3 py-2 rounded-lg text-sm"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Events
                   </Link>
                 </div>
               </div>

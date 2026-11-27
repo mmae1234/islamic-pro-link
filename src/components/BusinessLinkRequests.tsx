@@ -22,9 +22,11 @@ interface Profile {
 
 interface BusinessLinkRequestsProps {
   businessId: string;
+  /** Organizations call them members ("I'm a member") instead of team. */
+  isOrganization?: boolean;
 }
 
-const BusinessLinkRequests = ({ businessId }: BusinessLinkRequestsProps) => {
+const BusinessLinkRequests = ({ businessId, isOrganization = false }: BusinessLinkRequestsProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [actioningId, setActioningId] = useState<string | null>(null);
@@ -125,7 +127,9 @@ const BusinessLinkRequests = ({ businessId }: BusinessLinkRequestsProps) => {
           <CardHeader>
             <CardTitle id="link-requests-heading">Link Requests</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Members who say they work at your business. Approve them to show them on your business page.
+              {isOrganization
+                ? "Members who say they're part of your organization. Approve them to show them on your page."
+                : "Members who say they work at your business. Approve them to show them on your business page."}
             </p>
           </CardHeader>
           <CardContent>
@@ -187,16 +191,20 @@ const BusinessLinkRequests = ({ businessId }: BusinessLinkRequestsProps) => {
       <section aria-labelledby="linked-pros-heading" className="mt-6">
         <Card className="shadow-soft">
           <CardHeader>
-            <CardTitle id="linked-pros-heading">Linked Professionals</CardTitle>
+            <CardTitle id="linked-pros-heading">{isOrganization ? "Members" : "Linked Professionals"}</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Your team as shown on your business page.
+              {isOrganization ? "Members shown on your organization's page." : "Your team as shown on your business page."}
             </p>
           </CardHeader>
           <CardContent>
             {loading ? (
               <p className="text-muted-foreground">Loading linked professionals…</p>
             ) : approved.length === 0 ? (
-              <p className="text-muted-foreground">No linked professionals yet. Ask your team to open your business page and tap "I work here".</p>
+              <p className="text-muted-foreground">
+                {isOrganization
+                  ? 'No members yet. Ask your members to open your page and tap "I\'m a member".'
+                  : 'No linked professionals yet. Ask your team to open your business page and tap "I work here".'}
+              </p>
             ) : (
               <ul className="space-y-3">
                 {approved.map((link) => {

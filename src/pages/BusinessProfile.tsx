@@ -13,6 +13,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { getErrorMessage } from "@/lib/errors";
+import { orgTypeLabel } from "@/lib/orgTypes";
+import EventCard from "@/components/EventCard";
+import { useEvents } from "@/hooks/queries/useOrganizations";
 
 interface BusinessAccount {
   id: string;
@@ -30,6 +33,9 @@ interface BusinessAccount {
   website: string | null;
   logo_url: string | null;
   status: string;
+  kind?: string | null;
+  org_type?: string | null;
+  verified?: boolean | null;
   address_line1?: string | null;
   address_line2?: string | null;
   postal_code?: string | null;
@@ -268,6 +274,7 @@ const handleRequestLink = async () => {
   }
 
   const fullLocation = [business.city, business.state, business.country].filter(Boolean).join(', ');
+  const isOrg = business.kind === 'organization';
 
   return (
     <div className="min-h-screen bg-background">
@@ -282,7 +289,13 @@ const handleRequestLink = async () => {
                 <AvatarFallback>{(business.name?.[0] || '?').toUpperCase()}</AvatarFallback>
               </Avatar>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold text-foreground">{business.name || 'Unnamed Business'}</h1>
+                <h1 className="text-3xl md:text-4xl font-bold text-foreground">{business.name || (isOrg ? 'Unnamed organization' : 'Unnamed Business')}</h1>
+                {isOrg && (
+                  <Badge variant="secondary" className="mt-2">{orgTypeLabel(business.org_type)}</Badge>
+                )}
+                {isOrg && !business.verified && (
+                  <p className="text-sm text-muted-foreground mt-2">Waiting for approval. Only you and the site admin can see this page.</p>
+                )}
                 {fullLocation && (
                   <p className="text-muted-foreground mt-1">{fullLocation}</p>
                 )}
@@ -325,7 +338,7 @@ const handleRequestLink = async () => {
   )}
   {user && user.id === business.owner_id && (
     <Button variant="accent" asChild>
-      <Link to="/edit-business-profile">Edit Business Profile</Link>
+      <Link to="/edit-business-profile">{isOrg ? 'Edit Organization Profile' : 'Edit Business Profile'}</Link>
     </Button>
   )}
   {!user && (
@@ -348,7 +361,11 @@ const handleRequestLink = async () => {
             </section>
           )}
 
+          {/* Organizations: upcoming events */}
+          {isOrg && <OrgEventsSection orgId={business.id} signedIn={!!user} />}
+
           {/* Services / Sector */}
+          {!isOrg && (
           <section>
             <Card className="shadow-soft">
               <CardHeader>
@@ -370,6 +387,7 @@ const handleRequestLink = async () => {
               </CardContent>
             </Card>
           </section>
+          )}
 
           {/* Contact Information */}
           {(business.email || business.phone || business.website || business.address_line1 || business.facebook_url || business.instagram_url || business.linkedin_url || business.twitter_url || business.youtube_url || business.tiktok_url || business.whatsapp_number || business.telegram_url) && (
@@ -432,11 +450,11 @@ const handleRequestLink = async () => {
           <section>
             <Card className="shadow-soft">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Users className="w-5 h-5" /> Team Members</CardTitle>
+                <CardTitle className="flex items-center gap-2"><Users className="w-5 h-5" /> {isOrg ? 'Members' : 'Team Members'}</CardTitle>
               </CardHeader>
               <CardContent>
                 {team.length === 0 ? (
-                  <p className="text-muted-foreground">No team members listed yet.</p>
+                  <p className="text-muted-foreground">{isOrg ? 'No members listed yet.' : 'No team members listed yet.'}</p>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {team.map((m) => (
@@ -465,7 +483,7 @@ const handleRequestLink = async () => {
               <Card className="shadow-soft">
                 <CardContent className="pt-6 flex justify-end">
 <Button variant="hero" onClick={handleRequestLink} disabled={linking || alreadyLinked || linkBlocked}>
-  {alreadyLinked ? 'Request sent' : linkBlocked ? 'Linking disabled' : 'I work here'}
+  {alreadyLinked ? 'Request sent' : linkBlocked ? 'Linking disabled' : isOrg ? "I'm a member" : 'I work here'}
 </Button>
                 </CardContent>
               </Card>
@@ -479,3 +497,17 @@ const handleRequestLink = async () => {
 };
 
 export default BusinessProfile;
+
+/** Upcoming events on an organization's page. */
+function OrgEventsSection({ orgId, signedIn }: { orgId: string; signedIn: boolean }) {
+  const { data: events = [], isLoading } = useEvents(orgId, signedIn);
+  if (isLoading || events.length === 0) return null;
+  return (
+    <section className="space-y-3">
+      <h2 className="text-xl font-semibold text-foreground">Upcoming events</h2>
+      {events.map((e) => (
+        <EventCard key={e.id} event={e} signedIn={signedIn} showOrg={false} />
+      ))}
+    </section>
+  );
+}
