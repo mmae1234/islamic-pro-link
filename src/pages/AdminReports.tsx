@@ -24,6 +24,7 @@ import { formatDistanceToNow } from "date-fns";
 import Header from "@/components/Header";
 import AdminBusinessVerification from "@/components/AdminBusinessVerification";
 import AdminOrganizations from "@/components/AdminOrganizations";
+import AdminStats from "@/components/AdminStats";
 import Footer from "@/components/Footer";
 import { getErrorMessage } from "@/lib/errors";
 import type { ProfileNameSlice } from "@/hooks/queries/types";
@@ -276,6 +277,7 @@ const AdminReports = () => {
             </p>
           </div>
 
+          <AdminStats />
           <AdminOrganizations />
           <AdminBusinessVerification />
 
