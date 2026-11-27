@@ -78,6 +78,20 @@ serve(async (req) => {
       )
     }
 
+    // Only the caller's own uploads in the avatars bucket can be approved.
+    const callerId = String(claimsData.claims.sub)
+    const prefix = '/storage/v1/object/public/avatars/'
+    const objectPath = parsed.pathname.startsWith(prefix) ? decodeURIComponent(parsed.pathname.slice(prefix.length)) : ''
+    if (!objectPath || !objectPath.startsWith(`${callerId}/`) || objectPath.includes('..')) {
+      return new Response(
+        JSON.stringify({ error: "You can only check your own uploads", approved: false }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    })
+
     // CORRECT shape: pass image as a typed input part. The previous version sent
     // the URL as a string, which only moderates the URL TEXT (always passes).
     const moderationResponse = await fetch('https://api.openai.com/v1/moderations', {
@@ -110,6 +124,17 @@ serve(async (req) => {
         userId: claimsData.claims.sub,
         timestamp: new Date().toISOString()
       })
+      // Remove it server-side too (the browser may not).
+      await admin.storage.from('avatars').remove([objectPath])
+    } else {
+      // Record the approval against this exact stored file. The database
+      // only accepts profile photos / logos that have an approval row for
+      // the file as it is now (re-uploads get a new object id).
+      const { error: recordError } = await admin.rpc('record_image_approval', {
+        _path: objectPath,
+        _owner: callerId,
+      })
+      if (recordError) throw new Error(`Could not record approval: ${recordError.message}`)
     }
 
     return new Response(

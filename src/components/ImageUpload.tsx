@@ -60,12 +60,14 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
       // Upload to Supabase Storage
       const fileExt = (processed.type === 'image/webp' ? 'webp' : 'jpg');
-      const fileName = `${user.id}/avatar.${fileExt}`;
+      // A new file name every time: uploaded files can't be overwritten, so a
+      // photo can't be swapped after it passed the content check.
+      const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${fileExt}`;
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(fileName, processed, {
-          upsert: true, // Replace existing file
+          upsert: false,
           contentType: processed.type,
         });
 
