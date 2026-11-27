@@ -1,3 +1,4 @@
+import InviteCard from "@/components/InviteCard";
 import { formatPhone } from "@/lib/formatPhone";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -289,6 +290,12 @@ const BusinessDashboard = () => {
             )}
           </CardContent>
         </Card>
+
+        {user && account && (
+          <div className="mt-8">
+            <InviteCard userId={user.id} />
+          </div>
+        )}
 
         {account && isOrg && (
           <div className="mt-8">

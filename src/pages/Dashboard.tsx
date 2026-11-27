@@ -1,3 +1,4 @@
+import InviteCard from "@/components/InviteCard";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -341,6 +342,8 @@ const Dashboard = () => {
                   </CardContent>
                 </Card>
               )}
+
+              {user && <InviteCard userId={user.id} />}
 
               {/* Quick Actions */}
               <Card className="shadow-soft">

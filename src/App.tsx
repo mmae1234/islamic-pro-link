@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import InviteClaimer from "@/components/InviteClaimer";
 import GlobalErrorBoundary from "@/components/GlobalErrorBoundary";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AdminRoute from "@/components/AdminRoute";
@@ -90,6 +91,7 @@ const ResetPassword = lazyWithRetry(() => import("./pages/ResetPassword"));
 const Donations = lazyWithRetry(() => import("./pages/Donations"));
 const News = lazyWithRetry(() => import("./pages/News"));
 const Organizations = lazyWithRetry(() => import("./pages/Organizations"));
+const JoinInvite = lazyWithRetry(() => import("./pages/JoinInvite"));
 const Careers = lazyWithRetry(() => import("./pages/Careers"));
 const Scholarships = lazyWithRetry(() => import("./pages/Scholarships"));
 const EditProfile = lazyWithRetry(() => import("./pages/EditProfile"));
@@ -141,6 +143,7 @@ const App = () => {
             <BrowserRouter>
               <AuthProvider>
                 <RouteTitle />
+                <InviteClaimer />
                 <LazyRouteErrorBoundary>
                   <Suspense fallback={<AppLoading />}>
                     <Routes>
@@ -227,6 +230,7 @@ const App = () => {
                     <Route path="/donations" element={<Donations />} />
                     <Route path="/news" element={<News />} />
                     <Route path="/organizations" element={<Organizations />} />
+                    <Route path="/join/:code" element={<JoinInvite />} />
                     <Route path="/careers" element={<Careers />} />
                     <Route path="/scholarships" element={<Scholarships />} />
                     <Route
