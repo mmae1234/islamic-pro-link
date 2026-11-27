@@ -460,6 +460,14 @@ const Header = () => {
                         Edit Profile
                       </Link>
                     </Button>
+                    {isAdmin && (
+                      <Button variant="outline" size="sm" asChild className="justify-start">
+                        <Link to="/admin/reports" onClick={() => setIsMenuOpen(false)}>
+                          <Settings className="w-4 h-4 mr-2" />
+                          Admin
+                        </Link>
+                      </Button>
+                    )}
                     <Button variant="outline" size="sm" onClick={handleSignOut} className="justify-start">
                       <LogOut className="w-4 h-4 mr-2" />
                       Sign Out
