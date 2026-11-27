@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import ReportDialog from "@/components/ReportDialog";
-import { CalendarDays, MapPin, Video, ExternalLink, Lock, Flag } from "lucide-react";
+import { CalendarDays, MapPin, Video, ExternalLink, Lock, Flag, Share2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -62,7 +62,9 @@ const EventCard = ({ event, signedIn, showOrg = true }: { event: PublicEvent; si
             </Link>
           )}
         </div>
-        <h3 className="text-lg font-semibold text-foreground">{event.title}</h3>
+        <h3 className="text-lg font-semibold text-foreground">
+          <Link to={`/events/${event.id}`} className="hover:underline">{event.title}</Link>
+        </h3>
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
           <CalendarDays className="w-4 h-4 shrink-0" /> {formatEventWhen(event.starts_at, event.ends_at)}
         </p>
@@ -95,10 +97,26 @@ const EventCard = ({ event, signedIn, showOrg = true }: { event: PublicEvent; si
           ) : (
             <p className="flex items-center gap-2 text-sm text-muted-foreground">
               <Lock className="w-4 h-4" />
-              <Link to="/auth-gate?redirect=/organizations" className="text-primary hover:underline">Sign in</Link>
+              <Link to={`/auth-gate?redirect=/events/${event.id}`} className="text-primary hover:underline">Sign in</Link>
               to see the address and RSVP link.
             </p>
           )}
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-muted-foreground"
+            onClick={async () => {
+              const url = `https://muslimprosnet.com/events/${event.id}`;
+              try {
+                if (navigator.share) await navigator.share({ title: event.title, url });
+                else await navigator.clipboard.writeText(url);
+              } catch {
+                /* cancelled */
+              }
+            }}
+          >
+            <Share2 className="w-4 h-4 mr-1" /> Share
+          </Button>
           {signedIn && (
             <Button size="sm" variant="ghost" className="text-muted-foreground" onClick={() => setReportOpen(true)}>
               <Flag className="w-4 h-4 mr-1" /> Report
