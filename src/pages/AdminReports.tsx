@@ -46,6 +46,7 @@ type AbuseReport = {
   message_id: string | null;
   business_id?: string | null;
   event_id?: string | null;
+  opportunity_id?: string | null;
   status: ReportStatus;
   admin_note: string | null;
   evidence: EvidenceMessage[] | null;
@@ -314,7 +315,7 @@ const AdminReports = () => {
                         {getReasonIcon(report.reason)}
                         <span className="capitalize">{report.reason}</span>
                         <Badge variant={getReasonColor(report.reason)}>
-                          {report.event_id ? "Event" : report.business_id ? "Listing" : report.message_id ? "Message" : report.conversation_id ? "Conversation" : "Profile"}
+                          {report.opportunity_id ? "Job post" : report.event_id ? "Event" : report.business_id ? "Listing" : report.message_id ? "Message" : report.conversation_id ? "Conversation" : "Profile"}
                         </Badge>
                         <Badge variant={report.status === "open" ? "destructive" : "secondary"} className="capitalize">
                           {report.status}
@@ -340,13 +341,20 @@ const AdminReports = () => {
                       {report.business_id && (
                         <div className="space-y-2">
                           <h4 className="font-medium text-foreground">
-                            {report.event_id ? "Reported event (on this organization's page)" : "Reported business / organization"}
+                            {report.opportunity_id
+                              ? "Reported job / opportunity (on this listing's page)"
+                              : report.event_id
+                                ? "Reported event (on this organization's page)"
+                                : "Reported business / organization"}
                           </h4>
                           <Link to={`/business/${report.business_id}`} className="inline-flex p-3 bg-muted rounded-lg font-medium hover:underline">
                             Open the listing
                           </Link>
                           {report.event_id && (
                             <p className="text-xs text-muted-foreground">To hide the event, use the Events card above.</p>
+                          )}
+                          {report.opportunity_id && (
+                            <p className="text-xs text-muted-foreground">To hide the post, use the Jobs card above.</p>
                           )}
                         </div>
                       )}

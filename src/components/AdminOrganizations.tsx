@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { Landmark, CalendarDays } from "lucide-react";
+import { Landmark, CalendarDays, Briefcase } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -26,6 +26,8 @@ type AdminOrg = {
   created_at: string;
   owner_name: string | null;
 };
+
+type AdminOpp = { id: string; business_id: string; title: string; kind: string; hidden: boolean; apply_url: string | null; created_at: string };
 
 type AdminEvent = {
   id: string;
@@ -64,6 +66,26 @@ const AdminOrganizations = () => {
       return (data ?? []) as AdminEvent[];
     },
   });
+
+  const opps = useQuery({
+    queryKey: ["admin-opps"],
+    queryFn: async () => {
+      const { data, error } = await db
+        .from("opportunities")
+        .select("id, business_id, title, kind, hidden, apply_url, created_at")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return (data ?? []) as AdminOpp[];
+    },
+  });
+
+  const setOppHidden = async (o: AdminOpp, hidden: boolean) => {
+    const { error } = await db.rpc("admin_set_opportunity_hidden", { _id: o.id, _hidden: hidden });
+    if (error) return toast({ title: "Couldn't update", description: getErrorMessage(error), variant: "destructive" });
+    toast({ title: hidden ? "Post hidden" : "Post visible again", description: o.title });
+    queryClient.invalidateQueries({ queryKey: ["admin-opps"] });
+  };
 
   const setVerified = async (o: AdminOrg, verified: boolean) => {
     const { error } = await db.rpc("admin_set_business_verified", { _business_id: o.id, _verified: verified });
@@ -153,6 +175,37 @@ const AdminOrganizations = () => {
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-xs text-muted-foreground">{e.hidden ? "Hidden" : "Visible"}</span>
                     <Switch checked={!e.hidden} aria-label={`Show ${e.title}`} onCheckedChange={(v) => setHidden(e, !v)} />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Briefcase className="w-5 h-5 text-primary" />
+            Jobs &amp; opportunities
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">Turn a post off to hide it from everyone except its owner.</p>
+        </CardHeader>
+        <CardContent>
+          {opps.isLoading ? (
+            <p className="text-sm text-muted-foreground">Loading…</p>
+          ) : (opps.data ?? []).length === 0 ? (
+            <p className="text-sm text-muted-foreground">No posts yet.</p>
+          ) : (
+            <ul className="divide-y divide-border">
+              {(opps.data ?? []).map((o) => (
+                <li key={o.id} className="flex items-center justify-between gap-4 py-3">
+                  <div className="min-w-0">
+                    <Link to={`/business/${o.business_id}`} className="font-medium text-foreground hover:underline">{o.title}</Link>
+                    <p className="text-xs text-muted-foreground break-all">{[o.kind, o.apply_url].filter(Boolean).join(" · ")}</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs text-muted-foreground">{o.hidden ? "Hidden" : "Visible"}</span>
+                    <Switch checked={!o.hidden} aria-label={`Show ${o.title}`} onCheckedChange={(v) => setOppHidden(o, !v)} />
                   </div>
                 </li>
               ))}

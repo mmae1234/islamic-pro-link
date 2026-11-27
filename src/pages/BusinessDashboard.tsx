@@ -1,3 +1,4 @@
+import OpportunitiesManager from "@/components/OpportunitiesManager";
 import InviteCard from "@/components/InviteCard";
 import { formatPhone } from "@/lib/formatPhone";
 import { useEffect, useState } from "react";
@@ -290,6 +291,12 @@ const BusinessDashboard = () => {
             )}
           </CardContent>
         </Card>
+
+        {account && (
+          <div className="mt-8">
+            <OpportunitiesManager businessId={account.id} canPost={!isOrg || !!account.verified} />
+          </div>
+        )}
 
         {user && account && (
           <div className="mt-8">

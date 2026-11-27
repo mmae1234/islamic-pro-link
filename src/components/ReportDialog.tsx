@@ -26,7 +26,8 @@ interface ReportDialogProps {
   /** Business or organization being reported (owner is filled in server-side). */
   businessId?: string;
   eventId?: string;
-  reportType: 'profile' | 'message' | 'conversation' | 'listing' | 'event';
+  opportunityId?: string;
+  reportType: 'profile' | 'message' | 'conversation' | 'listing' | 'event' | 'opportunity';
 }
 
 const reportReasons = {
@@ -62,6 +63,14 @@ const reportReasons = {
     'Spam',
     'Other'
   ],
+  opportunity: [
+    'Fake or misleading job',
+    'Asks for money or personal financial details',
+    'Unsafe or suspicious apply link',
+    'Discriminatory or inappropriate content',
+    'Spam',
+    'Other'
+  ],
   event: [
     'Fake or misleading event',
     'Unsafe or suspicious RSVP link',
@@ -81,6 +90,7 @@ const ReportDialog = ({
   messageId,
   businessId,
   eventId,
+  opportunityId,
   reportType 
 }: ReportDialogProps) => {
   const { user } = useAuth();
@@ -107,6 +117,7 @@ const ReportDialog = ({
           ...(messageId ? { message_id: messageId } : {}),
           ...(businessId ? { business_id: businessId } : {}),
           ...(eventId ? { event_id: eventId } : {}),
+          ...(opportunityId ? { opportunity_id: opportunityId } : {}),
         } as never)
         .select('id')
         .single();
@@ -152,7 +163,8 @@ const ReportDialog = ({
     message: `Report Message from ${accusedName}`,
     conversation: `Report Conversation with ${accusedName}`,
     listing: `Report ${accusedName}`,
-    event: `Report event: ${accusedName}`
+    event: `Report event: ${accusedName}`,
+    opportunity: `Report post: ${accusedName}`
   };
 
   return (
