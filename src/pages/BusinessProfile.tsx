@@ -1,3 +1,5 @@
+import OpportunityCard from "@/components/OpportunityCard";
+import { useOpportunities } from "@/lib/opportunities";
 import { formatPhone } from "@/lib/formatPhone";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
@@ -370,6 +372,7 @@ const handleRequestLink = async () => {
 
           {/* Organizations: upcoming events */}
           {isOrg && <OrgEventsSection orgId={business.id} signedIn={!!user} />}
+          <OpenPostsSection businessId={business.id} signedIn={!!user} />
 
           {/* Services / Sector */}
           {!isOrg && (
@@ -524,6 +527,20 @@ function OrgEventsSection({ orgId, signedIn }: { orgId: string; signedIn: boolea
       <h2 className="text-xl font-semibold text-foreground">Upcoming events</h2>
       {events.map((e) => (
         <EventCard key={e.id} event={e} signedIn={signedIn} showOrg={false} />
+      ))}
+    </section>
+  );
+}
+
+/** Open jobs / volunteer roles on a business or organization page. */
+function OpenPostsSection({ businessId, signedIn }: { businessId: string; signedIn: boolean }) {
+  const { data: items = [], isLoading } = useOpportunities({ businessId }, signedIn);
+  if (isLoading || items.length === 0) return null;
+  return (
+    <section className="space-y-3">
+      <h2 className="text-xl font-semibold text-foreground">Open opportunities</h2>
+      {items.map((o) => (
+        <OpportunityCard key={o.id} item={o} signedIn={signedIn} showBusiness={false} />
       ))}
     </section>
   );

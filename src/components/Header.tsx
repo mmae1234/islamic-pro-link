@@ -131,7 +131,7 @@ const Header = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-popover border border-border shadow-elegant z-50">
                 <DropdownMenuItem asChild>
-                  <Link to="/careers" className="text-foreground text-sm">Careers</Link>
+                  <Link to="/careers" className="text-foreground text-sm">Jobs &amp; Opportunities</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/scholarships" className="text-foreground text-sm">Scholarships</Link>
@@ -390,7 +390,7 @@ const Header = () => {
                     className="block text-foreground hover:text-accent hover:bg-accent/10 transition-smooth px-3 py-2 rounded-lg text-sm"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Careers
+                    Jobs &amp; Opportunities
                   </Link>
                   <Link 
                     to="/scholarships" 

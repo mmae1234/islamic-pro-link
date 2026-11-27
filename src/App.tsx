@@ -93,6 +93,7 @@ const News = lazyWithRetry(() => import("./pages/News"));
 const Organizations = lazyWithRetry(() => import("./pages/Organizations"));
 const JoinInvite = lazyWithRetry(() => import("./pages/JoinInvite"));
 const EventDetail = lazyWithRetry(() => import("./pages/EventDetail"));
+const JobDetail = lazyWithRetry(() => import("./pages/JobDetail"));
 const Careers = lazyWithRetry(() => import("./pages/Careers"));
 const Scholarships = lazyWithRetry(() => import("./pages/Scholarships"));
 const EditProfile = lazyWithRetry(() => import("./pages/EditProfile"));
@@ -233,6 +234,7 @@ const App = () => {
                     <Route path="/organizations" element={<Organizations />} />
                     <Route path="/join/:code" element={<JoinInvite />} />
                     <Route path="/events/:id" element={<EventDetail />} />
+                    <Route path="/jobs/:id" element={<JobDetail />} />
                     <Route path="/careers" element={<Careers />} />
                     <Route path="/scholarships" element={<Scholarships />} />
                     <Route
