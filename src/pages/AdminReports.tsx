@@ -115,17 +115,32 @@ const AdminReports = () => {
 
   const loadReports = async () => {
     try {
+      // abuse_reports' foreign keys point at auth.users, not profiles, so a
+      // PostgREST embed fails ("Could not find a relationship"). Load the
+      // reports, then the names (admins can read all profiles).
       const { data, error } = await db
         .from("abuse_reports")
-        .select(`
-          *,
-          reporter_profile:profiles!abuse_reports_reporter_id_fkey(first_name, last_name),
-          accused_profile:profiles!abuse_reports_accused_id_fkey(first_name, last_name)
-        `)
+        .select("*")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      const rows = (data ?? []) as unknown as AbuseReportRaw[];
+      const base = (data ?? []) as Array<Record<string, unknown>>;
+      const ids = [
+        ...new Set(base.flatMap((r) => [r.reporter_id as string, r.accused_id as string]).filter(Boolean)),
+      ];
+      const names = new Map<string, ProfileNameSlice>();
+      if (ids.length > 0) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("user_id, first_name, last_name")
+          .in("user_id", ids);
+        for (const p of profs ?? []) names.set(p.user_id, { first_name: p.first_name, last_name: p.last_name });
+      }
+      const rows = base.map((r) => ({
+        ...r,
+        reporter_profile: names.get(r.reporter_id as string) ?? null,
+        accused_profile: names.get(r.accused_id as string) ?? null,
+      })) as unknown as AbuseReportRaw[];
       setReports(
         rows.map((row) => ({
           ...row,

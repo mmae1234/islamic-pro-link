@@ -85,10 +85,10 @@ const Header = () => {
             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-sm sm:text-lg">MP</span>
             </div>
-            <span className="text-lg sm:text-xl font-bold text-foreground truncate hidden xs:block">
+            <span className="text-lg sm:text-xl font-bold text-foreground truncate hidden xl:block">
               Muslim Professionals Network
             </span>
-            <span className="text-base font-bold text-foreground xs:hidden leading-tight">Muslim Pros Network</span>
+            <span className="text-base sm:text-lg font-bold text-foreground xl:hidden leading-tight whitespace-nowrap">Muslim Pros Network</span>
             <span
               className="ml-1 inline-flex items-center rounded-full border border-accent/40 bg-accent/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent"
               aria-label="Beta version"
@@ -99,7 +99,7 @@ const Header = () => {
           </Link>
 
           {/* Desktop Navigation - Hidden on mobile */}
-          <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
+          <div className="hidden xl:flex items-center space-x-6 whitespace-nowrap ml-10">
             {user ? (
               <>
                 <Link to="/search" className="text-foreground hover:text-accent transition-smooth text-sm">
@@ -160,7 +160,7 @@ const Header = () => {
           </div>
 
           {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-2 lg:space-x-4">
+          <div className="hidden md:flex items-center space-x-2 lg:space-x-4 ml-auto">
             {user ? (
               <>
                 <Button variant="ghost" size="sm" asChild className="h-9 w-9 p-0">
@@ -292,7 +292,7 @@ const Header = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="xl:hidden ml-auto md:ml-2">
             <Button
               variant="ghost"
               size="icon"
@@ -308,7 +308,7 @@ const Header = () => {
 
         {/* Mobile Navigation - Improved responsive design */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border animate-fade-in">
+          <div className="xl:hidden py-4 border-t border-border animate-fade-in">
             <div className="flex flex-col space-y-1">
               {user ? (
                 <>
