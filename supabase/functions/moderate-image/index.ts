@@ -38,7 +38,9 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     )
     const token = authHeader.replace('Bearer ', '')
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token)
+    const { data: claimsData, error: claimsError } = await supabase.auth.getUser(token)
+      // getClaims() isn't in supabase-js 2.45 (it threw on every call); same shape from getUser.
+      .then(({ data, error }) => ({ data: data?.user ? { claims: { sub: data.user.id } } : null, error }))
     if (claimsError || !claimsData?.claims) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized', approved: false }),
