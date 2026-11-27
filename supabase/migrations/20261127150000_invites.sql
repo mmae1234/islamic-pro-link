@@ -69,6 +69,7 @@ SET search_path TO 'public'
 AS $$
 DECLARE
   _inviter uuid;
+  _n int;
 BEGIN
   IF auth.uid() IS NULL OR _code IS NULL OR length(_code) > 32 THEN RETURN false; END IF;
   SELECT p.user_id INTO _inviter FROM public.profiles p WHERE p.invite_code = lower(btrim(_code));
@@ -77,8 +78,9 @@ BEGIN
   UPDATE public.profiles
   SET referred_by = _inviter
   WHERE user_id = auth.uid() AND referred_by IS NULL AND created_at > now() - interval '14 days';
+  GET DIAGNOSTICS _n = ROW_COUNT;
   PERFORM set_config('app.invite_rpc', 'off', true);
-  RETURN FOUND;
+  RETURN _n > 0;
 END;
 $$;
 
