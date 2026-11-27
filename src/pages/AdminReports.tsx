@@ -43,6 +43,8 @@ type AbuseReport = {
   reporter_id: string;
   accused_id: string;
   message_id: string | null;
+  business_id?: string | null;
+  event_id?: string | null;
   status: ReportStatus;
   admin_note: string | null;
   evidence: EvidenceMessage[] | null;
@@ -310,7 +312,7 @@ const AdminReports = () => {
                         {getReasonIcon(report.reason)}
                         <span className="capitalize">{report.reason}</span>
                         <Badge variant={getReasonColor(report.reason)}>
-                          {report.message_id ? "Message" : report.conversation_id ? "Conversation" : "Profile"}
+                          {report.event_id ? "Event" : report.business_id ? "Listing" : report.message_id ? "Message" : report.conversation_id ? "Conversation" : "Profile"}
                         </Badge>
                         <Badge variant={report.status === "open" ? "destructive" : "secondary"} className="capitalize">
                           {report.status}
@@ -333,8 +335,21 @@ const AdminReports = () => {
                     </CardHeader>
 
                     <CardContent className="space-y-4">
+                      {report.business_id && (
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-foreground">
+                            {report.event_id ? "Reported event (on this organization's page)" : "Reported business / organization"}
+                          </h4>
+                          <Link to={`/business/${report.business_id}`} className="inline-flex p-3 bg-muted rounded-lg font-medium hover:underline">
+                            Open the listing
+                          </Link>
+                          {report.event_id && (
+                            <p className="text-xs text-muted-foreground">To hide the event, use the Events card above.</p>
+                          )}
+                        </div>
+                      )}
                       <div className="space-y-2">
-                        <h4 className="font-medium text-foreground">Reported member</h4>
+                        <h4 className="font-medium text-foreground">{report.business_id ? "Owner" : "Reported member"}</h4>
                         <Link
                           to={`/profile/${report.accused_id}`}
                           className="inline-flex items-center gap-2 p-3 bg-muted rounded-lg font-medium hover:underline"

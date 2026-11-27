@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { CalendarDays, MapPin, Video, ExternalLink, Lock } from "lucide-react";
+import ReportDialog from "@/components/ReportDialog";
+import { CalendarDays, MapPin, Video, ExternalLink, Lock, Flag } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -46,6 +48,7 @@ const modeLabel: Record<EventMode, string> = { in_person: "In person", online: "
 
 /** One event. Links open in a new tab with no referrer/opener, and only https links render. */
 const EventCard = ({ event, signedIn, showOrg = true }: { event: PublicEvent; signedIn: boolean; showOrg?: boolean }) => {
+  const [reportOpen, setReportOpen] = useState(false);
   const place = [event.venue_name, event.city, event.state].filter(Boolean).join(", ");
   const safeRsvp = event.rsvp_url && SAFE_HTTPS_URL.test(event.rsvp_url) ? event.rsvp_url : null;
   return (
@@ -80,7 +83,7 @@ const EventCard = ({ event, signedIn, showOrg = true }: { event: PublicEvent; si
         {event.description && (
           <p className="text-sm text-foreground whitespace-pre-wrap break-words line-clamp-6">{event.description}</p>
         )}
-        <div className="pt-2">
+        <div className="pt-2 flex flex-wrap items-center gap-2">
           {signedIn ? (
             safeRsvp && (
               <Button asChild size="sm" variant="accent">
@@ -96,7 +99,22 @@ const EventCard = ({ event, signedIn, showOrg = true }: { event: PublicEvent; si
               to see the address and RSVP link.
             </p>
           )}
+          {signedIn && (
+            <Button size="sm" variant="ghost" className="text-muted-foreground" onClick={() => setReportOpen(true)}>
+              <Flag className="w-4 h-4 mr-1" /> Report
+            </Button>
+          )}
         </div>
+        {signedIn && (
+          <ReportDialog
+            open={reportOpen}
+            onOpenChange={setReportOpen}
+            accusedId={event.org_id}
+            accusedName={event.title}
+            eventId={event.id}
+            reportType="event"
+          />
+        )}
       </CardContent>
     </Card>
   );

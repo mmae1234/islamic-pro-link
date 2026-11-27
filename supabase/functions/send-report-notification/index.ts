@@ -39,6 +39,8 @@ const TYPE_MAP: Record<string, string> = {
   profile: "Profile Report",
   message: "Message Report",
   conversation: "Conversation Report",
+  listing: "Business / Organization Report",
+  event: "Event Report",
 };
 
 const handler = async (req: Request): Promise<Response> => {

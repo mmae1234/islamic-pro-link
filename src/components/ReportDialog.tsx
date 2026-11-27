@@ -23,7 +23,10 @@ interface ReportDialogProps {
   accusedName: string;
   conversationId?: string;
   messageId?: string;
-  reportType: 'profile' | 'message' | 'conversation';
+  /** Business or organization being reported (owner is filled in server-side). */
+  businessId?: string;
+  eventId?: string;
+  reportType: 'profile' | 'message' | 'conversation' | 'listing' | 'event';
 }
 
 const reportReasons = {
@@ -50,6 +53,22 @@ const reportReasons = {
     'Threats or violence',
     'Unwanted contact',
     'Other'
+  ],
+  listing: [
+    'Fake or not a real business/organization',
+    'Impersonating a real organization',
+    'Inappropriate content',
+    'Scam or fraud',
+    'Spam',
+    'Other'
+  ],
+  event: [
+    'Fake or misleading event',
+    'Unsafe or suspicious RSVP link',
+    'Inappropriate content',
+    'Scam or fraud',
+    'Spam',
+    'Other'
   ]
 };
 
@@ -60,6 +79,8 @@ const ReportDialog = ({
   accusedName,
   conversationId,
   messageId,
+  businessId,
+  eventId,
   reportType 
 }: ReportDialogProps) => {
   const { user } = useAuth();
@@ -84,6 +105,8 @@ const ReportDialog = ({
           // Recorded so the admin sees exactly which message was reported
           // (column added in 20261126140000; ignored by older databases' types).
           ...(messageId ? { message_id: messageId } : {}),
+          ...(businessId ? { business_id: businessId } : {}),
+          ...(eventId ? { event_id: eventId } : {}),
         } as never)
         .select('id')
         .single();
@@ -127,7 +150,9 @@ const ReportDialog = ({
   const titleMap = {
     profile: `Report ${accusedName}'s Profile`,
     message: `Report Message from ${accusedName}`,
-    conversation: `Report Conversation with ${accusedName}`
+    conversation: `Report Conversation with ${accusedName}`,
+    listing: `Report ${accusedName}`,
+    event: `Report event: ${accusedName}`
   };
 
   return (
