@@ -29,6 +29,7 @@ import {
   Phone,
   Send,
   Lock,
+  BadgeCheck,
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import ReportDialog from "@/components/ReportDialog";
@@ -264,6 +265,12 @@ const Profile = () => {
                             <div className="flex items-center text-muted-foreground">
                               <MapPin className="w-4 h-4 mr-2" />
                               {[professionalProfile.city, professionalProfile.state_province, professionalProfile.country].filter(Boolean).join(', ')}
+                            </div>
+                          )}
+                          {(professionalProfile as { verified_work_domain?: string | null }).verified_work_domain && (
+                            <div className="flex items-center text-primary text-sm font-medium" title="Confirmed with a code sent to a work email at this domain">
+                              <BadgeCheck className="w-4 h-4 mr-2" />
+                              Verified at {(professionalProfile as { verified_work_domain?: string | null }).verified_work_domain}
                             </div>
                           )}
                           {(((professionalProfile as { open_to?: string[] | null }).open_to) ?? []).length > 0 && (
