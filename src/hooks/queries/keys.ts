@@ -24,6 +24,7 @@ export type ProfessionalFilters = {
   languages?: string[];
   skills?: string[];
   gender?: string;
+  openTo?: string[];
 };
 
 export type BusinessFilters = {

@@ -1,3 +1,4 @@
+import { openToLabel } from "@/lib/openTo";
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -34,6 +35,7 @@ interface Professional {
   skills?: string[] | null;
   is_mentor?: boolean | null;
   is_seeking_mentor?: boolean | null;
+  open_to?: string[] | null;
   availability?: string | null;
   avatar_url?: string | null;
   profiles?: {
@@ -259,6 +261,9 @@ const ProfessionalCard = ({
                         Seeking Mentor
                       </Badge>
                     )}
+                    {(professional.open_to ?? []).map((t) => (
+                      <Badge key={t} variant="outline" className="text-xs">{openToLabel(t)}</Badge>
+                    ))}
                   </div>
                 </div>
 

@@ -1,3 +1,4 @@
+import { OPEN_TO } from "@/lib/openTo";
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,6 +32,7 @@ export type SearchFilterValues = {
   isSeekingMentor: boolean;
   experienceMin: string;
   experienceMax: string;
+  openTo: string[];
 };
 
 interface SearchFiltersProps {
@@ -52,7 +54,8 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
     isMentor: false,
     isSeekingMentor: false,
     experienceMin: '',
-    experienceMax: ''
+    experienceMax: '',
+    openTo: [] as string[],
   });
 
   const addSkill = (skill: string) => {
@@ -89,7 +92,8 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
       isMentor: false,
       isSeekingMentor: false,
       experienceMin: '',
-      experienceMax: ''
+      experienceMax: '',
+      openTo: [],
     });
   };
 
@@ -243,6 +247,33 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
           )}
         </div>
 
+        {/* Open to */}
+        <div className={more}>
+          <Label>Open to</Label>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {OPEN_TO.map((o) => {
+              const on = filters.openTo.includes(o.value);
+              return (
+                <Button
+                  key={o.value}
+                  type="button"
+                  size="sm"
+                  variant={on ? 'default' : 'outline'}
+                  aria-pressed={on}
+                  onClick={() =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      openTo: on ? prev.openTo.filter((v) => v !== o.value) : [...prev.openTo, o.value],
+                    }))
+                  }
+                >
+                  {o.label}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Mentorship Type */}
         <div className={`${moreGrid} md:grid-cols-2 gap-4`}>
           <div className="flex items-center space-x-2">
@@ -251,7 +282,7 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
               checked={filters.isSeekingMentor}
               onCheckedChange={(checked) => setFilters(prev => ({ ...prev, isSeekingMentor: checked as boolean }))}
             />
-            <Label htmlFor="isSeekingMentor">Looking for mentors</Label>
+            <Label htmlFor="isSeekingMentor">Seeking a mentor</Label>
           </div>
           
           <div className="flex items-center space-x-2">
@@ -260,7 +291,7 @@ const SearchFilters = ({ onSearch, loading = false }: SearchFiltersProps) => {
               checked={filters.isMentor}
               onCheckedChange={(checked) => setFilters(prev => ({ ...prev, isMentor: checked as boolean }))}
             />
-            <Label htmlFor="isMentor">Available mentors</Label>
+            <Label htmlFor="isMentor">Available to mentor</Label>
           </div>
         </div>
 

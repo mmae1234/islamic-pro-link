@@ -131,6 +131,7 @@ const Search = () => {
     languages: string[];
     skills: string[];
     gender: string;
+    openTo: string[];
   }>;
 
   const handleSearch = (next: SearchFilterPayload = {}) => {
@@ -149,6 +150,7 @@ const Search = () => {
       languages: next.languages,
       skills: next.skills,
       gender: next.gender,
+      openTo: next.openTo,
     });
   };
 

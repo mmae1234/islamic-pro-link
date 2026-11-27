@@ -1,3 +1,4 @@
+import { openToLabel } from "@/lib/openTo";
 import { personName, personInitials } from "@/lib/displayName";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -263,6 +264,13 @@ const Profile = () => {
                             <div className="flex items-center text-muted-foreground">
                               <MapPin className="w-4 h-4 mr-2" />
                               {[professionalProfile.city, professionalProfile.state_province, professionalProfile.country].filter(Boolean).join(', ')}
+                            </div>
+                          )}
+                          {(((professionalProfile as { open_to?: string[] | null }).open_to) ?? []).length > 0 && (
+                            <div className="flex flex-wrap gap-2" aria-label="Open to">
+                              {((professionalProfile as { open_to?: string[] | null }).open_to ?? []).map((t) => (
+                                <Badge key={t} variant="outline">{openToLabel(t)}</Badge>
+                              ))}
                             </div>
                           )}
                         </div>
