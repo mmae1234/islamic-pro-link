@@ -1,3 +1,4 @@
+import { OPEN_TO } from "@/lib/openTo";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -69,6 +70,7 @@ const EditProfile = () => {
   const [availability, setAvailability] = useState('');
   const [isMentor, setIsMentor] = useState(false);
   const [isSeekingMentor, setIsSeekingMentor] = useState(false);
+  const [openTo, setOpenTo] = useState<string[]>([]);
   const [preferredCommunication, setPreferredCommunication] = useState<string[]>(['in_app_messaging']);
   const [website, setWebsite] = useState('');
   const [facebookUrl, setFacebookUrl] = useState('');
@@ -147,6 +149,7 @@ const EditProfile = () => {
         setAvailability(professionalData.availability || '');
         setIsMentor(professionalData.is_mentor || false);
         setIsSeekingMentor(professionalData.is_seeking_mentor || false);
+        setOpenTo(((professionalData as { open_to?: string[] | null }).open_to) ?? []);
         setPreferredCommunication(professionalData.preferred_communication || ['in_app_messaging']);
         setWebsite(professionalData.website || '');
         setFacebookUrl(professionalData.facebook_url || '');
@@ -242,6 +245,7 @@ const EditProfile = () => {
             availability,
             is_mentor: isMentor,
             is_seeking_mentor: isSeekingMentor,
+            open_to: openTo,
             preferred_communication: preferredCommunication,
             website: sanitizedUrls['Website'] || null,
             facebook_url: sanitizedUrls['Facebook'] || null,
@@ -532,6 +536,29 @@ const EditProfile = () => {
                     <Label htmlFor="telegram">Telegram URL</Label>
                     <Input id="telegram" value={telegramUrl} onChange={(e) => setTelegramUrl(e.target.value)} placeholder="https://t.me/yourhandle" />
                   </div>
+                </div>
+              </div>
+
+              {/* Open to */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold">Open to</h3>
+                <p className="text-sm text-muted-foreground">Shown on your profile and searchable. Pick any that apply right now.</p>
+                <div className="flex flex-wrap gap-2">
+                  {OPEN_TO.map((o) => {
+                    const on = openTo.includes(o.value);
+                    return (
+                      <Button
+                        key={o.value}
+                        type="button"
+                        size="sm"
+                        variant={on ? 'default' : 'outline'}
+                        aria-pressed={on}
+                        onClick={() => setOpenTo((prev) => (on ? prev.filter((v) => v !== o.value) : [...prev, o.value]))}
+                      >
+                        {o.label}
+                      </Button>
+                    );
+                  })}
                 </div>
               </div>
 

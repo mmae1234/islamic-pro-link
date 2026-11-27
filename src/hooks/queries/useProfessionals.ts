@@ -71,6 +71,7 @@ export function useProfessionals(
         _min_experience: int(filters.experienceMin),
         _max_experience: int(filters.experienceMax),
         _gender: normalizeFilter(filters.gender) ?? undefined,
+        _open_to: many(filters.openTo),
       } as never);
 
       if (error) throw error;
